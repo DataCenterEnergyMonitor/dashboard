@@ -25,19 +25,6 @@ wue_df = pd.read_excel(relative_path, sheet_name='Input - WUE', skiprows=1)
 # format header values into a snake case
 wue_df = wue_df.clean_names()
 
-import dash
-from dash import html, dcc
-import plotly.express as px
-from dash.dependencies import Input, Output
-
-# Calculate top 5 companies with the most occurrences
-company_counts = wue_df["company"].value_counts().head(5).index.tolist()
-
-import dash
-from dash import html, dcc
-import plotly.express as px
-from dash.dependencies import Input, Output
-
 # Calculate top 5 companies with the most occurrences
 company_counts = wue_df["company"].value_counts().head(5).index.tolist()
 
@@ -47,8 +34,6 @@ global_industry_avg = {
     'applicable_year': wue_df['applicable_year'],  # The list of years from your DataFrame
     'wue': [1.8] * len(wue_df['applicable_year'])   # The same WUE value for all years
 }
-
-
 
 # Initialize Dash app
 app = dash.Dash(

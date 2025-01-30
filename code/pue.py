@@ -25,19 +25,6 @@ pue_df = pd.read_excel(relative_path, sheet_name='Input - PUE', skiprows=1)
 # format header values into a snake case
 pue_df = pue_df.clean_names()
 
-import dash
-from dash import html, dcc
-import plotly.express as px
-from dash.dependencies import Input, Output
-
-# Calculate top 5 companies with the most occurrences
-company_counts = pue_df["company"].value_counts().head(5).index.tolist()
-
-import dash
-from dash import html, dcc
-import plotly.express as px
-from dash.dependencies import Input, Output
-
 # Calculate top 5 companies with the most occurrences
 company_counts = pue_df["company"].value_counts().head(5).index.tolist()
 
