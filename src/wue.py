@@ -10,7 +10,7 @@ from dash import dcc, html, Input, Output
 
 ### Import Data
 
-# import PUE data
+# import WUE data
 # define relative path
 relative_path = Path('../data/dc_energy_use_pue.xlsx')
 
@@ -18,18 +18,21 @@ relative_path = Path('../data/dc_energy_use_pue.xlsx')
 absolute_path = relative_path.resolve()
 print(absolute_path)
 
-# import IAC database excell
 # set skiprows=1 to start data import from the second row
-pue_df = pd.read_excel(relative_path, sheet_name='Input - PUE', skiprows=1) 
+wue_df = pd.read_excel(relative_path, sheet_name='Input - WUE', skiprows=1) 
 
 # format header values into a snake case
-pue_df = pue_df.clean_names()
+wue_df = wue_df.clean_names()
 
 # Calculate top 5 companies with the most occurrences
-company_counts = pue_df["company"].value_counts().head(5).index.tolist()
+company_counts = wue_df["company"].value_counts().head(5).index.tolist()
 
 # Calculate global industry average outside the callback
-global_industry_avg = pue_df.groupby('applicable_year')['real_pue'].mean().reset_index()
+#global_industry_avg = wue_df.groupby('applicable_year')['wue'].mean().reset_index()
+global_industry_avg = {
+    'applicable_year': wue_df['applicable_year'],  # The list of years from your DataFrame
+    'wue': [1.8] * len(wue_df['applicable_year'])   # The same WUE value for all years
+}
 
 # Initialize Dash app
 app = dash.Dash(
@@ -41,15 +44,14 @@ server = app.server
 # Custom CSS for Roboto font and improved styling
 app.layout = html.Div([
     html.H1(
-        "Data Center Power Usage Effectiveness (PUE): Trends by Company",
+        "Data Center Water Usage Effectiveness (WUE): Trends by Company",
         style={'fontFamily': 'Roboto', 'fontWeight': '500', 'marginBottom': '30px'}
     ),
     
-    # Description of PUE with constrained width and darker gray color
+    # Description of WUE with constrained width and darker gray color
     html.Div([
         html.P(
-            "Power Usage Effectiveness (PUE) is a ratio that measures data center energy efficiency. "
-            "A PUE of 1.0 represents perfect efficiency.",
+            "Water Usage Effectiveness (WUE) is a ratio that measures how efficiently a data center uses water.",
             style={
                 'fontFamily': 'Roboto',
                 'marginBottom': '20px',
@@ -65,9 +67,9 @@ app.layout = html.Div([
         dcc.Dropdown(
             id='facility-scope-dropdown',
             options=[
-                {"label": scope, "value": scope} for scope in pue_df["facility_scope"].dropna().unique()
+                {"label": scope, "value": scope} for scope in wue_df["facility_scope"].dropna().unique()
             ],
-            value=pue_df["facility_scope"].dropna().unique()[0],
+            value=wue_df["facility_scope"].dropna().unique()[0],
             placeholder="Select a facility scope",
             style={'fontFamily': 'Roboto'}
         ),
@@ -80,7 +82,7 @@ app.layout = html.Div([
             options=[
                 {"label": "All", "value": "All"}
             ] + [
-                {"label": company, "value": company} for company in pue_df["company"].unique()
+                {"label": company, "value": company} for company in wue_df["company"].unique()
             ],
             multi=True,
             value=company_counts,
@@ -121,7 +123,7 @@ app.layout = html.Div([
      Input('facility-scope-dropdown', 'value')]
 )
 def update_chart(selected_companies, selected_scope):
-    filtered_df = pue_df.dropna(subset=["facility_scope"])
+    filtered_df = wue_df.dropna(subset=["facility_scope"])
 
     if selected_companies and "All" in selected_companies and len(selected_companies) > 1:
         selected_companies.remove("All")
@@ -136,14 +138,14 @@ def update_chart(selected_companies, selected_scope):
         filtered_df = filtered_df[filtered_df["facility_scope"] == selected_scope]
 
     # Create the main scatter plot
-    pue_fig = px.scatter(
+    wue_fig = px.scatter(
         filtered_df,
         x='applicable_year',
-        y='real_pue',
+        y='wue',
         color='company',
         labels={
             "applicable_year": "Year",
-            "real_pue": "Power Usage Effectiveness (PUE)",
+            "wue": "Water Usage Effectiveness (WUE)",
             "company": "Company Name"
         }
     )
@@ -152,9 +154,9 @@ def update_chart(selected_companies, selected_scope):
     if selected_scope == "fleet-wide":
         for company in filtered_df['company'].unique():
             company_data = filtered_df[filtered_df['company'] == company].sort_values('applicable_year')
-            pue_fig.add_scatter(
+            wue_fig.add_scatter(
                 x=company_data['applicable_year'],
-                y=company_data['real_pue'],
+                y=company_data['wue'],
                 mode='lines',
                 line=dict(width=1),
                 showlegend=False,
@@ -163,40 +165,15 @@ def update_chart(selected_companies, selected_scope):
             )
 
     # Add global industry average line with green color
-    pue_fig.add_scatter(
+    wue_fig.add_scatter(
         x=global_industry_avg['applicable_year'],
-        y=global_industry_avg['real_pue'],
+        y=global_industry_avg['wue'],
         mode='lines',
         name='Industry Average',
         line=dict(color='#2E8B57', dash='dash', width=2),  # Sea green color
-        hovertemplate='Year: %{x}<br>Industry Avg PUE: %{y:.2f}<extra></extra>'
+        hovertemplate='Year: %{x}<br>Industry Avg WUE: %{y:.2f}<extra></extra>'
     )
-
-    # # Update layout with improved styling
-    # pue_fig.update_layout(
-    #     font_family="Roboto",
-    #     plot_bgcolor='white',
-    #     xaxis=dict(
-    #         showgrid=True,
-    #         gridwidth=1,
-    #         gridcolor='lightgray',
-    #         dtick=1,  # Force yearly intervals
-    #         showline=True,
-    #         linecolor='black',
-    #         linewidth=1,
-    #         title_font=dict(size=14)
-    #     ),
-    #     yaxis=dict(
-    #         showgrid=True,
-    #         gridwidth=1,
-    #         gridcolor='lightgray',
-    #         range=[1, max(filtered_df['real_pue'].max() * 1.1, 1.8)],  # Start at 1.0
-    #         showline=True,
-    #         linecolor='black',
-    #         linewidth=1,
-    #         title_font=dict(size=14)
-    #     ),
-    pue_fig.update_layout(
+    wue_fig.update_layout(
     font_family="Roboto",
     plot_bgcolor='white',
     xaxis=dict(
@@ -209,7 +186,7 @@ def update_chart(selected_companies, selected_scope):
     ),
     yaxis=dict(
         showgrid=False,  # Disable gridlines
-        range=[1, max(filtered_df['real_pue'].max() * 1.1, 1.8)],  # Start at 1.0
+        range=[0, max(filtered_df['wue'].max() * 1.1, 1.8)],  # Start at 0
         showline=True,
         linecolor='black',
         linewidth=1,
@@ -228,10 +205,10 @@ def update_chart(selected_companies, selected_scope):
     )
 
     # Increase marker size
-    pue_fig.update_traces(marker=dict(size=10), selector=dict(mode='markers'))
+    wue_fig.update_traces(marker=dict(size=10), selector=dict(mode='markers'))
 
     # Add source citation with lower position
-    pue_fig.add_annotation(
+    wue_fig.add_annotation(
         text="Source: [TBD]",
         xref="paper",
         yref="paper",
@@ -242,7 +219,7 @@ def update_chart(selected_companies, selected_scope):
         align="left"
     )
 
-    return pue_fig, selected_companies
+    return wue_fig, selected_companies
 
 # Download callback remains the same
 @app.callback(
@@ -255,7 +232,7 @@ def download_data(n_clicks, selected_companies, selected_scope):
     if not n_clicks or dash.callback_context.triggered_id != 'download-button':
         return dash.no_update
 
-    filtered_df = pue_df.dropna(subset=["facility_scope"])
+    filtered_df = wue_df.dropna(subset=["facility_scope"])
 
     if selected_companies and "All" in selected_companies and len(selected_companies) > 1:
         selected_companies.remove("All")
@@ -272,4 +249,4 @@ def download_data(n_clicks, selected_companies, selected_scope):
     return dcc.send_data_frame(filtered_df.to_csv, "filtered_data.csv")
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8052)
+    app.run_server(debug=True, port=8053)
