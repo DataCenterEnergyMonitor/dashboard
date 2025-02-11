@@ -2,13 +2,13 @@ import dash
 from dash import Dash, dcc, html, Input, Output, callback
 import dash_bootstrap_components as dbc
 from data_loader import load_pue_data, load_wue_data
-from pages.home_page import create_home_page
 from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
+from pages.home_page import create_home_page
 from pages.about_page import create_about_page
 from callbacks.chart_callbacks import ChartCallbackManager
 from charts.pue_chart import create_pue_scatter_plot
-from charts.wue_chart import create_wue_scatter_plot  # Add WUE chart import
+from charts.wue_chart import create_wue_scatter_plot
 
 def create_app():
     app = dash.Dash(
@@ -24,48 +24,42 @@ def create_app():
     pue_df, company_counts, pue_industry_avg = load_pue_data()
     wue_df, wue_company_counts, wue_industry_avg = load_wue_data()
 
-    # Create data dictionary for each chart type
+    # Create data dictionary for charts
     data_dict = {
-        'pue': {
+        'pue_scatter': {
             'df': pue_df,
-            'industry_avg': pue_industry_avg,
-            'value_column': 'real_pue'  # Add column name for the metric
+            'industry_avg': pue_industry_avg
         },
-        'wue': {
+        'wue_scatter': {
             'df': wue_df,
-            'industry_avg': wue_industry_avg,
-            'value_column': 'wue'  # Add column name for the metric
+            'industry_avg': wue_industry_avg
         }
     }
 
     # Define chart configurations
     chart_configs = {
-        'pue': {
+        'pue_scatter': {
             'chart_id': 'pue-scatter-chart',
-            'company_dropdown_id': 'pue-company-dropdown',
-            'scope_dropdown_id': 'pue-facility-scope-dropdown',
-            'geographical_scope_dropdown_id': 'pue-geographical-scope-dropdown',
+            'chart_type': 'pue_scatter',
             'chart_creator': create_pue_scatter_plot,
-            'download_data_id': 'pue-download-dataframe',
+            'download_data_id': 'pue-download-data',
             'download_button_id': 'pue-download-button',
             'filename': 'pue_data.csv',
-            'chart_type': 'pue' # chart type identifier
+            'base_id': 'pue'  # base_id to match FilterManager
         },
-        'wue': {
+        'wue_scatter': {
             'chart_id': 'wue-scatter-chart',
-            'company_dropdown_id': 'wue-company-dropdown',
-            'scope_dropdown_id': 'wue-facility-scope-dropdown',
-            'geographical_scope_dropdown_id': 'wue-geographical-scope-dropdown',
+            'chart_type': 'wue_scatter',
             'chart_creator': create_wue_scatter_plot,
-            'download_data_id': 'wue-download-dataframe',
+            'download_data_id': 'wue-download-data',
             'download_button_id': 'wue-download-button',
             'filename': 'wue_data.csv',
-            'chart_type': 'wue'  # Add chart type identifier
+            'base_id': 'wue'  # base_id to match FilterManager
         }
     }
 
-    # Initialize callback manager with both data and configurations
-    callback_manager = ChartCallbackManager(app, data_dict, chart_configs)
+    # Initialize chart callback manager
+    chart_manager = ChartCallbackManager(app, data_dict, chart_configs)
 
     # URL Routing
     app.layout = html.Div([
@@ -79,9 +73,9 @@ def create_app():
     )
     def display_page(pathname):
         if pathname == '/pue':
-            return create_pue_page(pue_df, company_counts)
+            return create_pue_page(app, pue_df, company_counts)
         elif pathname == '/wue':
-            return create_wue_page(wue_df, wue_company_counts)
+            return create_wue_page(app, wue_df, wue_company_counts)
         elif pathname == '/about':
             return create_about_page()
         else:

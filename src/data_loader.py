@@ -12,7 +12,7 @@ def load_pue_data():
     pue_df = pue_df.clean_names()
     company_counts = pue_df["company"].value_counts().head(5).index.tolist()
     
-    # Renamed from global_industry_avg to pue_industry_avg
+    # Industry average PUE values annually
     pue_industry_avg = pue_df.groupby('applicable_year')['real_pue'].mean().reset_index()
     
     return pue_df, company_counts, pue_industry_avg
@@ -25,7 +25,7 @@ def load_wue_data():
     wue_df = wue_df.clean_names()
     wue_company_counts = wue_df["company"].value_counts().head(5).index.tolist()
     
-    # Renamed from wue_global_industry_avg to wue_industry_avg and converted to DataFrame
+    # set WUE industry average to 1.8 value
     wue_industry_avg = pd.DataFrame({
         'applicable_year': wue_df['applicable_year'], # The list of years from the DataFrame
         'wue': [1.8] * len(wue_df['applicable_year']) # The same WUE value for all years
