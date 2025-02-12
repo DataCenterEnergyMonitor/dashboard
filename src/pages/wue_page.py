@@ -10,17 +10,18 @@ def create_wue_page(app, wue_df, company_counts):
             label="Facility Scope",
             column="facility_scope",
             multi=False,
-            default_value=wue_df["facility_scope"].dropna().unique()[0],
-            show_all=False
+            default_value="Fleet-wide",
+            show_all=False,
+            depends_on=None
         ),
         FilterConfig(
             id="company",
             label="Company",
             column="company",
             multi=True,
-            default_value=company_counts,
+            default_value="All",
             show_all=True,
-            depends_on=["facility_scope"]  # Company depends on facility scope
+            depends_on=["facility_scope"]
         ),
         FilterConfig(
             id="geographical_scope",
@@ -29,7 +30,7 @@ def create_wue_page(app, wue_df, company_counts):
             multi=True,
             default_value="All",
             show_all=True,
-            depends_on=["facility_scope", "company"]  # Geo scope depends on facility and company
+            depends_on=["facility_scope", "company"]
         )
     ]
     

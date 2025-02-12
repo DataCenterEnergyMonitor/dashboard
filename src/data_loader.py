@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import janitor
+from janitor import clean_names
 
 def load_pue_data():
     # Get the current file's directory (src folder)
@@ -10,10 +11,30 @@ def load_pue_data():
     
     pue_df = pd.read_excel(data_path, sheet_name='Input - PUE', skiprows=1)
     pue_df = pue_df.clean_names()
-    company_counts = pue_df["company"].value_counts().head(5).index.tolist()
     
-    # Industry average PUE values annually
-    pue_industry_avg = pue_df.groupby('applicable_year')['real_pue'].mean().reset_index()
+    # Clean string columns
+    string_columns = ['facility_scope', 'company', 'geographical_scope', 'pue_measurement_level']
+    for col in string_columns:
+        if col in pue_df.columns:
+            pue_df[col] = pue_df[col].str.strip()
+    
+    # Get companies with the most single locations
+    company_counts = (
+        pue_df[pue_df['facility_scope'] == 'Single location']
+        .groupby('company')
+        .size()
+        .sort_values(ascending=False)
+        .head(5)
+        .index
+        .tolist()
+    )
+    
+     # Industry average PUE values annually
+    pue_industry_avg = (
+        pue_df.groupby('applicable_year')['real_pue']
+        .mean()
+        .reset_index()
+    )
     
     return pue_df, company_counts, pue_industry_avg
 
@@ -23,12 +44,20 @@ def load_wue_data():
     
     wue_df = pd.read_excel(data_path, sheet_name='Input - WUE', skiprows=1)
     wue_df = wue_df.clean_names()
-    wue_company_counts = wue_df["company"].value_counts().head(5).index.tolist()
     
     # set WUE industry average to 1.8 value
     wue_industry_avg = pd.DataFrame({
         'applicable_year': wue_df['applicable_year'], # The list of years from the DataFrame
         'wue': [1.8] * len(wue_df['applicable_year']) # The same WUE value for all years
     })
+
+    # Clean string columns
+    string_columns = ['facility_scope', 'company', 'geographical_scope']
+    for col in string_columns:
+        if col in wue_df.columns:
+            wue_df[col] = wue_df[col].str.strip()
+    
+    # Get all unique companies
+    wue_company_counts = wue_df['company'].unique().tolist()
     
     return wue_df, wue_company_counts, wue_industry_avg

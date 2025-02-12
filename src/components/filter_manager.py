@@ -54,57 +54,73 @@ class FilterManager:
         @self.app.callback(
             outputs,
             inputs,
-            prevent_initial_call=False  # Allow initial call
+            prevent_initial_call=False
         )
         def update_filter_options(*input_values):
             ctx = dash.callback_context
-            if not ctx.triggered:
-                # Return initial options for all filters
-                return [self._get_filter_options(f, self.df) for f in self.filters.values()]
-
-            # Get the triggered input's properties
-            triggered = ctx.triggered[0]
-            triggered_prop_id = triggered['prop_id']
-
-            try:
-                triggered_id = eval(triggered_prop_id.split('.')[0])
-                triggered_filter = triggered_id['filter_id']
-            except:
-                return [dash.no_update] * len(outputs)
-
-            # Get current values
+            
+            # Get current values, using defaults for initial load
             current_values = {}
             for filter_id, value in zip(self.filters.keys(), input_values):
+                filter_config = self.filters[filter_id]
                 if value is not None:
                     current_values[filter_id] = value
+                elif not ctx.triggered and filter_config.default_value is not None:
+                    # Use default value on initial load
+                    current_values[filter_id] = filter_config.default_value
+
+            # Get triggered filter
+            triggered_filter = None
+            if ctx.triggered:
+                triggered_id = eval(ctx.triggered[0]['prop_id'].split('.')[0])
+                triggered_filter = triggered_id.get('filter_id')
 
             # Process each filter
             results = []
             for filter_id in self.filters.keys():
                 filter_config = self.filters[filter_id]
                 
-                # Check dependencies
+                # If it's initial load and filter has a default value, don't update options
+                if not ctx.triggered and filter_config.default_value is not None:
+                    results.append(dash.no_update)
+                    continue
+
+                # Only update options if this filter depends on the triggered filter
                 should_update = (
-                    filter_id == triggered_filter or  # Always update the triggered filter
-                    triggered_filter in filter_config.depends_on  # Update if it depends on the triggered filter
+                    triggered_filter is None or  # Initial load
+                    filter_id == triggered_filter or  # This filter was triggered
+                    (filter_config.depends_on and triggered_filter in filter_config.depends_on)  # Depends on triggered filter
                 )
 
-                if should_update:
-                    # Apply filters based on dependencies
-                    filtered_df = self.df.copy()
+                if not should_update:
+                    results.append(dash.no_update)
+                    continue
+
+                # Apply filters based on dependencies
+                filtered_df = self.df.copy()
+                if filter_config.depends_on:
                     for dep_filter in filter_config.depends_on:
                         if dep_filter in current_values and current_values[dep_filter]:
                             dep_value = current_values[dep_filter]
                             if isinstance(dep_value, list):
-                                if "All" not in dep_value:
+                                if "All" not in dep_value:  # Only filter if not "All"
                                     filtered_df = filtered_df[filtered_df[self.filters[dep_filter].column].isin(dep_value)]
-                            elif dep_value != "All":
+                            elif dep_value != "All":  # Only filter if not "All"
                                 filtered_df = filtered_df[filtered_df[self.filters[dep_filter].column] == dep_value]
-                    
-                    options = self._get_filter_options(filter_config, filtered_df)
-                    results.append(options)
-                else:
-                    results.append(dash.no_update)
+
+                # Get new options while preserving current values
+                options = self._get_filter_options(filter_config, filtered_df)
+                
+                # If this is a multi-select filter and has current values, ensure they're in options
+                if filter_config.multi and filter_id in current_values:
+                    current_vals = current_values[filter_id]
+                    if isinstance(current_vals, list):
+                        existing_values = {opt['value'] for opt in options}
+                        for val in current_vals:
+                            if val not in existing_values and val != "All":
+                                options.append({'label': str(val), 'value': str(val)})
+                
+                results.append(options)
 
             return results
 
@@ -199,6 +215,6 @@ class FilterManager:
                 multi=config.multi,
                 placeholder=f"Select {config.label}",
                 style={'fontFamily': 'Roboto'},
-                clearable=config.multi
+                clearable=False if not config.multi else True
             ),
         ], style={"marginBottom": "20px", "width": "100%"})

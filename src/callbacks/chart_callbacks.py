@@ -262,24 +262,26 @@ class ChartCallbackManager:
                 # Get the data for this chart type
                 df = self.data_dict[chart_type]['df'].copy()
                 industry_avg = self.data_dict[chart_type].get('industry_avg')
-
-                # Get filter IDs for this chart type
+                
+                # Get filter IDs and values
                 filter_ids = self._get_filter_ids_for_chart(chart_type)
                 filter_values = dict(zip(filter_ids, args))
 
-                # Handle initial load or empty filters
-                if not ctx.triggered or not any(args):
-                    # Use default values for initial load
-                    facility_scope = df['facility_scope'].iloc[0] if not df.empty else None
-                    return config['chart_creator'](
-                        filtered_df=df,
-                        selected_scope=facility_scope,
-                        industry_avg=industry_avg
-                    )
+                # Handle initial load
+                if not ctx.triggered:
+                    # Apply default filters
+                    filtered_df = df.copy()
+                    for filter_id, value in filter_values.items():
+                        if value is not None:  # Use provided default values
+                            if isinstance(value, list):
+                                if value and "All" not in value:
+                                    filtered_df = filtered_df[filtered_df[filter_id].isin(value)]
+                            elif value != "All":
+                                filtered_df = filtered_df[filtered_df[filter_id] == value]
+                else:
+                    # Apply selected filters
+                    filtered_df = self._apply_filters(df, filter_values)
 
-                # Apply filters
-                filtered_df = self._apply_filters(df, filter_values)
-                
                 if filtered_df.empty:
                     return {
                         'data': [],
