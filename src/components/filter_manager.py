@@ -52,28 +52,14 @@ class FilterManager:
             for filter_id in self.filters.keys()
         ]
 
-        # Open state inputs
-        open_inputs = [
-            Input(
-                {"type": "filter-dropdown", "base_id": self.base_id, "filter_id": filter_id},
-                "is_open"
-            )
-            for filter_id in self.filters.keys()
-        ]
-
         @self.app.callback(
             outputs,
-            value_inputs + open_inputs,
+            value_inputs,
             prevent_initial_call=False
         )
-        def update_filter_options(*args):
+        def update_filter_options(*input_values):
             ctx = dash.callback_context
             
-            # Split args into values and open states
-            n_filters = len(self.filters)
-            input_values = args[:n_filters]
-            open_states = args[n_filters:]
-
             # Get current values
             current_values = {}
             for filter_id, value in zip(self.filters.keys(), input_values):
@@ -83,19 +69,15 @@ class FilterManager:
                 elif not ctx.triggered and filter_config.default_value is not None:
                     current_values[filter_id] = filter_config.default_value
 
-            # Get triggered input
-            triggered_prop = ctx.triggered[0]['prop_id'] if ctx.triggered else None
+            # Get triggered filter
             triggered_filter = None
-            is_open_event = False
-
-            if triggered_prop:
-                triggered_id = eval(triggered_prop.split('.')[0])
+            if ctx.triggered:
+                triggered_id = eval(ctx.triggered[0]['prop_id'].split('.')[0])
                 triggered_filter = triggered_id.get('filter_id')
-                is_open_event = triggered_prop.endswith('.is_open')
 
             # Process each filter
             results = []
-            for i, filter_id in enumerate(self.filters.keys()):
+            for filter_id in self.filters.keys():
                 filter_config = self.filters[filter_id]
                 
                 # If it's initial load and filter has a default value, don't update options
@@ -103,14 +85,11 @@ class FilterManager:
                     results.append(dash.no_update)
                     continue
 
-                # Update if:
-                # 1. This filter was opened
-                # 2. A dependency was changed
-                # 3. This is the triggered filter
+                # Always update dependent filters when their parent changes
                 should_update = (
-                    (is_open_event and triggered_filter == filter_id and open_states[i]) or  # Filter was opened
-                    (not is_open_event and triggered_filter in filter_config.depends_on) or  # Dependency changed
-                    filter_id == triggered_filter  # This filter was triggered
+                    triggered_filter is None or  # Initial load
+                    filter_id == triggered_filter or  # This filter was triggered
+                    (filter_config.depends_on and triggered_filter in filter_config.depends_on)  # Dependency changed
                 )
 
                 if not should_update:
@@ -132,7 +111,7 @@ class FilterManager:
                 # Get new options while preserving current values
                 options = self._get_filter_options(filter_config, filtered_df)
                 
-                # Preserve current values in options
+                # If this is a multi-select filter and has current values, ensure they're in options
                 if filter_config.multi and filter_id in current_values:
                     current_vals = current_values[filter_id]
                     if isinstance(current_vals, list):

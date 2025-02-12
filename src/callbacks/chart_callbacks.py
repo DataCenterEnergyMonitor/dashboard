@@ -224,6 +224,7 @@ import dash
 from dash.dependencies import Output, Input
 from dash import callback_context, no_update
 from dash import dcc
+from typing import List
 
 class ChartCallbackManager:
     _registered_callbacks = set()  # Track registered callbacks
@@ -340,16 +341,9 @@ class ChartCallbackManager:
 
             self._registered_callbacks.add(callback_key)
 
-    def _get_filter_ids_for_chart(self, chart_type):
+    def _get_filter_ids_for_chart(self, chart_type: str) -> List[str]:
         """Return the filter IDs needed for each chart type"""
-        base_filters = ['facility_scope', 'company']
-        
-        if chart_type == 'pue_scatter':
-            return base_filters + ['geographical_scope', 'pue_measurement_level']
-        elif chart_type == 'wue_scatter':
-            return base_filters + ['geographical_scope']
-        
-        return base_filters
+        return self.chart_configs[chart_type]['filters']
 
     def _apply_filters(self, df, filter_values):
         """Apply filters to the dataframe"""

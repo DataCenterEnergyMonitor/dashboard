@@ -39,22 +39,22 @@ def create_app():
     # Define chart configurations
     chart_configs = {
         'pue_scatter': {
+            'base_id': 'pue',
             'chart_id': 'pue-scatter-chart',
-            'chart_type': 'pue_scatter',
             'chart_creator': create_pue_scatter_plot,
-            'download_data_id': 'pue-download-data',
-            'download_button_id': 'pue-download-button',
+            'download_button_id': 'download-pue-data',
+            'download_data_id': 'download-pue-data-value',
             'filename': 'pue_data.csv',
-            'base_id': 'pue'
+            'filters': ['facility_scope', 'company', 'geographical_scope', 'pue_measurement_level']
         },
         'wue_scatter': {
+            'base_id': 'wue',
             'chart_id': 'wue-scatter-chart',
-            'chart_type': 'wue_scatter',
             'chart_creator': create_wue_scatter_plot,
-            'download_data_id': 'wue-download-data',
-            'download_button_id': 'wue-download-button',
+            'download_button_id': 'download-wue-data',
+            'download_data_id': 'download-wue-data-value',
             'filename': 'wue_data.csv',
-            'base_id': 'wue'
+            'filters': ['facility_scope', 'company', 'geographical_scope']
         }
     }
 
