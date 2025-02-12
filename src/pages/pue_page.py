@@ -10,7 +10,7 @@ def create_pue_page(app, pue_df, company_counts):
             label="Facility Scope",
             column="facility_scope",
             multi=False,
-            default_value="Single location",
+            default_value="Fleet-wide",
             show_all=False,
             depends_on=None
         ),

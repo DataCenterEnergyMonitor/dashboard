@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, ClassVar
-from dash import Dash, dcc, html, Input, Output, callback, no_update
+from dash import Dash, dcc, html, Input, Output, callback, no_update, State
 import pandas as pd
 import dash
 
@@ -43,7 +43,8 @@ class FilterManager:
             for filter_id in self.filters.keys()
         ]
 
-        inputs = [
+        # Value inputs
+        value_inputs = [
             Input(
                 {"type": "filter-dropdown", "base_id": self.base_id, "filter_id": filter_id},
                 "value"
@@ -51,33 +52,50 @@ class FilterManager:
             for filter_id in self.filters.keys()
         ]
 
+        # Open state inputs
+        open_inputs = [
+            Input(
+                {"type": "filter-dropdown", "base_id": self.base_id, "filter_id": filter_id},
+                "is_open"
+            )
+            for filter_id in self.filters.keys()
+        ]
+
         @self.app.callback(
             outputs,
-            inputs,
+            value_inputs + open_inputs,
             prevent_initial_call=False
         )
-        def update_filter_options(*input_values):
+        def update_filter_options(*args):
             ctx = dash.callback_context
             
-            # Get current values, using defaults for initial load
+            # Split args into values and open states
+            n_filters = len(self.filters)
+            input_values = args[:n_filters]
+            open_states = args[n_filters:]
+
+            # Get current values
             current_values = {}
             for filter_id, value in zip(self.filters.keys(), input_values):
                 filter_config = self.filters[filter_id]
                 if value is not None:
                     current_values[filter_id] = value
                 elif not ctx.triggered and filter_config.default_value is not None:
-                    # Use default value on initial load
                     current_values[filter_id] = filter_config.default_value
 
-            # Get triggered filter
+            # Get triggered input
+            triggered_prop = ctx.triggered[0]['prop_id'] if ctx.triggered else None
             triggered_filter = None
-            if ctx.triggered:
-                triggered_id = eval(ctx.triggered[0]['prop_id'].split('.')[0])
+            is_open_event = False
+
+            if triggered_prop:
+                triggered_id = eval(triggered_prop.split('.')[0])
                 triggered_filter = triggered_id.get('filter_id')
+                is_open_event = triggered_prop.endswith('.is_open')
 
             # Process each filter
             results = []
-            for filter_id in self.filters.keys():
+            for i, filter_id in enumerate(self.filters.keys()):
                 filter_config = self.filters[filter_id]
                 
                 # If it's initial load and filter has a default value, don't update options
@@ -85,11 +103,14 @@ class FilterManager:
                     results.append(dash.no_update)
                     continue
 
-                # Only update options if this filter depends on the triggered filter
+                # Update if:
+                # 1. This filter was opened
+                # 2. A dependency was changed
+                # 3. This is the triggered filter
                 should_update = (
-                    triggered_filter is None or  # Initial load
-                    filter_id == triggered_filter or  # This filter was triggered
-                    (filter_config.depends_on and triggered_filter in filter_config.depends_on)  # Depends on triggered filter
+                    (is_open_event and triggered_filter == filter_id and open_states[i]) or  # Filter was opened
+                    (not is_open_event and triggered_filter in filter_config.depends_on) or  # Dependency changed
+                    filter_id == triggered_filter  # This filter was triggered
                 )
 
                 if not should_update:
@@ -103,15 +124,15 @@ class FilterManager:
                         if dep_filter in current_values and current_values[dep_filter]:
                             dep_value = current_values[dep_filter]
                             if isinstance(dep_value, list):
-                                if "All" not in dep_value:  # Only filter if not "All"
+                                if "All" not in dep_value:
                                     filtered_df = filtered_df[filtered_df[self.filters[dep_filter].column].isin(dep_value)]
-                            elif dep_value != "All":  # Only filter if not "All"
+                            elif dep_value != "All":
                                 filtered_df = filtered_df[filtered_df[self.filters[dep_filter].column] == dep_value]
 
                 # Get new options while preserving current values
                 options = self._get_filter_options(filter_config, filtered_df)
                 
-                # If this is a multi-select filter and has current values, ensure they're in options
+                # Preserve current values in options
                 if filter_config.multi and filter_id in current_values:
                     current_vals = current_values[filter_id]
                     if isinstance(current_vals, list):
