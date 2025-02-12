@@ -4,7 +4,7 @@ from components.navbar import create_navbar
 
 def create_pue_page(app, pue_df, company_counts):
     # Define PUE-specific filters with dependencies
-    filters = [
+    pue_filters = [
         FilterConfig(
             id="facility_scope",
             label="Facility Scope",
@@ -42,10 +42,9 @@ def create_pue_page(app, pue_df, company_counts):
         )
     ]
     
-    # Initialize filter manager
-    filter_manager = FilterManager(app, "pue", pue_df, filters)
+    # Initialize PUE-specific filter manager
+    pue_filter_manager = FilterManager(app, "pue", pue_df, pue_filters)
     
-    # Create layout
     return html.Div([
         create_navbar(),
         html.Div([
@@ -66,7 +65,7 @@ def create_pue_page(app, pue_df, company_counts):
                     'fontSize': '16px'
                 })
             ]),
-            filter_manager.create_filter_components(),
+            pue_filter_manager.create_filter_components(),
             dcc.Graph(id='pue-scatter-chart')
         ], style={'padding': '20px', 'maxWidth': '1200px', 'margin': 'auto'})
     ])

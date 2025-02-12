@@ -45,7 +45,7 @@ def create_app():
             'download_data_id': 'pue-download-data',
             'download_button_id': 'pue-download-button',
             'filename': 'pue_data.csv',
-            'base_id': 'pue'  # base_id to match FilterManager
+            'base_id': 'pue'
         },
         'wue_scatter': {
             'chart_id': 'wue-scatter-chart',
@@ -54,7 +54,7 @@ def create_app():
             'download_data_id': 'wue-download-data',
             'download_button_id': 'wue-download-button',
             'filename': 'wue_data.csv',
-            'base_id': 'wue'  # base_id to match FilterManager
+            'base_id': 'wue'
         }
     }
 

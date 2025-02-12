@@ -226,6 +226,8 @@ from dash import callback_context, no_update
 from dash import dcc
 
 class ChartCallbackManager:
+    _registered_callbacks = set()  # Track registered callbacks
+
     def __init__(self, app, data_dict, chart_configs):
         self.app = app
         self.data_dict = data_dict
@@ -234,74 +236,138 @@ class ChartCallbackManager:
 
     def _register_callbacks(self):
         for chart_type, config in self.chart_configs.items():
+            callback_key = f"chart_{config['base_id']}"
+            if callback_key in self._registered_callbacks:
+                continue
+
             # Get the base ID for this chart
             base_id = config['base_id']
             chart_id = config['chart_id']
             
-            # Define inputs based on available filters
+            # Define inputs based on the specific chart type
             inputs = [
-                Input({"type": "filter-dropdown", "base_id": base_id, "filter_id": "facility_scope"}, "value"),
-                Input({"type": "filter-dropdown", "base_id": base_id, "filter_id": "company"}, "value")
+                Input({"type": "filter-dropdown", "base_id": base_id, "filter_id": filter_id}, "value")
+                for filter_id in self._get_filter_ids_for_chart(chart_type)
             ]
-            
-            # Only add geographical_scope input for PUE chart
-            if chart_type == 'pue_scatter':
-                inputs.append(Input({"type": "filter-dropdown", "base_id": base_id, "filter_id": "geographical_scope"}, "value"))
-                inputs.append(Input({"type": "filter-dropdown", "base_id": base_id, "filter_id": "pue_measurement_level"}, "value"))
 
-            # Create a closure to capture the chart_type
-            def create_callback(chart_type=chart_type, config=config):
-                @self.app.callback(
-                    Output(config['chart_id'], 'figure'),
-                    inputs,
-                    prevent_initial_call=False
-                )
-                def update_chart(*args):
-                    # Parse inputs based on chart type
-                    facility_scope = args[0]
-                    companies = args[1]
-                    
-                    # Get the data for this chart
-                    df = self.data_dict[chart_type]['df'].copy()
-                    industry_avg = self.data_dict[chart_type]['industry_avg']
-                    
-                    # Apply filters
-                    if facility_scope:
-                        df = df[df['facility_scope'] == facility_scope]
-                    if companies and "All" not in companies:
-                        df = df[df['company'].isin(companies)]
-                    
-                    if chart_type == 'pue_scatter':
-                        geo_scope = args[2]
-                        measurement_level = args[3]
-                        if geo_scope and "All" not in geo_scope:
-                            df = df[df['geographical_scope'].isin(geo_scope)]
-                        if measurement_level and "All" not in measurement_level:
-                            df = df[df['pue_measurement_level'].isin(measurement_level)]
-                    
-                    # Create the chart using the appropriate creator function
-                    return config['chart_creator'](df, facility_scope, industry_avg)
-
-                return update_chart
-
-            # Create and register the callback
-            create_callback()
-
-            # Register download callback
-            def create_download_callback(chart_type=chart_type, config=config):
-                @self.app.callback(
-                    Output(config['download_data_id'], "data"),
-                    Input(config['download_button_id'], "n_clicks"),
-                    prevent_initial_call=True
-                )
-                def download_data(n_clicks):
-                    if n_clicks is None:
-                        return dash.no_update
-                        
-                    df = self.data_dict[chart_type]['df']
-                    return dcc.send_data_frame(df.to_csv, config['filename'], index=False)
+            # Create chart update callback
+            @self.app.callback(
+                Output(chart_id, 'figure'),
+                inputs,
+                prevent_initial_call=False
+            )
+            def update_chart(*args, chart_type=chart_type, config=config):
+                ctx = callback_context
                 
-                return download_data
+                # Get the data for this chart type
+                df = self.data_dict[chart_type]['df'].copy()
+                industry_avg = self.data_dict[chart_type].get('industry_avg')
 
-            # Create and register the download callback
-            create_download_callback()
+                # Get filter IDs for this chart type
+                filter_ids = self._get_filter_ids_for_chart(chart_type)
+                filter_values = dict(zip(filter_ids, args))
+
+                # Handle initial load or empty filters
+                if not ctx.triggered or not any(args):
+                    # Use default values for initial load
+                    facility_scope = df['facility_scope'].iloc[0] if not df.empty else None
+                    return config['chart_creator'](
+                        filtered_df=df,
+                        selected_scope=facility_scope,
+                        industry_avg=industry_avg
+                    )
+
+                # Apply filters
+                filtered_df = self._apply_filters(df, filter_values)
+                
+                if filtered_df.empty:
+                    return {
+                        'data': [],
+                        'layout': {
+                            'xaxis': {'visible': False},
+                            'yaxis': {'visible': False},
+                            'annotations': [{
+                                'text': 'No data available for the selected filters',
+                                'xref': 'paper',
+                                'yref': 'paper',
+                                'showarrow': False,
+                                'font': {'size': 20}
+                            }]
+                        }
+                    }
+
+                try:
+                    return config['chart_creator'](
+                        filtered_df=filtered_df,
+                        selected_scope=filter_values.get('facility_scope'),
+                        industry_avg=industry_avg
+                    )
+                except Exception as e:
+                    print(f"Error creating chart: {e}")
+                    return {
+                        'data': [],
+                        'layout': {
+                            'xaxis': {'visible': False},
+                            'yaxis': {'visible': False},
+                            'annotations': [{
+                                'text': f'Error creating chart: {str(e)}',
+                                'xref': 'paper',
+                                'yref': 'paper',
+                                'showarrow': False,
+                                'font': {'size': 20}
+                            }]
+                        }
+                    }
+
+            # Create download callback
+            @self.app.callback(
+                Output(config['download_data_id'], "data"),
+                Input(config['download_button_id'], "n_clicks"),
+                prevent_initial_call=True
+            )
+            def download_data(n_clicks, chart_type=chart_type, config=config):
+                if not n_clicks:
+                    return dash.no_update
+                    
+                df = self.data_dict[chart_type]['df']
+                return dcc.send_data_frame(
+                    df.to_csv, 
+                    filename=config['filename'],
+                    index=False
+                )
+
+            self._registered_callbacks.add(callback_key)
+
+    def _get_filter_ids_for_chart(self, chart_type):
+        """Return the filter IDs needed for each chart type"""
+        base_filters = ['facility_scope', 'company']
+        
+        if chart_type == 'pue_scatter':
+            return base_filters + ['geographical_scope', 'pue_measurement_level']
+        elif chart_type == 'wue_scatter':
+            return base_filters + ['geographical_scope']
+        
+        return base_filters
+
+    def _apply_filters(self, df, filter_values):
+        """Apply filters to the dataframe"""
+        filtered_df = df.copy()
+        
+        # Map filter IDs to DataFrame column names
+        column_mapping = {
+            'facility_scope': 'facility_scope',
+            'company': 'company',
+            'geographical_scope': 'geographical_scope',
+            'pue_measurement_level': 'pue_measurement_level'
+        }
+
+        for filter_id, value in filter_values.items():
+            if value and filter_id in column_mapping:
+                column = column_mapping[filter_id]
+                if isinstance(value, list):
+                    if value and "All" not in value:
+                        filtered_df = filtered_df[filtered_df[column].isin(value)]
+                elif value != "All":
+                    filtered_df = filtered_df[filtered_df[column] == value]
+        
+        return filtered_df

@@ -4,7 +4,7 @@ from components.navbar import create_navbar
 
 def create_wue_page(app, wue_df, company_counts):
     # Define WUE-specific filters with dependencies
-    filters = [
+    wue_filters = [
         FilterConfig(
             id="facility_scope",
             label="Facility Scope",
@@ -20,7 +20,7 @@ def create_wue_page(app, wue_df, company_counts):
             multi=True,
             default_value=company_counts,
             show_all=True,
-            depends_on=["facility_scope"]
+            depends_on=["facility_scope"]  # Company depends on facility scope
         ),
         FilterConfig(
             id="geographical_scope",
@@ -29,14 +29,13 @@ def create_wue_page(app, wue_df, company_counts):
             multi=True,
             default_value="All",
             show_all=True,
-            depends_on=["facility_scope", "company"]
+            depends_on=["facility_scope", "company"]  # Geo scope depends on facility and company
         )
     ]
     
-    # Initialize filter manager
-    filter_manager = FilterManager(app, "wue", wue_df, filters)
+    # Initialize WUE-specific filter manager
+    wue_filter_manager = FilterManager(app, "wue", wue_df, wue_filters)
     
-    # Create layout
     return html.Div([
         create_navbar(),
         html.Div([
@@ -57,7 +56,7 @@ def create_wue_page(app, wue_df, company_counts):
                     'fontSize': '16px'
                 })
             ]),
-            filter_manager.create_filter_components(),
+            wue_filter_manager.create_filter_components(),
             dcc.Graph(id='wue-scatter-chart')
         ], style={'padding': '20px', 'maxWidth': '1200px', 'margin': 'auto'})
     ])
