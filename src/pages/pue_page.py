@@ -23,6 +23,16 @@ def create_pue_page(app, pue_df, company_counts):
             show_all=True,
             depends_on=["facility_scope"]
         ),
+        
+        FilterConfig(
+            id="iea_region",
+            label="IEA Region",
+            column="iea_region",
+            multi=True,
+            default_value="All",
+            show_all=True,
+            depends_on=['facility_scope', 'company']  # if there are dependencies
+        ),
         FilterConfig(
             id="geographical_scope",
             label="Geographical Scope",
@@ -32,6 +42,7 @@ def create_pue_page(app, pue_df, company_counts):
             show_all=True,
             depends_on=["facility_scope", "company"]
         ),
+
         FilterConfig(
             id="pue_measurement_level",
             label="PUE Measurement Level",

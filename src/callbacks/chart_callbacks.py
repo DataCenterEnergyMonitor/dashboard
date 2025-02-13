@@ -241,24 +241,25 @@ class ChartCallbackManager:
             if callback_key in self._registered_callbacks:
                 continue
 
-            # Get the base ID for this chart
             base_id = config['base_id']
             chart_id = config['chart_id']
             
             # Define inputs based on the specific chart type
             inputs = [
-                Input({"type": "filter-dropdown", "base_id": base_id, "filter_id": filter_id}, "value")
+                Input(
+                    {"type": "filter-dropdown", "base_id": base_id, "filter_id": filter_id},
+                    "value"
+                )
                 for filter_id in self._get_filter_ids_for_chart(chart_type)
             ]
 
-            # Create chart update callback
             @self.app.callback(
                 Output(chart_id, 'figure'),
                 inputs,
                 prevent_initial_call=False
             )
             def update_chart(*args, chart_type=chart_type, config=config):
-                ctx = callback_context
+                ctx = dash.callback_context
                 
                 # Get the data for this chart type
                 df = self.data_dict[chart_type]['df'].copy()
@@ -268,20 +269,15 @@ class ChartCallbackManager:
                 filter_ids = self._get_filter_ids_for_chart(chart_type)
                 filter_values = dict(zip(filter_ids, args))
 
-                # Handle initial load
-                if not ctx.triggered:
-                    # Apply default filters
-                    filtered_df = df.copy()
-                    for filter_id, value in filter_values.items():
-                        if value is not None:  # Use provided default values
-                            if isinstance(value, list):
-                                if value and "All" not in value:
-                                    filtered_df = filtered_df[filtered_df[filter_id].isin(value)]
-                            elif value != "All":
-                                filtered_df = filtered_df[filtered_df[filter_id] == value]
-                else:
-                    # Apply selected filters
-                    filtered_df = self._apply_filters(df, filter_values)
+                # Apply filters
+                filtered_df = df.copy()
+                for filter_id, value in filter_values.items():
+                    if value:
+                        if isinstance(value, list):
+                            if value and "All" not in value:
+                                filtered_df = filtered_df[filtered_df[filter_id].isin(value)]
+                        elif value != "All":
+                            filtered_df = filtered_df[filtered_df[filter_id] == value]
 
                 if filtered_df.empty:
                     return {
