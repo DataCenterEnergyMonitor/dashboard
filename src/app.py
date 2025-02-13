@@ -26,11 +26,11 @@ def create_app():
 
     # Create data dictionary for charts
     data_dict = {
-        'pue_scatter': {
+        'pue-scatter': {
             'df': pue_df,
             'industry_avg': pue_industry_avg
         },
-        'wue_scatter': {
+        'wue-scatter': {
             'df': wue_df,
             'industry_avg': wue_industry_avg
         }
@@ -38,22 +38,18 @@ def create_app():
 
     # Define chart configurations
     chart_configs = {
-        'pue_scatter': {
+        'pue-scatter': {
             'base_id': 'pue',
             'chart_id': 'pue-scatter-chart',
             'chart_creator': create_pue_scatter_plot,
-            'download_button_id': 'download-pue-data',
-            'download_data_id': 'download-pue-data-value',
-            'filename': 'pue_data.csv',
+            'filename': 'pue-data.csv',
             'filters': ['facility_scope', 'company', 'geographical_scope', 'pue_measurement_level']
         },
-        'wue_scatter': {
+        'wue-scatter': {
             'base_id': 'wue',
             'chart_id': 'wue-scatter-chart',
             'chart_creator': create_wue_scatter_plot,
-            'download_button_id': 'download-wue-data',
-            'download_data_id': 'download-wue-data-value',
-            'filename': 'wue_data.csv',
+            'filename': 'wue-data.csv',
             'filters': ['facility_scope', 'company', 'geographical_scope']
         }
     }

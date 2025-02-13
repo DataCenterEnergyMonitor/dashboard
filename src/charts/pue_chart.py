@@ -20,9 +20,6 @@ def create_pue_scatter_plot(filtered_df, selected_scope, industry_avg):
             }
         }
 
-    # print("Data passed to chart:", filtered_df.head()) 
-    # print("Applicable Years:", filtered_df['applicable_year'].unique())
-
     pue_fig = px.scatter(
         filtered_df,
         x='applicable_year',

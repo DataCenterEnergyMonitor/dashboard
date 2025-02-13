@@ -322,17 +322,19 @@ class ChartCallbackManager:
                         }
                     }
 
-            # Create download callback
+            # Simplified download callback for unfiltered data
             @self.app.callback(
-                Output(config['download_data_id'], "data"),
-                Input(config['download_button_id'], "n_clicks"),
+                Output(f"{config['base_id']}-download-data", "data"),
+                Input(f"{config['base_id']}-download-button", "n_clicks"),
                 prevent_initial_call=True
             )
             def download_data(n_clicks, chart_type=chart_type, config=config):
                 if not n_clicks:
                     return dash.no_update
-                    
+                
+                # Get the complete dataset
                 df = self.data_dict[chart_type]['df']
+                    
                 return dcc.send_data_frame(
                     df.to_csv, 
                     filename=config['filename'],
