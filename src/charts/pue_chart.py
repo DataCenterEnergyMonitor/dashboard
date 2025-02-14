@@ -30,7 +30,7 @@ def create_pue_scatter_plot(filtered_df, selected_scope, industry_avg):
             "real_pue": "Power Usage Effectiveness (PUE)",
             "company": "Company Name"
         },
-        custom_data=['company', 'geographical_scope', 'pue_measurement_level']  # Set custom data for hover
+        custom_data=['company', 'iea_region', 'geographical_scope', 'pue_measurement_level']  # Set custom data for hover
     )
 
     # Add industry average line
@@ -82,8 +82,9 @@ def create_pue_scatter_plot(filtered_df, selected_scope, industry_avg):
             '<b>Company: %{customdata[0]}</b><br>'
             'Year: %{x}<br>'
             'PUE: %{y:.2f}<br>'
-            'Location: %{customdata[1]}<br>'
-            'Measurement Level: %{customdata[2]}<extra></extra>'
+            'IEA Region: %{customdata[1]}<br>'
+            'Location: %{customdata[2]}<br>'
+            'Measurement Level: %{customdata[3]}<extra></extra>'
         )
     )
 
