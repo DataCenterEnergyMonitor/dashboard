@@ -43,7 +43,7 @@ def create_app():
             'chart_id': 'pue-scatter-chart',
             'chart_creator': create_pue_scatter_plot,
             'filename': 'pue-data.csv',
-            'filters': ['facility_scope', 'company', 'iea_region', 'geographical_scope', 'pue_measurement_level']
+            'filters': ['facility_scope', 'company', 'iea_region', 'iecc_climate_zone_s_', 'geographical_scope', 'pue_measurement_level']
         },
         'wue-scatter': {
             'base_id': 'wue',
@@ -62,7 +62,7 @@ def create_app():
         dcc.Location(id='url', refresh=False),
         html.Div(id='page-content')
     ])
-
+    
     @app.callback(
         Output('page-content', 'children'),
         Input('url', 'pathname')
@@ -72,7 +72,7 @@ def create_app():
             return create_pue_page(app, pue_df, company_counts)
         elif pathname == '/wue':
             return create_wue_page(app, wue_df, wue_company_counts)
-        elif pathname == '/about':
+        elif pathname == '/data_centers_101':
             return create_about_page()
         else:
             return create_home_page()

@@ -31,7 +31,17 @@ def create_pue_page(app, pue_df, company_counts):
             multi=True,
             default_value="All",
             show_all=True,
-            depends_on=['facility_scope', 'company']  # if there are dependencies
+            depends_on=['facility_scope', 'company']
+        ),
+
+        FilterConfig(
+            id="iecc_climate_zone_s_",
+            label="IECC Climate Zone",
+            column="iecc_climate_zone_s_",
+            multi=True,
+            default_value=None,
+            show_all=True,
+            depends_on=['facility_scope', 'company']
         ),
         FilterConfig(
             id="geographical_scope",

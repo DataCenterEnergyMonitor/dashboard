@@ -6,7 +6,7 @@ def create_about_page():
         create_navbar(),
         html.Div([
             html.H1(
-                "About",
+                "Data Centers 101",
                 style={'fontFamily': 'Roboto', 'fontWeight': '500', 'marginBottom': '30px'}
             ),
             html.P(
