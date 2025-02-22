@@ -28,7 +28,7 @@ def create_pue_page(app, pue_df, company_counts):
         
         FilterConfig(
             id="iea_region",
-            label="IEA Region",
+            label="Region",
             column="iea_region",
             multi=True,
             default_value="All",
@@ -45,15 +45,15 @@ def create_pue_page(app, pue_df, company_counts):
             show_all=True,
             depends_on=['facility_scope', 'company']
         ),
-        FilterConfig(
-            id="geographical_scope",
-            label="Geographical Scope",
-            column="geographical_scope",
-            multi=True,
-            default_value="All",
-            show_all=True,
-            depends_on=["facility_scope", "company"]
-        ),
+        # FilterConfig(
+        #     id="geographical_scope",
+        #     label="Geographical Scope",
+        #     column="geographical_scope",
+        #     multi=True,
+        #     default_value="All",
+        #     show_all=True,
+        #     depends_on=["facility_scope", "company"]
+        # ),
 
         FilterConfig(
             id="pue_measurement_level",
@@ -82,7 +82,7 @@ def create_pue_page(app, pue_df, company_counts):
             # Right side - Main Content
             html.Div([
                 html.H1(
-                    "Data Center Power Usage Effectiveness (PUE): Trends by Company",
+                    "Data Center Power Usage Effectiveness (PUE)",
                     style={'fontFamily': 'Roboto', 'fontWeight': '500', 'marginBottom': '30px', 'fontSize': '32px'}
                 ),
                 html.Div([
@@ -102,8 +102,7 @@ def create_pue_page(app, pue_df, company_counts):
             ], style={
                 'flex': '1',
                 'padding': '20px',
-                'maxWidth': '1200px',
-                'margin': 'auto'
+                'maxWidth': '1200px'
             })
         ], style={
             'display': 'flex',

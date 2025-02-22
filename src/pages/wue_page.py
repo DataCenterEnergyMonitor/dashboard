@@ -22,16 +22,16 @@ def create_wue_page(app, wue_df, company_counts):
             default_value="All",
             show_all=True,
             depends_on=["facility_scope"]
-        ),
-        FilterConfig(
-            id="geographical_scope",
-            label="Geographical Scope",
-            column="geographical_scope",
-            multi=True,
-            default_value="All",
-            show_all=True,
-            depends_on=["facility_scope", "company"]
         )
+        # FilterConfig(
+        #     id="geographical_scope",
+        #     label="Geographical Scope",
+        #     column="geographical_scope",
+        #     multi=True,
+        #     default_value="All",
+        #     show_all=True,
+        #     depends_on=["facility_scope", "company"]
+        # )
     ]
     
     # Initialize WUE-specific filter manager

@@ -131,7 +131,7 @@ class ChartCallbackManager:
             'company': 'company',
             'iea_region': 'iea_region',
             'iecc_climate_zone_s_' : 'iecc_climate_zone_s_',
-            'geographical_scope': 'geographical_scope',
+            #'geographical_scope': 'geographical_scope',
             'pue_measurement_level': 'pue_measurement_level'
         }
 

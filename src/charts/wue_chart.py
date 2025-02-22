@@ -12,7 +12,7 @@ def create_wue_scatter_plot(filtered_df, selected_scope, industry_avg):
             "wue": "Water Usage Effectiveness (WUE)",
             "company": "Company Name"
         },
-        custom_data=['company', 'geographical_scope']
+        custom_data=['company']
     )
     
     # Add industry average line
@@ -35,7 +35,6 @@ def create_wue_scatter_plot(filtered_df, selected_scope, industry_avg):
             '<b>Company: %{customdata[0]}</b><br>'
             'Year: %{x}<br>'
             'WUE: %{y:.2f}<br>'
-            'Location: %{customdata[1]}<br>'
         ))
     
     # Add source citation
