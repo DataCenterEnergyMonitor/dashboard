@@ -1,6 +1,8 @@
 from dash import html, dcc
+import dash_bootstrap_components as dbc
 from components.filter_manager import FilterManager, FilterConfig
 from components.navbar import create_navbar
+from components.filter_panel import create_filter_panel
 
 def create_pue_page(app, pue_df, company_counts):
     # Define PUE-specific filters with dependencies
@@ -69,26 +71,45 @@ def create_pue_page(app, pue_df, company_counts):
     
     return html.Div([
         create_navbar(),
+        # Main content container with flex layout
         html.Div([
-            html.H1(
-                "Data Center Power Usage Effectiveness (PUE): Trends by Company",
-                style={'fontFamily': 'Roboto', 'fontWeight': '500', 'marginBottom': '30px', 'fontSize': '32px'}
+            # Left side - Filter Panel
+            create_filter_panel(
+                pue_filter_manager.create_filter_components(),
+                title="PUE Filters"
             ),
+            
+            # Right side - Main Content
             html.Div([
-                html.P([
-                    "Power Usage Effectiveness (PUE) is a ratio that measures data center energy efficiency.",
-                    html.Br(),
-                    "A PUE of 1.0 represents perfect efficiency."
-                ], style={
-                    'fontFamily': 'Roboto',
-                    'marginBottom': '20px',
-                    'color': '#404040',
-                    'maxWidth': '800px',
-                    'fontSize': '16px'
-                })
-            ]),
-            pue_filter_manager.create_filter_components(),
-            dcc.Graph(id='pue-scatter-chart')
-        ], style={'padding': '20px', 'maxWidth': '1200px', 'margin': 'auto'})
+                html.H1(
+                    "Data Center Power Usage Effectiveness (PUE): Trends by Company",
+                    style={'fontFamily': 'Roboto', 'fontWeight': '500', 'marginBottom': '30px', 'fontSize': '32px'}
+                ),
+                html.Div([
+                    html.P([
+                        "Power Usage Effectiveness (PUE) is a ratio that measures data center energy efficiency.",
+                        html.Br(),
+                        "A PUE of 1.0 represents perfect efficiency."
+                    ], style={
+                        'fontFamily': 'Roboto',
+                        'marginBottom': '20px',
+                        'color': '#404040',
+                        'maxWidth': '800px',
+                        'fontSize': '16px'
+                    })
+                ]),
+                dcc.Graph(id='pue-scatter-chart')
+            ], style={
+                'flex': '1',
+                'padding': '20px',
+                'maxWidth': '1200px',
+                'margin': 'auto'
+            })
+        ], style={
+            'display': 'flex',
+            'flexDirection': 'row',
+            'minHeight': 'calc(100vh - 56px)',  # Subtract navbar height
+            'backgroundColor': '#f8f9fa'
+        })
     ])
 
