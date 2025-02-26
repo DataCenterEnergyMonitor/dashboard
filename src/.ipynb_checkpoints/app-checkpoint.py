@@ -1,20 +1,14 @@
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=UserWarning)
-
 import dash
 from dash import Dash, dcc, html, Input, Output, callback
 import dash_bootstrap_components as dbc
-from data_loader import load_pue_data, load_wue_data, load_energyforecast_data
+from data_loader import load_pue_data, load_wue_data
 from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
-from pages.energy_forecast_page import create_forecast_page
 from callbacks.chart_callbacks import ChartCallbackManager
 from charts.pue_chart import create_pue_scatter_plot
 from charts.wue_chart import create_wue_scatter_plot
-from charts.forecast_chart import create_forecast_scatter_plot
 
 def create_app():
     app = dash.Dash(
@@ -29,7 +23,6 @@ def create_app():
     # Load data
     pue_df, company_counts, pue_industry_avg = load_pue_data()
     wue_df, wue_company_counts, wue_industry_avg = load_wue_data()
-    forecast_df,forecast_avg = load_energyforecast_data()
 
     # Create data dictionary for charts
     data_dict = {
@@ -40,20 +33,16 @@ def create_app():
         'wue-scatter': {
             'df': wue_df,
             'industry_avg': wue_industry_avg
-        },
-        'forecast-scatter': {
-            'df': forecast_df,
-            'industry_avg': forecast_avg
-        }    
+        }
     }
 
     # Define chart configurations
     chart_configs = {
         'pue-scatter': {
-            'base_id': 'pue', #which filters to use
+            'base_id': 'pue',
             'chart_id': 'pue-scatter-chart',
             'chart_creator': create_pue_scatter_plot,
-            'filename': 'pue-data.csv', #download
+            'filename': 'pue-data.csv',
             'filters': ['facility_scope', 'company', 'iea_region', 'iecc_climate_zone_s_', 'geographical_scope', 'pue_measurement_level']
         },
         'wue-scatter': {
@@ -62,13 +51,6 @@ def create_app():
             'chart_creator': create_wue_scatter_plot,
             'filename': 'wue-data.csv',
             'filters': ['facility_scope', 'company', 'geographical_scope']
-        },
-        'forecast-scatter': {
-            'base_id': 'energy',
-            'chart_id': 'forecast-scatter-chart',
-            'chart_creator': create_forecast_scatter_plot,
-            'filename': 'forecast-data.csv',
-            'filters': ['geographic_scope', 'peer_reviewed_', 'author_type_s_']
         }
     }
 
@@ -90,8 +72,6 @@ def create_app():
             return create_pue_page(app, pue_df, company_counts)
         elif pathname == '/wue':
             return create_wue_page(app, wue_df, wue_company_counts)
-        elif pathname == '/energy':
-            return create_forecast_page(app, forecast_df)
         elif pathname == '/data_centers_101':
             return create_about_page()
         else:
