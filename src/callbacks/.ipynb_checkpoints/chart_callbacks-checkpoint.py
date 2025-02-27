@@ -41,7 +41,6 @@ class ChartCallbackManager:
                 
                 # Get the data for this chart type
                 df = self.data_dict[chart_type]['df'].copy()
-                
                 industry_avg = self.data_dict[chart_type].get('industry_avg')
                 
                 # Get filter IDs and values
@@ -132,11 +131,8 @@ class ChartCallbackManager:
             'company': 'company',
             'iea_region': 'iea_region',
             'iecc_climate_zone_s_' : 'iecc_climate_zone_s_',
-            #'geographical_scope': 'geographical_scope',
-            'pue_measurement_level': 'pue_measurement_level',
-            'geographic_scope': 'geographic_scope',
-            'peer_reviewed_': 'peer_reviewed_',
-            'author_type_s_': 'author_type_s_'
+            'geographical_scope': 'geographical_scope',
+            'pue_measurement_level': 'pue_measurement_level'
         }
 
         for filter_id, value in filter_values.items():
@@ -149,4 +145,3 @@ class ChartCallbackManager:
                     filtered_df = filtered_df[filtered_df[column] == value]
         
         return filtered_df
-  
