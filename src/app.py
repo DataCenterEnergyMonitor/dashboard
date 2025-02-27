@@ -21,6 +21,7 @@ def create_app():
         __name__,
         external_stylesheets=[
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', # Font Awesome CDN
             dbc.themes.BOOTSTRAP
         ],
         suppress_callback_exceptions=True
@@ -96,6 +97,62 @@ def create_app():
             return create_about_page()
         else:
             return create_home_page()
+
+    # Add custom CSS for dropdowns
+    app.index_string = '''
+    <!DOCTYPE html>
+    <html>
+        <head>
+            {%metas%}
+            <title>{%title%}</title>
+            {%favicon%}
+            {%css%}
+            <style>
+                /* Simple fix for dropdown menus */
+                .dash-dropdown .Select-menu-outer {
+                    z-index: 999 !important;
+                }
+                
+                /* Ensure dropdown stays open during scrolling */
+                .dash-dropdown-always-open .Select-menu-outer {
+                    position: absolute !important;
+                    display: block !important;
+                    z-index: 1000 !important;
+                }
+                
+                /* Improve dropdown scrolling behavior */
+                .dash-dropdown .Select-menu {
+                    max-height: 300px !important;
+                    overflow-y: auto !important;
+                }
+                
+                /* Prevent dropdown from closing when clicking on options */
+                .dash-dropdown .Select-option {
+                    pointer-events: auto !important;
+                }
+            </style>
+        </head>
+        <body>
+            {%app_entry%}
+            <footer>
+                {%config%}
+                {%scripts%}
+                {%renderer%}
+                <script>
+                    // Fix for multi-select dropdown behavior
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Prevent dropdown from closing when scrolling
+                        document.addEventListener('scroll', function(e) {
+                            if (e.target.classList && e.target.classList.contains('Select-menu')) {
+                                e.stopPropagation();
+                            }
+                        }, true);
+                    });
+                </script>
+            </footer>
+        </body>
+    </html>
+    '''
 
     return app
 

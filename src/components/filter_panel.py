@@ -1,27 +1,35 @@
-from dash import html
-import dash_bootstrap_components as dbc
+from dash import html, dcc
 
 def create_filter_panel(filter_components, title="Filters"):
     """
-    Creates an expandable filter panel component.
+    Creates a filter panel component.
     
     Args:
         filter_components: List of filter components to display
         title: Title of the filter panel
     """
     return html.Div([
-        dbc.Accordion([
-            dbc.AccordionItem(
-                filter_components,
-                title=title,
-                item_id="filter-panel",
-            )
-        ], start_collapsed=False, flush=True)
-    ], style={
-        'width': '300px',  # Fixed width for the filter panel
-        'minWidth': '300px',
+        # Filter icon header - left aligned
+        html.Div([
+            html.I(className="fas fa-filter", style={
+                'fontSize': '24px',
+                'color': '#4CAF50',
+                'marginBottom': '20px'
+            })
+        ], style={
+            'display': 'flex',
+            'justifyContent': 'flex-start',  # Left aligned
+            'width': '100%'
+        }),
+        
+        # Filter components
+        filter_components
+    ], id="filter-panel", style={
+        'width': '260px',
+        'backgroundColor': 'white',
         'padding': '20px',
-        'borderRight': '1px solid #ddd',
-        'height': '100vh',
-        'overflowY': 'auto'
-    }) 
+        'boxShadow': 'none',  # Remove shadow
+        'height': 'calc(100vh - 76px)',  # Extend all the way to the bottom (56px navbar + 20px padding)
+        'overflowY': 'auto',
+        'position': 'relative'
+    })
