@@ -10,8 +10,8 @@ def create_navbar():
                     html.A("Home", href="/", className="nav-link"),
                     html.A("PUE Trends", href="/pue", className="nav-link"),
                     html.A("WUE Trends", href="/wue", className="nav-link"),
-                    html.A("Data Centers 101", href="/data_centers_101", className="nav-link"),
                     html.A("Energy Forecast Trends", href="/energy", className="nav-link"),
+                    html.A("Data Centers 101", href="/data_centers_101", className="nav-link"),
                 ]
             )
         ],

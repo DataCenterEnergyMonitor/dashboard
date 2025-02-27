@@ -24,6 +24,7 @@ def create_home_page():
                 html.Ul([
                     html.Li(html.A("PUE Trends", href="/pue")),
                     html.Li(html.A("WUE Trends", href="/wue")),
+                    html.Li(html.A("Energy Forecast Trends", href="/energy")),
                     html.Li(html.A("About the Project", href="/about")),
                 ])
             ])

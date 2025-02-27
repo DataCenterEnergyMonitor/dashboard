@@ -2,8 +2,8 @@ import plotly.express as px
 from .styles import get_common_chart_layout
 import pandas as pd
 
-def create_forecast_scatter_plot(filtered_df, selected_scope, industry_avg):
-    if filtered_df.empty or selected_scope is None:
+def create_forecast_scatter_plot(filtered_df, selected_scope=None, industry_avg=None):
+    if filtered_df.empty:
         # Return an empty figure with a message
         return {
             'data': [],
@@ -19,6 +19,9 @@ def create_forecast_scatter_plot(filtered_df, selected_scope, industry_avg):
                 }]
             }
         }
+
+    # Add debug print
+    print("Creating forecast chart with data shape:", filtered_df.shape)
 
     forecast_fig = px.scatter(
         filtered_df,
@@ -39,35 +42,26 @@ def create_forecast_scatter_plot(filtered_df, selected_scope, industry_avg):
                      'peer_reviewed_',
                      'prediction_year']  # Set custom data for hover
     )
-    # Add industry average line
-    if industry_avg is not None:
-        pue_fig.add_scatter(
-            x=industry_avg['applicable_year'],
-            y=industry_avg['real_pue'],
-            mode='lines',
-            name='Industry Average',
-            line=dict(color='#bbbbbb', dash='dash', width=2)
-        )
             
     forecast_fig.update_layout(
-    font_family="Roboto",
-    plot_bgcolor='white',
-    xaxis=dict(
-        showgrid=False,  # disable gridlines
-        dtick=1,  # force yearly intervals
-        showline=True,
-        linecolor='black',
-        linewidth=1,
-        title_font=dict(size=14)
-    ),
-    yaxis=dict(
-        showgrid=False,  # Disable gridlines
-        range=[0, max(filtered_df['annual_electricity_consumption_twh_'].max() * 1.1, 1.8)],  # set y-axis to start at 1.0
-        showline=True,
-        linecolor='black',
-        linewidth=1,
-        title_font=dict(size=14)
-    ),
+        font_family="Roboto",
+        plot_bgcolor='white',
+        xaxis=dict(
+            showgrid=False,  # disable gridlines
+            dtick=1,  # force yearly intervals
+            showline=True,
+            linecolor='black',
+            linewidth=1,
+            title_font=dict(size=14)
+        ),
+        yaxis=dict(
+            showgrid=False,  # Disable gridlines
+            # range=[0, max(filtered_df['annual_electricity_consumption_twh_'].max() * 1.1, 1.8)],  # set y-axis to start at 1.0
+            showline=True,
+            linecolor='black',
+            linewidth=1,
+            title_font=dict(size=14)
+        ),
         legend=dict(
             orientation='h',
             yanchor='bottom',
