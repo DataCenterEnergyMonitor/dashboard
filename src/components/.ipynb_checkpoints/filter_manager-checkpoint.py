@@ -160,40 +160,40 @@ class FilterManager:
             if filter_config.type == "dropdown":
                 filter_components.append(self._create_dropdown(filter_config))
         
-        # Add download button
-        download_button = html.Button(
-            "Download Data",
-            id=f"{self.base_id}-download-button",
-            style={
-                'backgroundColor': '#4CAF50',
-                'color': 'white',
-                'padding': '12px 24px',
-                'border': 'none',
-                'borderRadius': '4px',
-                'cursor': 'pointer',
-                'fontFamily': 'Roboto',
-                'fontWeight': '500',
-                'fontSize': '14px',
-                'width': '200px'
-            }
-        )
+        # # Add download button
+        # download_button = html.Button(
+        #     "Download Data",
+        #     id=f"{self.base_id}-download-button",
+        #     style={
+        #         'backgroundColor': '#4CAF50',
+        #         'color': 'white',
+        #         'padding': '12px 24px',
+        #         'border': 'none',
+        #         'borderRadius': '4px',
+        #         'cursor': 'pointer',
+        #         'fontFamily': 'Roboto',
+        #         'fontWeight': '500',
+        #         'fontSize': '14px',
+        #         'width': '200px'
+        #     }
+        # )
 
-        # Download component
-        download_component = dcc.Download(id=f"{self.base_id}-download-data")
+        # # Download component
+        # download_component = dcc.Download(id=f"{self.base_id}-download-data")
 
-        return html.Div(
-            [
-                html.Div(filter_components),
-                html.Div(
-                    [download_button, download_component],
-                    style={
-                        "display": "flex",
-                        "justifyContent": "flex-end",
-                        "marginBottom": "20px"
-                    }
-                )
-            ]
-        )
+        # return html.Div(
+        #     [
+        #         html.Div(filter_components),
+        #         html.Div(
+        #             [download_button, download_component],
+        #             style={
+        #                 "display": "flex",
+        #                 "justifyContent": "flex-end",
+        #                 "marginBottom": "20px"
+        #             }
+        #         )
+        #     ]
+        # )
 
     def _create_dropdown(self, config: FilterConfig) -> html.Div:
         """Create a dropdown filter component"""

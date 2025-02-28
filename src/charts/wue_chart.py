@@ -1,7 +1,7 @@
 import plotly.express as px
 from .styles import get_common_chart_layout
 
-def create_wue_scatter_plot(filtered_df, selected_scope, industry_avg):
+def create_wue_scatter_plot(filtered_df, selected_scope, industry_avg=None):
     wue_fig = px.scatter(
         filtered_df,
         x='applicable_year',
@@ -12,16 +12,17 @@ def create_wue_scatter_plot(filtered_df, selected_scope, industry_avg):
             "wue": "Water Usage Effectiveness (WUE)",
             "company": "Company Name"
         },
-        custom_data=['company', 'geographical_scope']
+        custom_data=['company']
     )
     
     # Add industry average line
-    wue_fig.add_scatter(
-        x=industry_avg['applicable_year'],
-        y=industry_avg['wue'],
-        mode='lines',
-        name='Industry Average',
-        line=dict(color='#bbbbbb', dash='dash', width=2),
+    if industry_avg is not None:
+        wue_fig.add_scatter(
+            x=industry_avg['applicable_year'],
+            y=industry_avg['wue'],
+            mode='lines',
+            name='Industry Average',
+            line=dict(color='#bbbbbb', dash='dash', width=2),
     )
 
     # Apply layout settings
@@ -35,7 +36,6 @@ def create_wue_scatter_plot(filtered_df, selected_scope, industry_avg):
             '<b>Company: %{customdata[0]}</b><br>'
             'Year: %{x}<br>'
             'WUE: %{y:.2f}<br>'
-            'Location: %{customdata[1]}<br>'
         ))
     
     # Add source citation

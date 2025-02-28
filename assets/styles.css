@@ -1,0 +1,8 @@
+.dash-dropdown .Select-multi-value-wrapper {
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.dash-dropdown .Select-value {
+    text-overflow: ellipsis;
+}

@@ -21,6 +21,7 @@ def create_app():
         __name__,
         external_stylesheets=[
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', # Font Awesome CDN
             dbc.themes.BOOTSTRAP
         ],
         suppress_callback_exceptions=True
@@ -35,11 +36,11 @@ def create_app():
     data_dict = {
         'pue-scatter': {
             'df': pue_df,
-            'industry_avg': pue_industry_avg
+            'industry_avg': None
         },
         'wue-scatter': {
             'df': wue_df,
-            'industry_avg': wue_industry_avg
+            'industry_avg': None
         },
         'forecast-scatter': {
             'df': forecast_df,
@@ -53,15 +54,15 @@ def create_app():
             'base_id': 'pue', #which filters to use
             'chart_id': 'pue-scatter-chart',
             'chart_creator': create_pue_scatter_plot,
-            'filename': 'pue-data.csv', #download
-            'filters': ['facility_scope', 'company', 'iea_region', 'iecc_climate_zone_s_', 'geographical_scope', 'pue_measurement_level']
+            'filename': 'pue-data.csv',
+            'filters': ['facility_scope', 'company', 'iea_region', 'iecc_climate_zone_s_', 'pue_measurement_level']
         },
         'wue-scatter': {
             'base_id': 'wue',
             'chart_id': 'wue-scatter-chart',
             'chart_creator': create_wue_scatter_plot,
             'filename': 'wue-data.csv',
-            'filters': ['facility_scope', 'company', 'geographical_scope']
+            'filters': ['facility_scope', 'company']
         },
         'forecast-scatter': {
             'base_id': 'energy',
@@ -96,6 +97,62 @@ def create_app():
             return create_about_page()
         else:
             return create_home_page()
+
+    # Add custom CSS for dropdowns
+    app.index_string = '''
+    <!DOCTYPE html>
+    <html>
+        <head>
+            {%metas%}
+            <title>{%title%}</title>
+            {%favicon%}
+            {%css%}
+            <style>
+                /* Simple fix for dropdown menus */
+                .dash-dropdown .Select-menu-outer {
+                    z-index: 999 !important;
+                }
+                
+                /* Ensure dropdown stays open during scrolling */
+                .dash-dropdown-always-open .Select-menu-outer {
+                    position: absolute !important;
+                    display: block !important;
+                    z-index: 1000 !important;
+                }
+                
+                /* Improve dropdown scrolling behavior */
+                .dash-dropdown .Select-menu {
+                    max-height: 300px !important;
+                    overflow-y: auto !important;
+                }
+                
+                /* Prevent dropdown from closing when clicking on options */
+                .dash-dropdown .Select-option {
+                    pointer-events: auto !important;
+                }
+            </style>
+        </head>
+        <body>
+            {%app_entry%}
+            <footer>
+                {%config%}
+                {%scripts%}
+                {%renderer%}
+                <script>
+                    // Fix for multi-select dropdown behavior
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Prevent dropdown from closing when scrolling
+                        document.addEventListener('scroll', function(e) {
+                            if (e.target.classList && e.target.classList.contains('Select-menu')) {
+                                e.stopPropagation();
+                            }
+                        }, true);
+                    });
+                </script>
+            </footer>
+        </body>
+    </html>
+    '''
 
     return app
 

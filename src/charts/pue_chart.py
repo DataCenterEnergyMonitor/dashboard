@@ -82,7 +82,7 @@ def create_pue_scatter_plot(filtered_df, selected_scope, industry_avg):
             '<b>Company: %{customdata[0]}</b><br>'
             'Year: %{x}<br>'
             'PUE: %{y:.2f}<br>'
-            'IEA Region: %{customdata[1]}<br>'
+            'Region: %{customdata[1]}<br>'
             'IECC Climate Zone: %{customdata[2]}<br>'
             'Location: %{customdata[3]}<br>'
             'Measurement Level: %{customdata[4]}<extra></extra>'
