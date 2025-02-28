@@ -159,39 +159,10 @@ class FilterManager:
         for filter_config in self.filters.values():
             if filter_config.type == "dropdown":
                 filter_components.append(self._create_dropdown(filter_config))
-        
-        # # Add download button
-        # download_button = html.Button(
-        #     "Download Data",
-        #     id=f"{self.base_id}-download-button",
-        #     style={
-        #         'backgroundColor': '#4CAF50',
-        #         'color': 'white',
-        #         'padding': '12px 24px',
-        #         'border': 'none',
-        #         'borderRadius': '4px',
-        #         'cursor': 'pointer',
-        #         'fontFamily': 'Roboto',
-        #         'fontWeight': '500',
-        #         'fontSize': '14px',
-        #         'width': '200px'
-        #     }
-        # )
-
-        # # Download component
-        # download_component = dcc.Download(id=f"{self.base_id}-download-data")
 
         return html.Div(
             [
                 html.Div(filter_components),
-                # html.Div(
-                #     [download_button, download_component],
-                #     style={
-                #         "display": "flex",
-                #         "justifyContent": "flex-end",
-                #         "marginBottom": "20px"
-                #     }
-                # )
             ]
         )
 
@@ -218,12 +189,17 @@ class FilterManager:
                     'fontFamily': 'Roboto'
                 },
                 clearable=False if not config.multi else True,
-                # Add these properties to improve multi-select behavior
-                optionHeight=35,           # Smaller option height to fit more options
-                maxHeight=300,             # Maximum height of dropdown menu
                 persistence=True,          # Remember selections between interactions
                 persistence_type='session', # Store in session storage
-                # Ensure dropdown menu stays open during scrolling
-                className='dash-dropdown-always-open'
+                # Modify dropdown display properties
+                maxHeight=1000,           # Increased maximum height for dropdown menu
+                optionHeight=35,          # Keep reasonable option height
+                # Add CSS to ensure proper scrolling
+                className='dash-dropdown'
             ),
-        ], style={"marginBottom": "20px", "width": "100%", "position": "relative", "zIndex": "auto"})
+        ], style={
+            "marginBottom": "20px", 
+            "width": "100%", 
+            "position": "relative", 
+            "zIndex": "auto"
+        })
