@@ -189,12 +189,10 @@ class FilterManager:
                     'fontFamily': 'Roboto'
                 },
                 clearable=False if not config.multi else True,
-                persistence=True,          # Remember selections between interactions
-                persistence_type='session', # Store in session storage
-                # Modify dropdown display properties
-                maxHeight=1000,           # Increased maximum height for dropdown menu
-                optionHeight=35,          # Keep reasonable option height
-                # Add CSS to ensure proper scrolling
+                persistence=True,
+                persistence_type='session',
+                maxHeight=300,
+                optionHeight=35,
                 className='dash-dropdown'
             ),
         ], style={
