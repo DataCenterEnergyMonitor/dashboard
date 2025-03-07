@@ -4,7 +4,7 @@ from components.filter_manager import FilterManager, FilterConfig
 from components.navbar import create_navbar
 from components.filter_panel import create_filter_panel
 
-def create_pue_page(app, pue_df, company_counts):
+def create_reporting_trends_page(app, pue_df, company_counts):
     # Define PUE-specific filters with dependencies
     pue_filters = [
         FilterConfig(
@@ -68,7 +68,7 @@ def create_pue_page(app, pue_df, company_counts):
         "Download Data",
         id=f"pue-download-button",
         style={
-            'backgroundColor': '#AACE63', #'#4CAF50',
+            'backgroundColor': '#4CAF50',
             'color': 'white',
             'padding': '8px 16px',
             'border': 'none',

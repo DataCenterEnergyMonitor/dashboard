@@ -1,8 +1,8 @@
 import plotly.express as px
-from .styles import get_common_chart_layout
+from .styles import get_pue_chart_layout
 import pandas as pd
 
-def create_pue_scatter_plot(filtered_df, selected_scope, industry_avg):
+def create_reporting_bar_plot(filtered_df, selected_scope, industry_avg):
     if filtered_df.empty or selected_scope is None:
         # Return an empty figure with a message
         return {

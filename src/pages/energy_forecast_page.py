@@ -3,6 +3,9 @@ from components.filter_manager import FilterManager, FilterConfig
 from components.navbar import create_navbar
 
 def create_forecast_page(app, forecast_df):
+    print("Forecast DataFrame shape:", forecast_df.shape)
+    print("Forecast DataFrame columns:", forecast_df.columns)
+    print("Sample data:", forecast_df.head())
     # Define Energy Forecast-specific filters with dependencies
     forecast_filters = [
         FilterConfig(

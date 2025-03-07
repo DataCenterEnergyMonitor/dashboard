@@ -1,0 +1,40 @@
+# Page categories
+Industry Trends:
+  PUE:
+    route: /pue
+    preview: assets/previews/pue_preview.png
+    description: Analyze Power Usage Effectiveness trends
+  WUE:
+    route: /wue
+    preview: assets/previews/wue_preview.png
+    description: Water Usage Effectiveness analytics
+  Energy Forecast:
+    route: /energy
+    preview: assets/previews/energy_forecast_preview.png
+    description: Predictive energy consumption analysis
+  Company Analysis:
+    route: /company-analysis
+    preview: assets/previews/pue_preview.png
+    description: Comparative company performance metrics
+  Energy Reporting Trends:
+    route: /reporting
+    preview: assets/previews/reporting_trends_preview.png
+    description: Industry reporting patterns and insights
+  Energy Data Trends:
+    route: /energy_data_trends
+    preview: assets/previews/energy_data_trends_preview.png
+    description: Additional metrics and analysis
+
+Learn:
+  Data Centers 101:
+    route: /data-centers-101
+    preview: assets/previews/pue_preview.png
+    description: Introduction to data center operations
+  AI Energy Demand:
+    route: /ai-energy
+    preview: assets/previews/pue_preview.png
+    description: AI impact on energy consumption
+  Methods:
+    route: /methods
+    preview: assets/previews/pue_preview.png
+    description: Methodology and calculations 

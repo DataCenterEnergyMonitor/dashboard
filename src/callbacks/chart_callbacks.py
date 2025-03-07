@@ -37,6 +37,9 @@ class ChartCallbackManager:
                 prevent_initial_call=False
             )
             def update_chart(*args, chart_type=chart_type, config=config):
+                print(f"Chart update triggered for {chart_type}")
+                #print("Filter values:", dict(zip(filter_ids, args)))
+        
                 ctx = dash.callback_context
                 
                 # Get the data for this chart type

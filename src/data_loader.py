@@ -90,3 +90,28 @@ def load_energyforecast_data():
     forecast_avg = (forecast_df['annual_electricity_consumption_twh_']
     )
     return forecast_df, forecast_avg
+
+
+def load_reporting_trends_data():
+    current_dir = Path(__file__).parent
+    data_path = current_dir.parent / 'data' / 'dc_energy_use_pue.xlsx'
+    
+    wue_df = pd.read_excel(data_path, sheet_name='Input - WUE', skiprows=1)
+    wue_df = wue_df.clean_names()
+    
+    # set WUE industry average to 1.8 value
+    wue_industry_avg = pd.DataFrame({
+        'applicable_year': wue_df['applicable_year'], # The list of years from the DataFrame
+        'wue': [1.8] * len(wue_df['applicable_year']) # The same WUE value for all years
+    })
+
+    # Clean string columns
+    string_columns = ['facility_scope', 'company', 'geographical_scope']
+    for col in string_columns:
+        if col in wue_df.columns:
+            wue_df[col] = wue_df[col].str.strip()
+    
+    # Get all unique companies
+    wue_company_counts = wue_df['company'].unique().tolist()
+    
+    return wue_df, wue_company_counts, wue_industry_avg
