@@ -8,14 +8,15 @@ import dash
 from dash import Dash, dcc, html, Input, Output, callback
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from data_loader import load_pue_data, load_wue_data, load_energyforecast_data, load_reporting_trends_data
+from data_loader import load_pue_data, load_wue_data, load_energyforecast_data, load_reporting_data
 
 from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
 from pages.energy_forecast_page import create_forecast_page
-from pages.reporting_trends_page import create_reporting_trends_page
+from pages.reporting_page import create_reporting_page
+from pages.data_centers_101_page import create_data_centers_101_page
 
 from callbacks.chart_callbacks import ChartCallbackManager
 from charts.pue_chart import create_pue_scatter_plot
@@ -37,13 +38,12 @@ def create_app():
     for root, dirs, files in os.walk(assets_path):
         for file in files:
             file_path = os.path.join(root, file)
-            print(f"File: {file_path}")
-            print(f"File exists: {os.path.exists(file_path)}")
-            print(f"File permissions: {oct(os.stat(file_path).st_mode)[-3:]}")
 
     app = Dash(
         __name__,
-        external_stylesheets=[dbc.themes.BOOTSTRAP],
+        external_stylesheets=[
+            dbc.themes.BOOTSTRAP,
+            'https://use.fontawesome.com/releases/v5.15.4/css/all.css'],
         suppress_callback_exceptions=True,
         assets_folder=assets_path,  # Set absolute path to assets
         assets_url_path='assets'    # Explicitly set the assets URL path
@@ -53,6 +53,7 @@ def create_app():
     pue_df, company_counts, pue_industry_avg = load_pue_data()
     wue_df, wue_company_counts, wue_industry_avg = load_wue_data()
     forecast_df,forecast_avg = load_energyforecast_data()
+    reporting_df = load_reporting_data()
 
     # Create data dictionary for charts
     data_dict = {
@@ -66,8 +67,12 @@ def create_app():
         },
         'forecast-scatter': {
             'df': forecast_df,
-            'industry_avg': forecast_avg
-        }    
+            'industry_avg': None
+        },
+        'reporting-bar': {
+            'df': reporting_df,
+            'industry_avg': None
+        }
     }
 
     # Define chart configurations
@@ -92,6 +97,13 @@ def create_app():
             'chart_creator': create_forecast_scatter_plot,
             'filename': 'forecast-data.csv',
             'filters': ['geographic_scope', 'peer_reviewed_', 'author_type_s_']
+        },
+        'reporting-bar': {
+            'base_id': 'reporting',
+            'chart_id': 'reporting-bar-chart',
+            'chart_creator': create_reporting_bar_plot,
+            'filename': 'reporting-data.csv',
+            'filters': ['reporting_scope']
         }
     }
 
@@ -116,7 +128,7 @@ def create_app():
         elif pathname == '/energy':
             return create_forecast_page(app, forecast_df)
         elif pathname == '/reporting':
-            return create_reporting_trends_page(app, reporting_df)
+            return create_reporting_page(app, reporting_df)
         elif pathname == '/about':
             return create_about_page()
         elif pathname == '/data_centers_101':

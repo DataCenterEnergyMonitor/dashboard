@@ -55,7 +55,18 @@ class ChartCallbackManager:
                 filtered_df = df.copy()
                 for filter_id, value in filter_values.items():
                     if value:
-                        if isinstance(value, list):
+                        if filter_id == 'reported_data_year' and isinstance(value, (list, tuple)):
+                            # Extract years from date strings
+                            start_date = value[0].split('T')[0] if 'T' in value[0] else value[0]
+                            end_date = value[1].split('T')[0] if 'T' in value[1] else value[1]
+                            start_year = int(start_date.split('-')[0])
+                            end_year = int(end_date.split('-')[0])
+                            
+                            filtered_df = filtered_df[
+                                (filtered_df['reported_data_year'] >= start_year) & 
+                                (filtered_df['reported_data_year'] <= end_year)
+                            ]
+                        elif isinstance(value, list):
                             if value and "All" not in value:
                                 filtered_df = filtered_df[filtered_df[filter_id].isin(value)]
                         elif value != "All":
@@ -123,33 +134,32 @@ class ChartCallbackManager:
 
     def _get_filter_ids_for_chart(self, chart_type: str) -> List[str]:
         """Return the filter IDs needed for each chart type"""
+        if chart_type == 'reporting-bar':
+            return ['reporting_scope', 'reported_data_year']
         return self.chart_configs[chart_type]['filters']
 
     def _apply_filters(self, df, filter_values):
         """Apply filters to the dataframe"""
         filtered_df = df.copy()
         
-        # Map filter IDs to DataFrame column names
-        column_mapping = {
-            'facility_scope': 'facility_scope',
-            'company': 'company',
-            'iea_region': 'iea_region',
-            'iecc_climate_zone_s_' : 'iecc_climate_zone_s_',
-            #'geographical_scope': 'geographical_scope',
-            'pue_measurement_level': 'pue_measurement_level',
-            'geographic_scope': 'geographic_scope',
-            'peer_reviewed_': 'peer_reviewed_',
-            'author_type_s_': 'author_type_s_'
-        }
-
         for filter_id, value in filter_values.items():
-            if value and filter_id in column_mapping:
-                column = column_mapping[filter_id]
-                if isinstance(value, list):
+            if value:
+                if filter_id == 'reported_data_year' and isinstance(value, (list, tuple)):
+                    # Extract years from date strings
+                    start_date = value[0].split('T')[0] if 'T' in value[0] else value[0]
+                    end_date = value[1].split('T')[0] if 'T' in value[1] else value[1]
+                    start_year = int(start_date.split('-')[0])
+                    end_year = int(end_date.split('-')[0])
+                    
+                    filtered_df = filtered_df[
+                        (filtered_df['reported_data_year'] >= start_year) & 
+                        (filtered_df['reported_data_year'] <= end_year)
+                    ]
+                elif isinstance(value, list):
                     if value and "All" not in value:
-                        filtered_df = filtered_df[filtered_df[column].isin(value)]
+                        filtered_df = filtered_df[filtered_df[filter_id].isin(value)]
                 elif value != "All":
-                    filtered_df = filtered_df[filtered_df[column] == value]
+                    filtered_df = filtered_df[filtered_df[filter_id] == value]
         
         return filtered_df
   

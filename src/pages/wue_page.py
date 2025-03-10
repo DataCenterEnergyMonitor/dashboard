@@ -44,7 +44,7 @@ def create_wue_page(app, wue_df, company_counts):
             'border': 'none',
             'borderRadius': '4px',
             'cursor': 'pointer',
-            'fontFamily': 'Roboto',
+            'fontFamily': 'Roboto, sans-serif',
             'fontWeight': '500',
             'fontSize': '14px'
         }
@@ -67,7 +67,7 @@ def create_wue_page(app, wue_df, company_counts):
                 html.H1(
                     "Data Center Water Usage Effectiveness (WUE): Trends by Company",
                     style={
-                        'fontFamily': 'Roboto', 
+                        'fontFamily': 'Roboto, sans-serif', 
                         'fontWeight': '500', 
                         'marginBottom': '30px',
                         'fontSize': '32px',
@@ -80,7 +80,7 @@ def create_wue_page(app, wue_df, company_counts):
                         html.Br(),
                         "Lower WUE values indicate better water efficiency."
                     ], style={
-                        'fontFamily': 'Roboto',
+                        'fontFamily': 'Roboto, sans-serif',
                         'marginBottom': '20px',
                         'color': '#404040',
                         'maxWidth': '800px',

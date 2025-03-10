@@ -1,10 +1,20 @@
 import plotly.express as px
-from .styles import get_pue_chart_layout
+from .styles import get_common_chart_layout
 import pandas as pd
 
-def create_reporting_bar_plot(filtered_df, selected_scope, industry_avg):
-    if filtered_df.empty or selected_scope is None:
-        # Return an empty figure with a message
+def create_reporting_bar_plot(filtered_df, selected_scope=None, industry_avg=None):
+    """
+    Create a bar plot showing the number of reporting companies by year.
+    
+    Args:
+        filtered_df: DataFrame containing the reporting data
+        selected_scope: Selected reporting scope from the dropdown
+        industry_avg: Not used for this chart, kept for interface consistency
+    """
+    print("Filtered DataFrame shape:", filtered_df.shape)  # Debug print
+    print("Selected scope:", selected_scope)  # Debug print
+    
+    if filtered_df.empty:
         return {
             'data': [],
             'layout': {
@@ -20,85 +30,59 @@ def create_reporting_bar_plot(filtered_df, selected_scope, industry_avg):
             }
         }
 
-    pue_fig = px.scatter(
-        filtered_df,
-        x='applicable_year',
-        y='real_pue',
-        color='company',
+    # Group the data by year and scope, count unique companies
+    grouped_df = (filtered_df
+                 .groupby(['reported_data_year', 'reporting_scope'])
+                 .agg({'company_name': 'nunique'})
+                 .reset_index()
+                 .rename(columns={'company_name': 'num_companies'}))
+    
+    print("Grouped DataFrame:", grouped_df.head())  # Debug print
+
+    reporting_fig = px.bar(
+        grouped_df,
+        x='reported_data_year',
+        y='num_companies',
+        color='reporting_scope',  # Add color by reporting scope
         labels={
-            "applicable_year": "Year",
-            "real_pue": "Power Usage Effectiveness (PUE)",
-            "company": "Company Name"
+            "reported_data_year": "Year",
+            "num_companies": "Number of Companies Reporting",
+            "reporting_scope": "Reporting Scope"
         },
-        custom_data=['company', 'iea_region', 'iecc_climate_zone_s_','geographical_scope', 'pue_measurement_level']  # Set custom data for hover
+        barmode='group'  # Group bars by year
     )
 
-    # Add industry average line
-    if industry_avg is not None:
-        pue_fig.add_scatter(
-            x=industry_avg['applicable_year'],
-            y=industry_avg['real_pue'],
-            mode='lines',
-            name='Industry Average',
-            line=dict(color='#bbbbbb', dash='dash', width=2)
-        )
-
-    pue_fig.update_layout(
-    font_family="Roboto, sans-serif",
-    plot_bgcolor='white',
-    xaxis=dict(
-        showgrid=False,  # disable gridlines
-        dtick=1,  # force yearly intervals
-        showline=True,
-        linecolor='black',
-        linewidth=1,
-        title_font=dict(size=14)
-    ),
-    yaxis=dict(
-        showgrid=False,  # Disable gridlines
-        range=[1, max(filtered_df['real_pue'].max() * 1.1, 1.8)],  # set y-axis to start at 1.0
-        showline=True,
-        linecolor='black',
-        linewidth=1,
-        title_font=dict(size=14)
-    ),
-        legend=dict(
-            orientation='h',
-            yanchor='bottom',
-            y=1.02,
-            xanchor='right',
-            x=1
+    # Get common layout and update specific properties
+    layout = get_common_chart_layout()
+    layout.update(
+        xaxis=dict(
+            title="Year",
+            tickmode='linear',
+            dtick=1  # Show all years
         ),
-        margin=dict(t=100, b=100),  # set bottom margin for citation
-        showlegend=True,
-        template='simple_white'
-    )
-
-    # Update marker size and hover template
-    pue_fig.update_traces(
-        marker=dict(size=10),
-        selector=dict(mode='markers'),
-        hovertemplate=(
-            '<b>Company: %{customdata[0]}</b><br>'
-            'Year: %{x}<br>'
-            'PUE: %{y:.2f}<br>'
-            'Region: %{customdata[1]}<br>'
-            'IECC Climate Zone: %{customdata[2]}<br>'
-            'Location: %{customdata[3]}<br>'
-            'Measurement Level: %{customdata[4]}<extra></extra>'
+        yaxis=dict(
+            title="Number of Companies Reporting",
+            tickmode='linear'
+        ),
+        legend=dict(
+            orientation="h",  # horizontal legend
+            yanchor="bottom",
+            y=1.02,  # Position above the chart
+            xanchor="right",
+            x=1
         )
     )
+    
+    reporting_fig.update_layout(layout)
 
-    # Add source citation with lower position
-    pue_fig.add_annotation(
-        text="Source: [TBD]",
-        xref="paper",
-        yref="paper",
-        x=0,
-        y=-0.25,
-        showarrow=False,
-        font=dict(size=10),
-        align="left"
+    # Update hover template
+    reporting_fig.update_traces(
+        hovertemplate=(
+            'Year: %{x}<br>'
+            'Number of Companies: %{y}<br>'
+            'Reporting Scope: %{customdata[0]}<br>'
+        ),
+        customdata=grouped_df[['reporting_scope']]
     )
 
-    return pue_fig
+    return reporting_fig

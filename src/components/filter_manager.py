@@ -173,7 +173,7 @@ class FilterManager:
         return html.Div([
             html.Label(
                 config.label,
-                style={'fontFamily': 'Roboto', 'fontWeight': '500'}
+                style={'fontFamily': 'Roboto, sans-serif', 'fontWeight': '500'}
             ),
             dcc.Dropdown(
                 id={
@@ -186,7 +186,7 @@ class FilterManager:
                 multi=config.multi,
                 placeholder=f"Select {config.label}",
                 style={
-                    'fontFamily': 'Roboto'
+                    'fontFamily': 'Roboto, sans-serif'
                 },
                 clearable=False if not config.multi else True,
                 persistence=True,

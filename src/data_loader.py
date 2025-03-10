@@ -92,26 +92,38 @@ def load_energyforecast_data():
     return forecast_df, forecast_avg
 
 
-def load_reporting_trends_data():
+def load_reporting_data():
     current_dir = Path(__file__).parent
-    data_path = current_dir.parent / 'data' / 'dc_energy_use_pue.xlsx'
+    data_path = current_dir.parent / 'data' / 'modules.xlsx'
     
-    wue_df = pd.read_excel(data_path, sheet_name='Input - WUE', skiprows=1)
-    wue_df = wue_df.clean_names()
-    
-    # set WUE industry average to 1.8 value
-    wue_industry_avg = pd.DataFrame({
-        'applicable_year': wue_df['applicable_year'], # The list of years from the DataFrame
-        'wue': [1.8] * len(wue_df['applicable_year']) # The same WUE value for all years
-    })
+    # import and clean energy consumption data
+    # import and clean energy consumption data
+    company_total_ec_df = pd.read_excel(data_path, sheet_name='Company Total Electricity Use', skiprows=1)
+    company_total_ec_df = company_total_ec_df.clean_names()
+    company_total_ec_df.rename(columns={'company': 'company_name'}, inplace=True)
+    company_total_ec_df = company_total_ec_df[['company_name', 'reported_data_year']]
+    company_total_ec_df = company_total_ec_df.dropna(subset=['reported_data_year']) # remove rows with no data
 
-    # Clean string columns
-    string_columns = ['facility_scope', 'company', 'geographical_scope']
-    for col in string_columns:
-        if col in wue_df.columns:
-            wue_df[col] = wue_df[col].str.strip()
+    dc_ec_df = pd.read_excel(data_path, sheet_name='Data Center Electricity Use ', skiprows=1)
+    dc_ec_df = dc_ec_df.clean_names()
+    dc_ec_df = dc_ec_df[['company_name', 'reported_data_year']]
+
+    dc_fuel_df = pd.read_excel(data_path, sheet_name='Data Center Fuel Use ', skiprows=1)
+    dc_fuel_df = dc_fuel_df.clean_names()
+    dc_fuel_df = dc_fuel_df[['company_name', 'reported_data_year']]
+
+    dc_water_df = pd.read_excel(data_path, sheet_name='Data Center Water Use ', skiprows=1)
+    dc_water_df = dc_water_df.clean_names()
+    dc_water_df = dc_water_df[['company_name', 'reported_data_year']]
+
+    # add a reporting_scope column to each DataFrame
+    company_total_ec_df.loc[:, 'reporting_scope'] = 'Company Wide Electricity Use'
+    dc_ec_df.loc[:, 'reporting_scope'] = 'Data Center Electricity Use'
+    dc_fuel_df.loc[:, 'reporting_scope'] = 'Data Center Fuel Use'
+    dc_water_df.loc[:, 'reporting_scope'] = 'Data Center Water Use'
+
+    # combine all the dfs into one - maintaining the original columns
+    reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df, dc_water_df], axis=0)
+    reporting_df['reported_data_year'] = reporting_df['reported_data_year'].astype(int)
     
-    # Get all unique companies
-    wue_company_counts = wue_df['company'].unique().tolist()
-    
-    return wue_df, wue_company_counts, wue_industry_avg
+    return  reporting_df

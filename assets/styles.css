@@ -48,18 +48,37 @@ a:hover {
 }
 
 .navbar {
-    background-color: #0F4D8B; /* #343a40; /* Change this to your desired color */
+    background-color: #0F4D8B !important; /* #343a40; /* Change this to your desired color */
 }
 
 /* Change navbar brand color */
 .navbar-brand {
-    color: #0F4D8B; /* #14AE5C; /* Change this to your desired color */
+    color: #0F4D8B; /* #14AE5C ; */ 
 }
 
 .navbar-brand:hover {
-    color: #ffffff !important; /* Change this to your desired hover color */
+    color: #ffffff !important; 
 }
 
 body {
     font-family: 'Roboto', sans-serif; /* Example font */
+}
+
+/* Range Slider Styles */
+.custom-range-slider .rc-slider-track {
+    background-color: #0F4D8B;
+}
+
+.custom-range-slider .rc-slider-handle {
+    border-color: #0F4D8B;
+    background-color: #0F4D8B;
+}
+
+.custom-range-slider .rc-slider-handle:hover {
+    border-color: #0F4D8B; /*#45a049;*/
+}
+
+.custom-range-slider .rc-slider-handle:active {
+    border-color: #0F4D8B; /*#45a049;*/
+    box-shadow: 0 0 5px #0F4D8B;
 }
