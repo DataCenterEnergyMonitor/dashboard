@@ -103,7 +103,7 @@ def create_app():
             'chart_id': 'reporting-bar-chart',
             'chart_creator': create_reporting_bar_plot,
             'filename': 'reporting-data.csv',
-            'filters': ['reporting_scope']
+            'filters': ['year_range_from', 'year_range_to']
         }
     }
 

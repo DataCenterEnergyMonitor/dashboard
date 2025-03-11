@@ -68,7 +68,7 @@ def create_pue_page(app, pue_df, company_counts):
         "Download Data",
         id=f"pue-download-button",
         style={
-            'backgroundColor': '#AACE63', #'#4CAF50',
+            'backgroundColor': '#4CAF50',
             'color': 'white',
             'padding': '8px 16px',
             'border': 'none',

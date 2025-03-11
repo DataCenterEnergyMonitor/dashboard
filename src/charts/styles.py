@@ -51,3 +51,29 @@ def get_pue_chart_layout(filtered_df):
     }
     
     return {**base_layout, **pue_specific}
+
+def get_bar_chart_layout():
+    """Get common layout settings for bar charts"""
+    return dict(
+        xaxis=dict(
+            title="Year",
+            tickmode='linear',
+            dtick=1
+        ),
+        yaxis=dict(
+            title="Number of Companies Reporting",
+            tickmode='linear',
+            dtick=5  # Show tick every 5 units for better readability
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            title=None
+        ),
+        margin=dict(t=100),
+        hovermode='x unified',
+        template='simple_white'  # Consistent with other charts
+    )
