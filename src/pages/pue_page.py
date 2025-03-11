@@ -74,7 +74,7 @@ def create_pue_page(app, pue_df, company_counts):
             'border': 'none',
             'borderRadius': '4px',
             'cursor': 'pointer',
-            'fontFamily': 'Roboto',
+            'fontFamily': 'Roboto, sans-serif',
             'fontWeight': '500',
             'fontSize': '14px'
         }
@@ -98,7 +98,7 @@ def create_pue_page(app, pue_df, company_counts):
                 html.H1(
                     "Data Center Power Usage Effectiveness (PUE)",
                     style={
-                        'fontFamily': 'Roboto',
+                        'fontFamily': 'Roboto, sans-serif',
                         'fontWeight': '500',
                         'marginBottom': '10px',
                         'fontSize': '32px',
@@ -111,7 +111,7 @@ def create_pue_page(app, pue_df, company_counts):
                         html.Br(),
                         "A PUE of 1.0 represents perfect efficiency."
                     ], style={
-                        'fontFamily': 'Roboto',
+                        'fontFamily': 'Roboto, sans-serif',
                         'marginBottom': '10px',
                         'color': '#404040',
                         'fontSize': '16px'

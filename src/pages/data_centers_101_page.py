@@ -1,7 +1,7 @@
 from dash import html
 from layouts.base_layout import create_base_layout
 
-def create_about_page():
+def create_data_centers_101_page():
     content = html.H4(
         "Coming soon...",
         style={

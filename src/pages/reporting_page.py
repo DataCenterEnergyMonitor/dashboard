@@ -1,42 +1,33 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from components.filter_manager import FilterManager, FilterConfig
-from components.navbar import create_navbar
+from layouts.base_layout import create_base_layout
 from components.filter_panel import create_filter_panel
 
-def create_wue_page(app, wue_df, company_counts):
-    # Define WUE-specific filters with dependencies
-    wue_filters = [
+def create_reporting_page(app, reporting_df):
+    """Create the reporting page with year range filter"""
+    # Define reporting trends filters
+    reporting_filters = [
         FilterConfig(
-            id="facility_scope",
-            label="Facility Scope",
-            column="facility_scope",
-            multi=False,
-            default_value="Fleet-wide",
-            show_all=False,
-            depends_on=None
-        ),
-        FilterConfig(
-            id="company",
-            label="Company",
-            column="company",
-            multi=True,
-            default_value="All",
-            show_all=True,
-            depends_on=["facility_scope"]
+            id="year_range",
+            label="Year Range",
+            column="reported_data_year",
+            type="year_range",
+            default_value={'from': min(reporting_df['reported_data_year']), 
+                         'to': max(reporting_df['reported_data_year'])}
         )
     ]
     
-    # Initialize WUE-specific filter manager
-    wue_filter_manager = FilterManager(app, "wue", wue_df, wue_filters)
-
-    # Get filter components without download button
-    filter_components = wue_filter_manager.create_filter_components()
+    # Create filter manager
+    reporting_filter_manager = FilterManager(app, "reporting", reporting_df, reporting_filters)
+    
+    # Get filter components
+    filter_components = reporting_filter_manager.create_filter_components()
     
     # Extract download button and component
     download_button = html.Button(
         "Download Data",
-        id=f"wue-download-button",
+        id="reporting-download-button",
         style={
             'backgroundColor': '#4CAF50',
             'color': 'white',
@@ -49,23 +40,42 @@ def create_wue_page(app, wue_df, company_counts):
             'fontSize': '14px'
         }
     )
-    download_component = dcc.Download(id=f"wue-download-data")
-    
-    return html.Div([
-        create_navbar(),
-        html.Div([
-            # Left side - Filter Panel
-            html.Div([
-                create_filter_panel(filter_components)
-            ], style={
-                'width': '260px',
-                'flexShrink': '0'
-            }),
+    download_component = dcc.Download(id="reporting-download-data")
 
+    # Main content
+    content = html.Div([
+        # Main content container with flex layout
+        html.Div([
+            # Left side - Filter Panel (empty but maintains consistent layout)
+            html.Div([
+                # Filter Panel Header with Icon
+                html.Div([
+                    html.I(className="fas fa-filter", 
+                          style={
+                              'fontSize': '24px', 
+                              'color': '#4CAF50', 
+                              'marginBottom': '20px'})
+                ], style={
+                    'display': 'flex', 
+                    'justifyContent': 'flex-start', 
+                    'width': '100%'}),
+                
+                # Filter Components (empty in this case)
+                filter_components
+            ], id='filter-panel', style={
+                'width': '260px',
+                'backgroundColor': 'white',
+                'padding': '20px',
+                'boxShadow': 'none',
+                'height': 'calc(100vh - 76px)',
+                'overflowY': 'auto',
+                'position': 'relative'
+            }),
+            
             # Right side - Main Content
             html.Div([
                 html.H1(
-                    "Data Center Water Usage Effectiveness (WUE): Trends by Company",
+                    "Trends in Data Center Energy Reporting Over Time",
                     style={
                         'fontFamily': 'Roboto, sans-serif', 
                         'fontWeight': '500', 
@@ -74,21 +84,8 @@ def create_wue_page(app, wue_df, company_counts):
                         'paddingTop': '0px'
                         }
                 ),
-                html.Div([
-                    html.P([
-                        "Water Usage Effectiveness (WUE) measures the water efficiency of data centers.",
-                        html.Br(),
-                        "Lower WUE values indicate better water efficiency."
-                    ], style={
-                        'fontFamily': 'Roboto, sans-serif',
-                        'marginBottom': '20px',
-                        'color': '#404040',
-                        'maxWidth': '800px',
-                        'fontSize': '16px'
-                    })
-                ]),
-
-                # Download button above chart
+                
+                # Download button container
                 html.Div([
                     download_button,
                     download_component
@@ -101,18 +98,17 @@ def create_wue_page(app, wue_df, company_counts):
                     'paddingRight': '10px',
                     'paddingBottom': '10px'
                 }),
-
-                # Chart
+                
+                # Chart container
                 html.Div([
                     dcc.Graph(
-                        id='wue-scatter-chart',
+                        id='reporting-bar-chart',
                         style={
                             'height': 'calc(100vh - 400px)',
-                            'width': '100%'
-                        },
+                            'width': '100%'},
                         config={
                             'responsive': True
-                        }
+                            }
                     )
                 ], style={
                     'width': '90%',
@@ -132,8 +128,4 @@ def create_wue_page(app, wue_df, company_counts):
         })
     ])
 
-    #         wue_filter_manager.create_filter_components(),
-    #         dcc.Graph(id='wue-scatter-chart')
-    #     ], style={'padding': '20px', 'maxWidth': '1200px', 'margin': 'auto'})
-    # ])
-
+    return create_base_layout(content)

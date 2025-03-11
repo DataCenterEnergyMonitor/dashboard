@@ -1,6 +1,6 @@
 import dash
-from dash.dependencies import Output, Input
-from dash import callback_context, no_update
+from dash.dependencies import Output, Input, State
+from dash import callback, Input, Output, ALL, MATCH, callback_context, no_update
 from dash import dcc
 from typing import List
 
@@ -37,27 +37,18 @@ class ChartCallbackManager:
                 prevent_initial_call=False
             )
             def update_chart(*args, chart_type=chart_type, config=config):
-                ctx = dash.callback_context
+                print(f"Chart update triggered for {chart_type}")
                 
                 # Get the data for this chart type
                 df = self.data_dict[chart_type]['df'].copy()
                 
-                industry_avg = self.data_dict[chart_type].get('industry_avg')
-                
-                # Get filter IDs and values
+                # Create filter_values dictionary
                 filter_ids = self._get_filter_ids_for_chart(chart_type)
                 filter_values = dict(zip(filter_ids, args))
-
+                
                 # Apply filters
-                filtered_df = df.copy()
-                for filter_id, value in filter_values.items():
-                    if value:
-                        if isinstance(value, list):
-                            if value and "All" not in value:
-                                filtered_df = filtered_df[filtered_df[filter_id].isin(value)]
-                        elif value != "All":
-                            filtered_df = filtered_df[filtered_df[filter_id] == value]
-
+                filtered_df = self._apply_filters(df, filter_values)
+                
                 if filtered_df.empty:
                     return {
                         'data': [],
@@ -75,11 +66,14 @@ class ChartCallbackManager:
                     }
 
                 try:
-                    return config['chart_creator'](
-                        filtered_df=filtered_df,
-                        selected_scope=filter_values.get('facility_scope'),
-                        industry_avg=industry_avg
-                    )
+                    if chart_type == 'reporting-bar':
+                        return config['chart_creator'](filtered_df)
+                    else:
+                        return config['chart_creator'](
+                            filtered_df=filtered_df,
+                            selected_scope=filter_values.get('facility_scope'),
+                            industry_avg=self.data_dict[chart_type].get('industry_avg')
+                        )
                 except Exception as e:
                     print(f"Error creating chart: {e}")
                     return {
@@ -120,33 +114,49 @@ class ChartCallbackManager:
 
     def _get_filter_ids_for_chart(self, chart_type: str) -> List[str]:
         """Return the filter IDs needed for each chart type"""
+        if chart_type == 'reporting-bar':
+            return ['year_range_from', 'year_range_to']
         return self.chart_configs[chart_type]['filters']
 
     def _apply_filters(self, df, filter_values):
         """Apply filters to the dataframe"""
         filtered_df = df.copy()
         
-        # Map filter IDs to DataFrame column names
-        column_mapping = {
-            'facility_scope': 'facility_scope',
-            'company': 'company',
-            'iea_region': 'iea_region',
-            'iecc_climate_zone_s_' : 'iecc_climate_zone_s_',
-            #'geographical_scope': 'geographical_scope',
-            'pue_measurement_level': 'pue_measurement_level',
-            'geographic_scope': 'geographic_scope',
-            'peer_reviewed_': 'peer_reviewed_',
-            'author_type_s_': 'author_type_s_'
-        }
-
         for filter_id, value in filter_values.items():
-            if value and filter_id in column_mapping:
-                column = column_mapping[filter_id]
+            if not value:
+                continue
+                
+            if '_from' in filter_id or '_to' in filter_id:
+                # Handle year range filter
+                base_id = filter_id.rsplit('_', 1)[0]
+                if f"{base_id}_from" in filter_values and f"{base_id}_to" in filter_values:
+                    from_year = filter_values[f"{base_id}_from"]
+                    to_year = filter_values[f"{base_id}_to"]
+                    if from_year and to_year:
+                        filtered_df = filtered_df[
+                            (filtered_df['reported_data_year'] >= from_year) &
+                            (filtered_df['reported_data_year'] <= to_year)
+                        ]
+            else:
+                # Handle regular filters (for scatter plots)
                 if isinstance(value, list):
                     if value and "All" not in value:
-                        filtered_df = filtered_df[filtered_df[column].isin(value)]
+                        filtered_df = filtered_df[filtered_df[filter_id].isin(value)]
                 elif value != "All":
-                    filtered_df = filtered_df[filtered_df[column] == value]
+                    filtered_df = filtered_df[filtered_df[filter_id] == value]
         
         return filtered_df
+
+@callback(
+    Output('reporting-bar-chart', 'figure'),
+    [Input('url', 'pathname'),
+     Input({'type': 'filter-dropdown', 'base_id': 'reporting', 'filter_id': ALL}, 'value')]
+)
+def update_reporting_chart(pathname, filter_values):
+    """Update the reporting bar chart"""
+    if pathname != '/reporting':
+        return dash.no_update
+
+    # Create the bar chart with the full dataset since we have no filters
+    return create_reporting_bar_plot(reporting_df)
   

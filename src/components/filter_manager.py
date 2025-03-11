@@ -9,15 +9,18 @@ class FilterConfig:
     id: str
     label: str
     column: str
-    type: str = "dropdown"
+    type: str = "dropdown"  # Can be "dropdown" or "year_range"
     multi: bool = False
     default_value: Any = None
     show_all: bool = True
     depends_on: List[str] = None
+    options: Dict[str, Any] = None  # For additional filter-specific options
 
     def __post_init__(self):
         if self.depends_on is None:
             self.depends_on = []
+        if self.options is None:
+            self.options = {}
 
 class FilterManager:
     _registered_callbacks = set()  # Track registered callbacks
@@ -129,7 +132,14 @@ class FilterManager:
     def _get_filter_options(self, filter_config: FilterConfig, filtered_df: pd.DataFrame) -> List[Dict]:
         """Get options for a filter based on the filtered dataframe"""
         unique_values = filtered_df[filter_config.column].dropna().unique()
-        options = [{'label': str(val), 'value': str(val)} for val in sorted(unique_values)]
+        
+        if filter_config.id == 'reported_data_year':
+            # Sort years in descending order
+            options = [{'label': str(val), 'value': str(val)} 
+                      for val in sorted(unique_values, reverse=True)]
+        else:
+            options = [{'label': str(val), 'value': str(val)} 
+                      for val in sorted(unique_values)]
         
         if filter_config.show_all and len(options) > 1:
             options.insert(0, {'label': 'All', 'value': 'All'})
@@ -155,10 +165,13 @@ class FilterManager:
         """Create all filter components"""
         filter_components = []
         
-        # Create filter dropdowns
-        for filter_config in self.filters.values():
-            if filter_config.type == "dropdown":
-                filter_components.append(self._create_dropdown(filter_config))
+        # Create filter components for all filters
+        if self.filters:
+            for filter_config in self.filters.values():
+                if filter_config.type == "dropdown":
+                    filter_components.append(self._create_dropdown(filter_config))
+                elif filter_config.type == "year_range":
+                    filter_components.append(self._create_year_range(filter_config))
 
         return html.Div(
             [
@@ -170,10 +183,66 @@ class FilterManager:
         """Create a dropdown filter component"""
         options = self._get_filter_options(config, self.df)
         
+        if config.type == "year_range":
+            years = sorted(self.df[config.column].unique())
+            min_year, max_year = min(years), max(years)
+            
+            return html.Div([
+                html.Label(
+                    config.label,
+                    style={'fontFamily': 'Roboto, sans-serif', 'fontWeight': '500'}
+                ),
+                html.Div([
+                    # From Year dropdown
+                    html.Div([
+                        dcc.Dropdown(
+                            id={
+                                "type": "filter-dropdown",
+                                "base_id": self.base_id,
+                                "filter_id": f"{config.id}_from"
+                            },
+                            options=[{'label': str(year), 'value': year} for year in years],
+                            value=config.default_value.get('from', min_year),
+                            placeholder="From",
+                            style={'fontFamily': 'Roboto, sans-serif'},
+                            clearable=False
+                        ),
+                    ], style={'width': '48%'}),
+                    
+                    # To Year dropdown
+                    html.Div([
+                        dcc.Dropdown(
+                            id={
+                                "type": "filter-dropdown",
+                                "base_id": self.base_id,
+                                "filter_id": f"{config.id}_to"
+                            },
+                            options=[{'label': str(year), 'value': year} for year in years],
+                            value=config.default_value.get('to', max_year),
+                            placeholder="To",
+                            style={'fontFamily': 'Roboto, sans-serif'},
+                            clearable=False
+                        ),
+                    ], style={'width': '48%'})
+                ], style={
+                    'display': 'flex',
+                    'justifyContent': 'space-between',
+                    'alignItems': 'center',
+                    'width': '100%',
+                    'marginTop': '5px'
+                })
+            ], style={
+                "marginBottom": "20px",
+                "width": "100%",
+                "position": "relative",
+                "zIndex": "auto"
+            })
+        
+        # Regular dropdown
         return html.Div([
             html.Label(
                 config.label,
-                style={'fontFamily': 'Roboto', 'fontWeight': '500'}
+                style={'fontFamily': 'Roboto, sans-serif', 'fontWeight': '500'}
             ),
             dcc.Dropdown(
                 id={
@@ -186,7 +255,7 @@ class FilterManager:
                 multi=config.multi,
                 placeholder=f"Select {config.label}",
                 style={
-                    'fontFamily': 'Roboto'
+                    'fontFamily': 'Roboto, sans-serif'
                 },
                 clearable=False if not config.multi else True,
                 persistence=True,
@@ -196,8 +265,74 @@ class FilterManager:
                 className='dash-dropdown'
             ),
         ], style={
-            "marginBottom": "20px", 
-            "width": "100%", 
-            "position": "relative", 
+            "marginBottom": "20px",
+            "width": "100%",
+            "position": "relative",
+            "zIndex": "auto"
+        })
+
+    def _create_year_range(self, config: FilterConfig) -> html.Div:
+        """Create a year range filter component"""
+        years = sorted(self.df[config.column].unique())
+        min_year, max_year = min(years), max(years)
+
+        @self.app.callback(
+            Output({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_to"}, "options"),
+            Input({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_from"}, "value")
+        )
+        def update_to_year_options(from_year):
+            if from_year is None:
+                from_year = min_year
+            # Update to_year options to only show years >= from_year
+            return [{'label': str(year), 'value': year} for year in years if year >= from_year]
+        
+        return html.Div([
+            html.Label(
+                config.label,
+                style={'fontFamily': 'Roboto, sans-serif', 'fontWeight': '500'}
+            ),
+            html.Div([
+                # From Year dropdown
+                html.Div([
+                    dcc.Dropdown(
+                        id={
+                            "type": "filter-dropdown",
+                            "base_id": self.base_id,
+                            "filter_id": f"{config.id}_from"
+                        },
+                        options=[{'label': str(year), 'value': year} for year in years],
+                        value=min_year,
+                        placeholder="From",
+                        style={'fontFamily': 'Roboto, sans-serif'},
+                        clearable=False
+                    ),
+                ], style={'width': '48%'}),
+                
+                # To Year dropdown
+                html.Div([
+                    dcc.Dropdown(
+                        id={
+                            "type": "filter-dropdown",
+                            "base_id": self.base_id,
+                            "filter_id": f"{config.id}_to"
+                        },
+                        options=[{'label': str(year), 'value': year} for year in years if year >= min_year],
+                        value=max_year,
+                        placeholder="To",
+                        style={'fontFamily': 'Roboto, sans-serif'},
+                        clearable=False
+                    ),
+                ], style={'width': '48%'})
+            ], style={
+                'display': 'flex',
+                'justifyContent': 'space-between',
+                'alignItems': 'center',
+                'width': '100%',
+                'marginTop': '5px'
+            })
+        ], style={
+            "marginBottom": "20px",
+            "width": "100%",
+            "position": "relative",
             "zIndex": "auto"
         })

@@ -90,3 +90,40 @@ def load_energyforecast_data():
     forecast_avg = (forecast_df['annual_electricity_consumption_twh_']
     )
     return forecast_df, forecast_avg
+
+
+def load_reporting_data():
+    current_dir = Path(__file__).parent
+    data_path = current_dir.parent / 'data' / 'modules.xlsx'
+    
+    # import and clean energy consumption data
+    # import and clean energy consumption data
+    company_total_ec_df = pd.read_excel(data_path, sheet_name='Company Total Electricity Use', skiprows=1)
+    company_total_ec_df = company_total_ec_df.clean_names()
+    company_total_ec_df.rename(columns={'company': 'company_name'}, inplace=True)
+    company_total_ec_df = company_total_ec_df[['company_name', 'reported_data_year']]
+    company_total_ec_df = company_total_ec_df.dropna(subset=['reported_data_year']) # remove rows with no data
+
+    dc_ec_df = pd.read_excel(data_path, sheet_name='Data Center Electricity Use ', skiprows=1)
+    dc_ec_df = dc_ec_df.clean_names()
+    dc_ec_df = dc_ec_df[['company_name', 'reported_data_year']]
+
+    dc_fuel_df = pd.read_excel(data_path, sheet_name='Data Center Fuel Use ', skiprows=1)
+    dc_fuel_df = dc_fuel_df.clean_names()
+    dc_fuel_df = dc_fuel_df[['company_name', 'reported_data_year']]
+
+    dc_water_df = pd.read_excel(data_path, sheet_name='Data Center Water Use ', skiprows=1)
+    dc_water_df = dc_water_df.clean_names()
+    dc_water_df = dc_water_df[['company_name', 'reported_data_year']]
+
+    # add a reporting_scope column to each DataFrame
+    company_total_ec_df.loc[:, 'reporting_scope'] = 'Company Wide Electricity Use'
+    dc_ec_df.loc[:, 'reporting_scope'] = 'Data Center Electricity Use'
+    dc_fuel_df.loc[:, 'reporting_scope'] = 'Data Center Fuel Use'
+    dc_water_df.loc[:, 'reporting_scope'] = 'Data Center Water Use'
+
+    # combine all the dfs into one - maintaining the original columns
+    reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df, dc_water_df], axis=0)
+    reporting_df['reported_data_year'] = reporting_df['reported_data_year'].astype(int)
+    
+    return  reporting_df

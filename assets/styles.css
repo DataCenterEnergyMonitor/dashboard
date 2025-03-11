@@ -6,3 +6,79 @@
 .dash-dropdown .Select-value {
     text-overflow: ellipsis;
 }
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.nav-link:hover {
+    color: white !important;
+}
+
+.dropdown-menu {
+    background-color: #343a40;
+}
+
+.dropdown-item {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dropdown-item:hover {
+    background-color: #2c3136;
+    color: white !important;
+}
+
+/* Card hover effect */
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(20, 174, 92, 0.2);
+}
+
+/* default theme colors */
+a {
+    color: inherit;
+}
+
+a:hover {
+    color: inherit;
+}
+
+.navbar {
+    background-color: #0F4D8B !important; /* #343a40; /* Change this to your desired color */
+}
+
+/* Change navbar brand color */
+.navbar-brand {
+    color: #0F4D8B; /* #14AE5C ; */ 
+}
+
+.navbar-brand:hover {
+    color: #ffffff !important; 
+}
+
+body {
+    font-family: 'Roboto', sans-serif; /* Example font */
+}
+
+/* Range Slider Styles */
+.custom-range-slider .rc-slider-track {
+    background-color: #0F4D8B;
+}
+
+.custom-range-slider .rc-slider-handle {
+    border-color: #0F4D8B;
+    background-color: #0F4D8B;
+}
+
+.custom-range-slider .rc-slider-handle:hover {
+    border-color: #0F4D8B; /*#45a049;*/
+}
+
+.custom-range-slider .rc-slider-handle:active {
+    border-color: #0F4D8B; /*#45a049;*/
+    box-shadow: 0 0 5px #0F4D8B;
+}
