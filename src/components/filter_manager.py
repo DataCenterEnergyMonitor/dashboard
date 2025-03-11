@@ -277,25 +277,14 @@ class FilterManager:
         min_year, max_year = min(years), max(years)
 
         @self.app.callback(
-            [Output({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_to"}, "options"),
-             Output({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_to"}, "value")],
-            [Input({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_from"}, "value"),
-             State({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_to"}, "value")]
+            Output({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_to"}, "options"),
+            Input({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_from"}, "value")
         )
-        def update_to_year(from_year, current_to_year):
+        def update_to_year_options(from_year):
             if from_year is None:
                 from_year = min_year
-                
-            # Update options to only show years >= from_year
-            options = [{'label': str(year), 'value': year} for year in years if year >= from_year]
-            
-            # Update value if needed
-            if current_to_year is None or current_to_year < from_year:
-                new_value = from_year
-            else:
-                new_value = current_to_year
-                
-            return options, new_value
+            # Update to_year options to only show years >= from_year
+            return [{'label': str(year), 'value': year} for year in years if year >= from_year]
         
         return html.Div([
             html.Label(
