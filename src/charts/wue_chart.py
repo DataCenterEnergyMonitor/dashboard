@@ -1,7 +1,24 @@
 import plotly.express as px
 from .styles import get_common_chart_layout
 
-def create_wue_scatter_plot(filtered_df, selected_scope, industry_avg=None):
+def create_wue_scatter_plot(filtered_df, selected_scope="Fleet-wide", industry_avg=None):
+    if filtered_df.empty or selected_scope is None:
+        # Return an empty figure with a message
+        return {
+            'data': [],
+            'layout': {
+                'xaxis': {'visible': False},
+                'yaxis': {'visible': False},
+                'annotations': [{
+                    'text': 'No data available for the selected filters',
+                    'xref': 'paper',
+                    'yref': 'paper',
+                    'showarrow': False,
+                    'font': {'size': 20}
+                }]
+            }
+        }
+    
     wue_fig = px.scatter(
         filtered_df,
         x='applicable_year',

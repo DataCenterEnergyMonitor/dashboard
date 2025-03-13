@@ -104,11 +104,11 @@ def load_reporting_data():
     company_total_ec_df = company_total_ec_df[['company_name', 'reported_data_year']]
     company_total_ec_df = company_total_ec_df.dropna(subset=['reported_data_year']) # remove rows with no data
 
-    dc_ec_df = pd.read_excel(data_path, sheet_name='Data Center Electricity Use ', skiprows=1)
+    dc_ec_df = pd.read_excel(data_path, sheet_name='Data Center Electricity Use', skiprows=1)
     dc_ec_df = dc_ec_df.clean_names()
     dc_ec_df = dc_ec_df[['company_name', 'reported_data_year']]
 
-    dc_fuel_df = pd.read_excel(data_path, sheet_name='Data Center Fuel Use ', skiprows=1)
+    dc_fuel_df = pd.read_excel(data_path, sheet_name='Data Center Fuel Use', skiprows=1)
     dc_fuel_df = dc_fuel_df.clean_names()
     dc_fuel_df = dc_fuel_df[['company_name', 'reported_data_year']]
 
@@ -125,5 +125,9 @@ def load_reporting_data():
     # combine all the dfs into one - maintaining the original columns
     reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df, dc_water_df], axis=0)
     reporting_df['reported_data_year'] = reporting_df['reported_data_year'].astype(int)
+
+    # strip whitespace from all string columns
+    for col in reporting_df.select_dtypes(include='object').columns:
+        reporting_df[col] = reporting_df[col].str.strip()
     
     return  reporting_df

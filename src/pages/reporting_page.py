@@ -1,8 +1,6 @@
 from dash import html, dcc
-import dash_bootstrap_components as dbc
 from components.filter_manager import FilterManager, FilterConfig
 from layouts.base_layout import create_base_layout
-from components.filter_panel import create_filter_panel
 
 def create_reporting_page(app, reporting_df):
     """Create the reporting page with year range filter"""
@@ -18,119 +16,33 @@ def create_reporting_page(app, reporting_df):
         )
     ]
     
-    # Create filter manager
+    # Create filter manager and get filter components
     reporting_filter_manager = FilterManager(app, "reporting", reporting_df, reporting_filters)
-    
-    # Get filter components
     filter_components = reporting_filter_manager.create_filter_components()
-    
-    # Extract download button and component
-    download_button = html.Button(
-        "Download Data",
-        id="reporting-download-button",
-        style={
-            'backgroundColor': '#4CAF50',
-            'color': 'white',
-            'padding': '8px 16px',
-            'border': 'none',
-            'borderRadius': '4px',
-            'cursor': 'pointer',
-            'fontFamily': 'Roboto, sans-serif',
-            'fontWeight': '500',
-            'fontSize': '14px'
-        }
-    )
-    download_component = dcc.Download(id="reporting-download-data")
 
-    # Main content
     content = html.Div([
-        # Main content container with flex layout
+        # Left side - Filter Panel
         html.Div([
-            # Left side - Filter Panel
-            html.Div([
-                html.Div([
-                    html.I(className="fas fa-filter", 
-                          style={
-                              'fontSize': '24px', 
-                              'color': '#4CAF50', 
-                              'marginBottom': '20px'})
-                ], style={
-                    'display': 'flex', 
-                    'justifyContent': 'flex-start', 
-                    'width': '100%'}),
-                filter_components
-            ], id='filter-panel', style={
-                'width': '260px',
-                'backgroundColor': 'white',
-                'padding': '20px',
-                'boxShadow': 'none',
-                'height': 'calc(100vh - 76px)',
-                'overflowY': 'auto',
-                'position': 'relative'
-            }),
+            html.I(className="fas fa-filter", style={'fontSize': '24px', 'color': '#4CAF50'}),
+            filter_components
+        ], style={'width': '260px', 'padding': '20px', 'backgroundColor': 'white'}),
+        
+        # Right side - Charts
+        html.Div([
+            html.H1("Trends in Data Center Energy Reporting Over Time"),
             
-            # Right side - Main Content
-            html.Div([
-                html.H1(
-                    "Trends in Data Center Energy Reporting Over Time",
-                    style={
-                        'fontFamily': 'Roboto, sans-serif', 
-                        'fontWeight': '500', 
-                        'marginBottom': '30px',
-                        'fontSize': '32px',
-                        'paddingTop': '0px'
-                    }
-                ),
-                
-                # Download button container
-                html.Div([
-                    download_button,
-                    download_component
-                ], style={
-                    'display': 'flex',
-                    'justifyContent': 'right',
-                    'marginBottom': '10px',
-                    'width': '90%',
-                    'margin': '0 auto',
-                    'paddingRight': '10px',
-                    'paddingBottom': '10px'
-                }),
-                
-                # Chart container
-                html.Div([
-                    # First chart (bar chart)
-                    dcc.Graph(
-                        id='reporting-bar-chart',
-                        style={'height': 'calc(50vh - 200px)', 'width': '100%'},
-                        config={'responsive': True}
-                    ),
-                    
-                    # Timeline chart container
-                    html.Div([
-                        html.Img(
-                            id='timeline-chart',
-                            style={
-                                'width': '100%',
-                                'marginTop': '20px'
-                            }
-                        )
-                    ], id='timeline-container')
-                ], style={
-                    'width': '90%',
-                    'margin': '0 auto'
-                })
-            ], style={
-                'flex': '1',
-                'padding': '30px',
-                'minWidth': '0',
-                'overflow': 'hidden'
-            })
-        ], style={
-            'display': 'flex',
-            'flexDirection': 'row',
-            'minHeight': 'calc(100vh - 40px)',
-            'backgroundColor': '#f8f9fa'
-        })
-    ])
+            # Bar Chart
+            dcc.Graph(
+                id='reporting-bar-chart',
+                style={'height': '500px', 'marginBottom': '20px'}
+            ),
+            
+            # Timeline Chart
+            dcc.Graph(
+                id='timeline-chart',
+                style={'height': '600px'}
+            )
+        ], style={'flex': '1', 'padding': '20px', 'backgroundColor': '#f8f9fa'})
+    ], style={'display': 'flex', 'minHeight': '100vh'})
 
     return create_base_layout(content)

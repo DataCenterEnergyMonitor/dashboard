@@ -43,14 +43,14 @@ def create_app():
             'chart_id': 'pue-scatter-chart',
             'chart_creator': create_pue_scatter_plot,
             'filename': 'pue-data.csv',
-            'filters': ['facility_scope', 'company', 'iea_region', 'iecc_climate_zone_s_', 'geographical_scope', 'pue_measurement_level']
+            'filters': ['facility_scope', 'company', 'iea_region', 'iecc_climate_zone_s_', 'pue_measurement_level']
         },
         'wue-scatter': {
             'base_id': 'wue',
             'chart_id': 'wue-scatter-chart',
             'chart_creator': create_wue_scatter_plot,
             'filename': 'wue-data.csv',
-            'filters': ['facility_scope', 'company', 'geographical_scope']
+            'filters': ['facility_scope', 'company']
         }
     }
 

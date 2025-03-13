@@ -23,126 +23,122 @@ class ChartCallbackManager:
             base_id = config['base_id']
             chart_id = config['chart_id']
             
-            # Define inputs based on the specific chart type
-            inputs = [
-                Input(
-                    {"type": "filter-dropdown", "base_id": base_id, "filter_id": filter_id},
-                    "value"
+            if base_id == 'reporting':
+                # For reporting page, we need both year_range_from and year_range_to inputs
+                @self.app.callback(
+                    [Output('reporting-bar-chart', 'figure'),
+                     Output('timeline-chart', 'figure')],
+                    [Input('url', 'pathname'),
+                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "year_range_from"}, "value"),
+                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "year_range_to"}, "value")]
                 )
-                for filter_id in self._get_filter_ids_for_chart(chart_type)
-            ]
-
-            # Single callback for both charts
-            @self.app.callback(
-                [Output(chart_id, 'figure'),
-                 Output('timeline-chart', 'src', allow_duplicate=True)],
-                inputs,
-                prevent_initial_call='initial_duplicate'
-            )
-            def update_charts(*args, chart_type=chart_type, config=config):
-                print(f"Chart update triggered for {chart_type}")
-                
-                # Get the data for this chart type
-                df = self.data_dict[chart_type]['df'].copy()
-                
-                # Create filter_values dictionary
-                filter_ids = self._get_filter_ids_for_chart(chart_type)
-                filter_values = dict(zip(filter_ids, args))
-                
-                # Apply filters
-                filtered_df = self._apply_filters(df, filter_values)
-                
-                if filtered_df.empty:
-                    empty_fig = {
-                        'data': [],
-                        'layout': {
-                            'xaxis': {'visible': False},
-                            'yaxis': {'visible': False},
-                            'annotations': [{
-                                'text': 'No data available for the selected filters',
-                                'xref': 'paper',
-                                'yref': 'paper',
-                                'showarrow': False,
-                                'font': {'size': 20}
-                            }]
+                def update_reporting_charts(pathname, year_from, year_to):
+                    print(f"Callback triggered with pathname: {pathname}")
+                    print(f"Year range: {year_from} - {year_to}")
+                    
+                    if pathname != '/reporting':
+                        return dash.no_update, dash.no_update
+                    
+                    df = self.data_dict['reporting-bar']['df'].copy()
+                    print(f"Initial dataframe shape: {df.shape}")
+                    
+                    # Create filter values dict
+                    filter_values = {
+                        'year_range': {
+                            'from': year_from,
+                            'to': year_to
                         }
                     }
-                    return empty_fig, None
-
-                try:
-                    # Create bar chart
-                    bar_chart = config['chart_creator'](filtered_df)
                     
-                    # Create timeline chart
-                    timeline_img = create_timeline_chart(filtered_df)
-
-                    return bar_chart, timeline_img
-                except Exception as e:
-                    print(f"Error creating chart: {e}")
-                    error_fig = {
-                        'data': [],
-                        'layout': {
-                            'xaxis': {'visible': False},
-                            'yaxis': {'visible': False},
-                            'annotations': [{
-                                'text': f'Error creating chart: {str(e)}',
-                                'xref': 'paper',
-                                'yref': 'paper',
-                                'showarrow': False,
-                                'font': {'size': 20}
-                            }]
-                        }
-                    }
-                    return error_fig, None
-
-            # Register download callback
-            @self.app.callback(
-                Output(f"{config['base_id']}-download-data", "data"),
-                Input(f"{config['base_id']}-download-button", "n_clicks"),
-                prevent_initial_call=True
-            )
-            def download_data(n_clicks, chart_type=chart_type, config=config):
-                if not n_clicks:
-                    return dash.no_update
-                
-                # Get the complete dataset
-                df = self.data_dict[chart_type]['df']
+                    filtered_df = self._apply_filters(df, filter_values)
+                    print(f"Filtered dataframe shape: {filtered_df.shape}")
                     
-                return dcc.send_data_frame(
-                    df.to_csv, 
-                    filename=config['filename'],
-                    index=False
+                    try:
+                        bar_chart = self.chart_configs['reporting-bar']['chart_creator'](filtered_df)
+                        timeline_chart = create_timeline_chart(filtered_df)
+                        return bar_chart, timeline_chart
+                    except Exception as e:
+                        print(f"Error creating charts: {e}")
+                        return dash.no_update, dash.no_update
+            else:
+                @self.app.callback(
+                    Output(chart_id, 'figure'),
+                    [Input('url', 'pathname')] + [
+                        Input(
+                            {"type": "filter-dropdown", "base_id": base_id, "filter_id": filter_id},
+                            "value"
+                        )
+                        for filter_id in config['filters']  # Use config's filters directly
+                    ]
                 )
+                def update_chart(pathname, *args, chart_type=chart_type, config=config):
+                    print(f"Update chart callback for {chart_type}")
+                    expected_pathname = f'/{chart_type.split("-")[0]}'  # Handle 'pue-scatter' -> '/pue'
+                    if pathname != expected_pathname:
+                        return dash.no_update
+                    
+                    df = self.data_dict[chart_type]['df'].copy()
+                    print(f"Initial {chart_type} dataframe shape: {df.shape}")
+                    
+                    filter_ids = config['filters']
+                    filter_values = dict(zip(filter_ids, args))
+                    print(f"Filter values for {chart_type}: {filter_values}")
+                    
+                    filtered_df = self._apply_filters(df, filter_values)
+                    print(f"Filtered {chart_type} dataframe shape: {filtered_df.shape}")
+                    
+                    try:
+                        figure = config['chart_creator'](filtered_df)
+                        print(f"Chart created successfully for {chart_type}")
+                        return figure
+                    except Exception as e:
+                        print(f"Error creating {chart_type} chart: {e}")
+                        return {
+                            'data': [],
+                            'layout': {
+                                'xaxis': {'visible': True},
+                                'yaxis': {'visible': True},
+                                'annotations': [{
+                                    'text': f'Error creating chart: {str(e)}',
+                                    'xref': 'paper',
+                                    'yref': 'paper',
+                                    'showarrow': False,
+                                    'font': {'size': 20}
+                                }]
+                            }
+                        }
 
             self._registered_callbacks.add(callback_key)
 
     def _get_filter_ids_for_chart(self, chart_type: str) -> List[str]:
         """Return the filter IDs needed for each chart type"""
-        if chart_type == 'reporting-bar':
-            return ['year_range_from', 'year_range_to']
-        return self.chart_configs[chart_type]['filters']
+        return self.chart_configs[chart_type].get('filters', [])
 
     def _apply_filters(self, df, filter_values):
         """Apply filters to the dataframe"""
         filtered_df = df.copy()
         
         for filter_id, value in filter_values.items():
-            if not value:
+            if value is None or value == []:
                 continue
-                
-            if '_from' in filter_id or '_to' in filter_id:
-                # Handle year range filter
-                base_id = filter_id.rsplit('_', 1)[0]
-                if f"{base_id}_from" in filter_values and f"{base_id}_to" in filter_values:
-                    from_year = filter_values[f"{base_id}_from"]
-                    to_year = filter_values[f"{base_id}_to"]
-                    if from_year and to_year:
-                        filtered_df = filtered_df[
-                            (filtered_df['reported_data_year'] >= from_year) &
-                            (filtered_df['reported_data_year'] <= to_year)
-                        ]
+
+            if filter_id == 'year_range':
+                try:
+                    if not value:
+                        continue
+                        
+                    from_year = int(value.get('from', min(df['reported_data_year'])))
+                    to_year = int(value.get('to', max(df['reported_data_year'])))
+                    
+                    print(f"Applying year filter: {from_year} to {to_year}")
+                    
+                    filtered_df = filtered_df[
+                        (filtered_df['reported_data_year'] >= from_year) &
+                        (filtered_df['reported_data_year'] <= to_year)
+                    ]
+                except (ValueError, TypeError, AttributeError) as e:
+                    print(f"Error processing year range: {e}")
             else:
-                # Handle regular filters (for scatter plots)
                 if isinstance(value, list):
                     if value and "All" not in value:
                         filtered_df = filtered_df[filtered_df[filter_id].isin(value)]

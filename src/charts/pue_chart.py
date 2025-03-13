@@ -2,7 +2,7 @@ import plotly.express as px
 from .styles import get_common_chart_layout
 import pandas as pd
 
-def create_pue_scatter_plot(filtered_df, selected_scope, industry_avg):
+def create_pue_scatter_plot(filtered_df, selected_scope="Fleet-wide", industry_avg=None):
     if filtered_df.empty or selected_scope is None:
         # Return an empty figure with a message
         return {
