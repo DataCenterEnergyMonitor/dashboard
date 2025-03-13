@@ -18,12 +18,12 @@ def create_section_divider(title):
     return html.Div([
         dbc.Row([
             dbc.Col(
-                html.H2(title, className="text-success", style={'color': '#0F4D8B'}), # section title color: green 14AE5C   
+                html.H2(title, style={'color': '#343a40'}), # section title color: green 14AE5C   
                 width="auto",
                 className="px-2"
             ),
-            dbc.Col(html.Hr(style={'borderColor': '#14AE5C'}), className="my-auto") # divider line color: green 14AE5C
-        ], align="center", className="my-4")
+            dbc.Col(html.Hr(style={'borderColor': '#343a40'}), className="my-auto") # divider line color: green 14AE5C
+        ], align="center", className="my-3")
     ])
 
 def create_card(title, page_info):
@@ -52,7 +52,7 @@ def create_card(title, page_info):
         ),
         href=page_info['route'],
         style={'textDecoration': 'none'},  # Remove underline from links
-        className="m-3"  # Maintain spacing between cards
+        className="p-2"  # Changed from m-3 to p-2 to prevent margin collapse
     )
 
 def create_section(title, pages_dict):
@@ -62,13 +62,15 @@ def create_section(title, pages_dict):
         dbc.Row([
             dbc.Col(
                 create_card(page_title, page_info),
-                width="auto"
+                width="auto",
+                className="p-2"  # Added padding to Col
             )
             for page_title, page_info in pages_dict.items()
         ], 
-        className="flex-wrap justify-content-start g-2"  # Align cards to the left with consistent gap
+        className="flex-wrap justify-content-start g-0",  # Changed g-2 to g-0 since we're using padding
+        style={'margin': '0'}
         )
-    ])
+    ], className="mb-5")
 
 def create_home_page():
     menu_config = load_menu_config()
@@ -96,18 +98,18 @@ def create_home_page():
                 )
             ], className="my-5"),
 
-            # Description
-            dbc.Card(
-                dbc.CardBody([
-                    html.P(
-                        "Welcome to the Data Center Analytics Dashboard. "
-                        "This platform provides comprehensive insights into data center energy reporting metrics.",
-                        className="lead text-center mb-0"
-                    )
-                ]),
-                className="mb-5",
-                style={'borderColor': '#14AE5C'}  # Custom green border
-            ),
+            # # Description
+            # dbc.Card(
+            #     dbc.CardBody([
+            #         html.P(
+            #             "Welcome to the Data Center Analytics Dashboard. "
+            #             "This platform provides comprehensive insights into data center energy reporting metrics.",
+            #             className="lead text-center mb-0"
+            #         )
+            #     ]),
+            #     className="mb-5",
+            #     style={'borderColor': '#14AE5C'}  # Custom green border
+            # ),
 
             # Sections
             *[create_section(category, pages) 

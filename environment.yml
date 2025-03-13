@@ -22,3 +22,4 @@ dependencies:
   - s3fs
   - python-dotenv
   - pyyaml
+  - matplotlib

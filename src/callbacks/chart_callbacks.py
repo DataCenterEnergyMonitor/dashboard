@@ -3,6 +3,7 @@ from dash.dependencies import Output, Input, State
 from dash import callback, Input, Output, ALL, MATCH, callback_context, no_update
 from dash import dcc
 from typing import List
+from charts.timeline_chart import create_timeline_chart
 
 class ChartCallbackManager:
     _registered_callbacks = set()  # Track registered callbacks
@@ -31,12 +32,14 @@ class ChartCallbackManager:
                 for filter_id in self._get_filter_ids_for_chart(chart_type)
             ]
 
+            # Single callback for both charts
             @self.app.callback(
-                Output(chart_id, 'figure'),
+                [Output(chart_id, 'figure'),
+                 Output('timeline-chart', 'src', allow_duplicate=True)],
                 inputs,
-                prevent_initial_call=False
+                prevent_initial_call='initial_duplicate'
             )
-            def update_chart(*args, chart_type=chart_type, config=config):
+            def update_charts(*args, chart_type=chart_type, config=config):
                 print(f"Chart update triggered for {chart_type}")
                 
                 # Get the data for this chart type
@@ -50,7 +53,7 @@ class ChartCallbackManager:
                 filtered_df = self._apply_filters(df, filter_values)
                 
                 if filtered_df.empty:
-                    return {
+                    empty_fig = {
                         'data': [],
                         'layout': {
                             'xaxis': {'visible': False},
@@ -64,19 +67,19 @@ class ChartCallbackManager:
                             }]
                         }
                     }
+                    return empty_fig, None
 
                 try:
-                    if chart_type == 'reporting-bar':
-                        return config['chart_creator'](filtered_df)
-                    else:
-                        return config['chart_creator'](
-                            filtered_df=filtered_df,
-                            selected_scope=filter_values.get('facility_scope'),
-                            industry_avg=self.data_dict[chart_type].get('industry_avg')
-                        )
+                    # Create bar chart
+                    bar_chart = config['chart_creator'](filtered_df)
+                    
+                    # Create timeline chart
+                    timeline_img = create_timeline_chart(filtered_df)
+
+                    return bar_chart, timeline_img
                 except Exception as e:
                     print(f"Error creating chart: {e}")
-                    return {
+                    error_fig = {
                         'data': [],
                         'layout': {
                             'xaxis': {'visible': False},
@@ -90,8 +93,9 @@ class ChartCallbackManager:
                             }]
                         }
                     }
+                    return error_fig, None
 
-            # Simplified download callback for unfiltered data
+            # Register download callback
             @self.app.callback(
                 Output(f"{config['base_id']}-download-data", "data"),
                 Input(f"{config['base_id']}-download-button", "n_clicks"),
@@ -147,16 +151,17 @@ class ChartCallbackManager:
         
         return filtered_df
 
-@callback(
-    Output('reporting-bar-chart', 'figure'),
-    [Input('url', 'pathname'),
-     Input({'type': 'filter-dropdown', 'base_id': 'reporting', 'filter_id': ALL}, 'value')]
-)
-def update_reporting_chart(pathname, filter_values):
-    """Update the reporting bar chart"""
-    if pathname != '/reporting':
-        return dash.no_update
-
-    # Create the bar chart with the full dataset since we have no filters
-    return create_reporting_bar_plot(reporting_df)
+# Remove this callback as it's causing the conflict
+# @callback(
+#     Output('reporting-bar-chart', 'figure'),
+#     [Input('url', 'pathname'),
+#      Input({'type': 'filter-dropdown', 'base_id': 'reporting', 'filter_id': ALL}, 'value')]
+# )
+# def update_reporting_chart(pathname, filter_values):
+#     """Update the reporting bar chart"""
+#     if pathname != '/reporting':
+#         return dash.no_update
+# 
+#     # Create the bar chart with the full dataset since we have no filters
+#     return create_reporting_bar_plot(reporting_df)
   

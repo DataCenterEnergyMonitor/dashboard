@@ -77,3 +77,4 @@ def get_bar_chart_layout():
         hovermode='x unified',
         template='simple_white'  # Consistent with other charts
     )
+

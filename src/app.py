@@ -72,6 +72,10 @@ def create_app():
         'reporting-bar': {
             'df': reporting_df,
             'industry_avg': None
+        },
+        'timeline-bar': {
+            'df': reporting_df, # same data source as reporting-bar
+            'industry_avg': None
         }
     }
 
@@ -105,6 +109,13 @@ def create_app():
             'filename': 'reporting-data.csv',
             'filters': ['year_range_from', 'year_range_to']
         }
+        # 'timeline-bar': {
+        #     'base_id': 'timeline',
+        #     'chart_id': 'timeline-bar-chart',
+        #     'chart_creator': create_timeline_bar_plot,
+        #     'filename': 'reporting-data.csv', # a single download button for reporting and timeline charts
+        #     'filters': ['year_range_from', 'year_range_to']
+        # }
     }
 
     # Initialize chart callback manager
@@ -131,7 +142,7 @@ def create_app():
             return create_reporting_page(app, reporting_df)
         elif pathname == '/about':
             return create_about_page()
-        elif pathname == '/data_centers_101':
+        elif pathname == '/data-centers-101':
             return create_data_centers_101_page()
         else:
             return create_home_page()

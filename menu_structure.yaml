@@ -3,11 +3,11 @@ Industry Trends:
   PUE:
     route: /pue
     preview: assets/previews/pue_preview.png
-    description: Analyze Power Usage Effectiveness trends
+    description: Power Usage Effectiveness trends
   WUE:
     route: /wue
     preview: assets/previews/wue_preview.png
-    description: Water Usage Effectiveness analytics
+    description: Water Usage Effectiveness trends
   Energy Forecast:
     route: /energy
     preview: assets/previews/energy_forecast_preview.png
@@ -21,14 +21,14 @@ Industry Trends:
     preview: assets/previews/reporting_trends_preview.png
     description: Industry reporting patterns and insights
   Energy Data Trends:
-    route: /energy_data_trends
+    route: /energy-data-trends
     preview: assets/previews/energy_data_trends_preview.png
-    description: Additional metrics and analysis
+    description: Data center energy consumption metrics
 
 Learn:
   Data Centers 101:
     route: /data-centers-101
-    preview: assets/previews/pue_preview.png
+    preview: assets/previews/data_center_101_preview.svg
     description: Introduction to data center operations
   AI Energy Demand:
     route: /ai-energy

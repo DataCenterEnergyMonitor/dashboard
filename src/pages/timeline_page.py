@@ -46,8 +46,9 @@ def create_reporting_page(app, reporting_df):
     content = html.Div([
         # Main content container with flex layout
         html.Div([
-            # Left side - Filter Panel
+            # Left side - Filter Panel (empty but maintains consistent layout)
             html.Div([
+                # Filter Panel Header with Icon
                 html.Div([
                     html.I(className="fas fa-filter", 
                           style={
@@ -58,6 +59,8 @@ def create_reporting_page(app, reporting_df):
                     'display': 'flex', 
                     'justifyContent': 'flex-start', 
                     'width': '100%'}),
+                
+                # Filter Components (empty in this case)
                 filter_components
             ], id='filter-panel', style={
                 'width': '260px',
@@ -79,7 +82,7 @@ def create_reporting_page(app, reporting_df):
                         'marginBottom': '30px',
                         'fontSize': '32px',
                         'paddingTop': '0px'
-                    }
+                        }
                 ),
                 
                 # Download button container
@@ -98,23 +101,15 @@ def create_reporting_page(app, reporting_df):
                 
                 # Chart container
                 html.Div([
-                    # First chart (bar chart)
                     dcc.Graph(
                         id='reporting-bar-chart',
-                        style={'height': 'calc(50vh - 200px)', 'width': '100%'},
-                        config={'responsive': True}
-                    ),
-                    
-                    # Timeline chart container
-                    html.Div([
-                        html.Img(
-                            id='timeline-chart',
-                            style={
-                                'width': '100%',
-                                'marginTop': '20px'
+                        style={
+                            'height': 'calc(100vh - 400px)',
+                            'width': '100%'},
+                        config={
+                            'responsive': True
                             }
-                        )
-                    ], id='timeline-container')
+                    )
                 ], style={
                     'width': '90%',
                     'margin': '0 auto'

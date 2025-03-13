@@ -9,9 +9,9 @@ REPORTING_SCOPE_COLORS = {
     'Data Center Water Use': '#23CDC6'  
 }
 
-def create_reporting_bar_plot(filtered_df):
+def create_timeline_bar_plot(filtered_df):
     """
-    Create a stacked bar plot showing the number of reporting companies by year and scope.
+    Create a stacked bar plot showing the companies reporting timeline.
     """
     if filtered_df.empty:
         return {
@@ -29,18 +29,18 @@ def create_reporting_bar_plot(filtered_df):
             }
         }
 
-    # Group the data by year and scope, count unique companies
-    grouped_df = (filtered_df
-                 .groupby(['reported_data_year', 'reporting_scope'])
-                 .agg({'company_name': 'nunique'})
-                 .reset_index()
-                 .rename(columns={'company_name': 'num_companies'}))
+    # # Group the data by year and scope, count unique companies
+    # grouped_df = (filtered_df
+    #              .groupby(['reported_data_year', 'reporting_scope'])
+    #              .agg({'company_name': 'nunique'})
+    #              .reset_index()
+    #              .rename(columns={'company_name': 'num_companies'}))
     
     # Create the stacked bar chart
-    reporting_fig = px.bar(
-        grouped_df,
+    timeline_fig = px.bar(
+        filtered_df,
         x='reported_data_year',
-        y='num_companies',
+        y='company_name',
         color='reporting_scope',
         color_discrete_map=REPORTING_SCOPE_COLORS,
         barmode='stack'
