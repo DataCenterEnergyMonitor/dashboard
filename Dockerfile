@@ -29,4 +29,4 @@ EXPOSE 8050
 SHELL ["/bin/bash", "-c"]
 
 # Command to run the application with the conda environment activated
-CMD ["conda", "run", "-n", "dcmonitor", "python", "src/app.py"]
+CMD ["conda", "run", "--no-capture-output", "-n", "dcmonitor", "python", "-u", "src/server.py"]

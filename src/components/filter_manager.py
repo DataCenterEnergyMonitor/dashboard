@@ -9,7 +9,7 @@ class FilterConfig:
     id: str
     label: str
     column: str
-    type: str = "dropdown"  # Can be "dropdown" or "year_range"
+    type: str = "dropdown"  # Can be "dropdown" or "year_range_pair"
     multi: bool = False
     default_value: Any = None
     show_all: bool = True
@@ -170,8 +170,8 @@ class FilterManager:
             for filter_config in self.filters.values():
                 if filter_config.type == "dropdown":
                     filter_components.append(self._create_dropdown(filter_config))
-                elif filter_config.type == "year_range":
-                    filter_components.append(self._create_year_range(filter_config))
+                elif filter_config.type == "year_range_pair":
+                    filter_components.append(self._create_year_range_pair(filter_config))
 
         return html.Div(
             [
@@ -183,7 +183,7 @@ class FilterManager:
         """Create a dropdown filter component"""
         options = self._get_filter_options(config, self.df)
         
-        if config.type == "year_range":
+        if config.type == "year_range_pair":
             years = sorted(self.df[config.column].unique())
             min_year, max_year = min(years), max(years)
             
@@ -271,21 +271,12 @@ class FilterManager:
             "zIndex": "auto"
         })
 
-    def _create_year_range(self, config: FilterConfig) -> html.Div:
-        """Create a year range filter component"""
+    def _create_year_range_pair(self, config: FilterConfig) -> html.Div:
+        """Create a pair of year dropdown filters"""
         years = sorted(self.df[config.column].unique())
         min_year, max_year = min(years), max(years)
-
-        @self.app.callback(
-            Output({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_to"}, "options"),
-            Input({"type": "filter-dropdown", "base_id": self.base_id, "filter_id": f"{config.id}_from"}, "value")
-        )
-        def update_to_year_options(from_year):
-            if from_year is None:
-                from_year = min_year
-            # Update to_year options to only show years >= from_year
-            return [{'label': str(year), 'value': year} for year in years if year >= from_year]
         
+        # Create the container div
         return html.Div([
             html.Label(
                 config.label,
@@ -298,11 +289,11 @@ class FilterManager:
                         id={
                             "type": "filter-dropdown",
                             "base_id": self.base_id,
-                            "filter_id": f"{config.id}_from"
+                            "filter_id": "from_year"
                         },
                         options=[{'label': str(year), 'value': year} for year in years],
-                        value=min_year,
-                        placeholder="From",
+                        value=config.default_value.get('from', min_year),
+                        placeholder="From Year",
                         style={'fontFamily': 'Roboto, sans-serif'},
                         clearable=False
                     ),
@@ -314,11 +305,11 @@ class FilterManager:
                         id={
                             "type": "filter-dropdown",
                             "base_id": self.base_id,
-                            "filter_id": f"{config.id}_to"
+                            "filter_id": "to_year"
                         },
-                        options=[{'label': str(year), 'value': year} for year in years if year >= min_year],
-                        value=max_year,
-                        placeholder="To",
+                        options=[{'label': str(year), 'value': year} for year in years],
+                        value=config.default_value.get('to', max_year),
+                        placeholder="To Year",
                         style={'fontFamily': 'Roboto, sans-serif'},
                         clearable=False
                     ),

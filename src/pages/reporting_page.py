@@ -1,35 +1,41 @@
 from dash import html, dcc
-from components.filter_manager import FilterManager, FilterConfig
+from components.year_range import create_year_range_component
 from layouts.base_layout import create_base_layout
 
 def create_reporting_page(app, reporting_df):
     """Create the reporting page with year range filter"""
-    # Define reporting trends filters
-    reporting_filters = [
-        FilterConfig(
-            id="year_range",
-            label="Year Range",
-            column="reported_data_year",
-            type="year_range",
-            default_value={'from': min(reporting_df['reported_data_year']), 
-                         'to': max(reporting_df['reported_data_year'])}
-        )
-    ]
+    years = sorted(reporting_df['reported_data_year'].unique())
+    min_year, max_year = min(years), max(years)
     
-    # Create filter manager and get filter components
-    reporting_filter_manager = FilterManager(app, "reporting", reporting_df, reporting_filters)
-    filter_components = reporting_filter_manager.create_filter_components()
+    # Create year range filter component
+    year_range_filter = create_year_range_component(
+        base_id="reporting",
+        years=years,
+        default_from=min_year,
+        default_to=max_year
+    )
 
     content = html.Div([
         # Left side - Filter Panel
         html.Div([
-            html.I(className="fas fa-filter", style={'fontSize': '24px', 'color': '#4CAF50'}),
-            filter_components
-        ], style={'width': '260px', 'padding': '20px', 'backgroundColor': 'white'}),
+            year_range_filter
+        ], style={
+            'width': '260px',
+            'padding': '20px',
+            'backgroundColor': '#f8f9fa',
+            'borderRight': '1px solid #dee2e6'
+        }),
         
         # Right side - Charts
         html.Div([
-            html.H1("Trends in Data Center Energy Reporting Over Time"),
+            html.H1(
+                "Trends in Data Center Energy Reporting Over Time",
+                style={
+                    'fontFamily': 'Roboto, sans-serif',
+                    'marginBottom': '20px',
+                    'color': '#2c3e50'
+                }
+            ),
             
             # Bar Chart
             dcc.Graph(
@@ -42,7 +48,15 @@ def create_reporting_page(app, reporting_df):
                 id='timeline-chart',
                 style={'height': '600px'}
             )
-        ], style={'flex': '1', 'padding': '20px', 'backgroundColor': '#f8f9fa'})
-    ], style={'display': 'flex', 'minHeight': '100vh'})
+        ], style={
+            'flex': '1',
+            'padding': '20px',
+            'backgroundColor': '#ffffff'
+        })
+    ], style={
+        'display': 'flex',
+        'minHeight': '100vh',
+        'backgroundColor': '#ffffff'
+    })
 
     return create_base_layout(content)

@@ -14,6 +14,8 @@ from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
+from pages.contact_page import create_contact_page
+
 from pages.energy_forecast_page import create_forecast_page
 from pages.reporting_page import create_reporting_page
 from pages.data_centers_101_page import create_data_centers_101_page
@@ -144,6 +146,8 @@ def create_app():
             return create_about_page()
         elif pathname == '/data-centers-101':
             return create_data_centers_101_page()
+        elif pathname == '/contact':
+            return create_contact_page()
         else:
             return create_home_page()
 

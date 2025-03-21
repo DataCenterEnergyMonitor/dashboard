@@ -24,36 +24,33 @@ class ChartCallbackManager:
             chart_id = config['chart_id']
             
             if base_id == 'reporting':
-                # For reporting page, we need both year_range_from and year_range_to inputs
                 @self.app.callback(
                     [Output('reporting-bar-chart', 'figure'),
                      Output('timeline-chart', 'figure')],
                     [Input('url', 'pathname'),
-                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "year_range_from"}, "value"),
-                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "year_range_to"}, "value")]
+                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "from_year"}, "value"),
+                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "to_year"}, "value")]
                 )
                 def update_reporting_charts(pathname, year_from, year_to):
-                    print(f"Callback triggered with pathname: {pathname}")
-                    print(f"Year range: {year_from} - {year_to}")
-                    
                     if pathname != '/reporting':
                         return dash.no_update, dash.no_update
                     
                     df = self.data_dict['reporting-bar']['df'].copy()
-                    print(f"Initial dataframe shape: {df.shape}")
                     
+                    # Ensure we have valid year values
+                    if year_from is None or year_to is None:
+                        return dash.no_update, dash.no_update
+                        
                     # Create filter values dict
                     filter_values = {
                         'year_range': {
-                            'from': year_from,
-                            'to': year_to
+                            'from': int(year_from),
+                            'to': int(year_to)
                         }
                     }
                     
-                    filtered_df = self._apply_filters(df, filter_values)
-                    print(f"Filtered dataframe shape: {filtered_df.shape}")
-                    
                     try:
+                        filtered_df = self._apply_filters(df, filter_values)
                         bar_chart = self.chart_configs['reporting-bar']['chart_creator'](filtered_df)
                         timeline_chart = create_timeline_chart(filtered_df)
                         return bar_chart, timeline_chart

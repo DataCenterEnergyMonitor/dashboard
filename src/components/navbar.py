@@ -59,6 +59,7 @@ def create_navbar():
                                     )
                                     for category, pages in menu_structure.items()
                                 ],
+                                dbc.NavItem(dbc.NavLink("Contact Us", href="/contact")),
                             ], navbar=True)
                         ]
                     )
