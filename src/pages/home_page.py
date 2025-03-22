@@ -63,13 +63,17 @@ def create_section(title, pages_dict):
             dbc.Col(
                 create_card(page_title, page_info),
                 width="auto",
-                className="p-2"  # Added padding to Col
+                className="p-2 fade-in"  # Add animation class
             )
             for page_title, page_info in pages_dict.items()
-        ], 
-        className="flex-wrap justify-content-start g-0",  # Changed g-2 to g-0 since we're using padding
-        style={'margin': '0'}
-        )
+        ],
+        className="flex-wrap justify-content-start g-0",
+        style={
+            'margin': '0',
+            'background': '#f8f9fa',  # Light background
+            'borderRadius': '8px',
+            'padding': '20px'
+        })
     ], className="mb-5")
 
 def create_home_page():
@@ -89,7 +93,8 @@ def create_home_page():
             # Title
             html.H1(
                 site_config.get('title', 'Data Center Energy Monitor'),
-                className="text-center"
+                className="text-center",
+                style={'fontFamily': 'Poppins, sans-serif'}
             )
         ], className="my-5"),
 
@@ -98,17 +103,29 @@ def create_home_page():
             *[create_section(category, pages) 
               for category, pages in menu_config.items() 
               if category != 'site_config'],
-
-            # # Footer
-            # html.Footer([
-            #     html.Hr(className="mt-5"),
-            #     html.P(
-            #         "© 2024 Data Center Energy Monitor. All rights reserved.",
-            #         className="text-center text-muted"
-            #     )
-            # ], className="mt-5")
         ], className="container-fluid px-2 px-sm-3 px-md-4 px-lg-5", 
-           style={'maxWidth': '1400px'})  # Responsive padding classes
+           style={'maxWidth': '1400px'}),  # Added comma here
+
+        # Back to Top button
+        html.Button(
+            "↑",
+            id="back-to-top",
+            className="back-to-top-btn",
+            style={
+                'position': 'fixed',
+                'bottom': '20px',
+                'right': '20px',
+                'display': 'none',
+                'borderRadius': '50%',
+                'width': '40px',
+                'height': '40px',
+                'backgroundColor': '#007bff',
+                'color': 'white',
+                'border': 'none',
+                'cursor': 'pointer',
+                'zIndex': 1000
+            }
+        )
     ])
 
     return create_base_layout(content)
