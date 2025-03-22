@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 from components.filter_manager import FilterManager, FilterConfig
 from components.navbar import create_navbar
 from components.filter_panel import create_filter_panel
+from layouts.base_layout import create_base_layout
 
 def create_wue_page(app, wue_df, company_counts):
     # Define WUE-specific filters with dependencies
@@ -51,8 +52,8 @@ def create_wue_page(app, wue_df, company_counts):
     )
     download_component = dcc.Download(id=f"wue-download-data")
     
-    return html.Div([
-        create_navbar(),
+    content = html.Div([
+        # Main content container
         html.Div([
             # Left side - Filter Panel
             html.Div([
@@ -131,6 +132,8 @@ def create_wue_page(app, wue_df, company_counts):
             'backgroundColor': '#f8f9fa'
         })
     ])
+
+    return create_base_layout(content)
 
     #         wue_filter_manager.create_filter_components(),
     #         dcc.Graph(id='wue-scatter-chart')

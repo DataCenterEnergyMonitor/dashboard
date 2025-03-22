@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 from components.filter_manager import FilterManager, FilterConfig
 from components.navbar import create_navbar
 from components.filter_panel import create_filter_panel
+from layouts.base_layout import create_base_layout
 
 def create_pue_page(app, pue_df, company_counts):
     # Define PUE-specific filters with dependencies
@@ -81,8 +82,7 @@ def create_pue_page(app, pue_df, company_counts):
     )
     download_component = dcc.Download(id=f"pue-download-data")
     
-    return html.Div([
-        create_navbar(),
+    content = html.Div([
         # Main content container
         html.Div([
             # Left side - Filter Panel
@@ -161,3 +161,5 @@ def create_pue_page(app, pue_df, company_counts):
             'backgroundColor': '#f8f9fa'
         })
     ])
+
+    return create_base_layout(content)

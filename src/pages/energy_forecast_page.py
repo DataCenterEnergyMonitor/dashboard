@@ -49,65 +49,86 @@ def create_forecast_page(app, forecast_df):
     print("Created filter components")
     
     content = html.Div([
-        # Left side - Filter Panel
+        # Main content container
         html.Div([
-            create_filter_panel(filter_components)
-        ], style={
-            'width': '260px',
-            'padding': '20px',
-            'backgroundColor': '#f8f9fa',
-            'borderRight': '1px solid #dee2e6'
-        }),
-        
-        # Right side - Main Content
-        html.Div([
-            html.H1(
-                "Energy Forecasts for Data Centers",
-                style={
-                    'fontFamily': 'Roboto, sans-serif',
-                    'fontWeight': '500',
-                    'marginBottom': '10px',
-                    'fontSize': '32px'
-                }
-            ),
+            # Left side - Filter Panel
             html.Div([
-                html.P([
-                    "Reported Energy Consumption Trends and Predictions for Data Center",
-                    html.Br()
-                ], style={
-                    'fontFamily': 'Roboto, sans-serif',
-                    'marginBottom': '20px',
-                    'color': '#404040',
-                    'fontSize': '16px'
-                })
-            ]),
+                create_filter_panel(filter_components)
+            ], style={
+                'width': '260px',
+                'flexShrink': '0',
+                'backgroundColor': '#f8f9fa',
+                'borderRight': '1px solid #dee2e6'
+            }),
             
+            # Right side - Main Content
             html.Div([
-                # Download button above chart
-                create_download_button(
-                    button_id="btn-download-forecast-data",
-                    download_id="download-forecast-data"
+                html.H1(
+                    "Energy Forecasts for Data Centers",
+                    style={
+                        'fontFamily': 'Roboto, sans-serif',
+                        'fontWeight': '500',
+                        'marginBottom': '10px',
+                        'fontSize': '32px',
+                        'paddingTop': '0px'
+                    }
                 ),
+                html.Div([
+                    html.P([
+                        "Reported Energy Consumption Trends and Predictions for Data Center",
+                    ], style={
+                        'fontFamily': 'Roboto, sans-serif',
+                        'marginBottom': '20px',
+                        'color': '#404040',
+                        'fontSize': '16px'
+                    })
+                ]),
+                
+                # Download button above chart
+                html.Div([
+                    create_download_button(
+                        button_id="btn-download-forecast-data",
+                        download_id="download-forecast-data"
+                    )
+                ], style={
+                    'display': 'flex',
+                    'justifyContent': 'right',
+                    'marginBottom': '10px',
+                    'width': '90%',
+                    'margin': '0 auto',
+                    'paddingRight': '10px',
+                    'paddingBottom': '10px'
+                }),
                 
                 # Chart
-                dcc.Graph(
-                    id='forecast-scatter-chart',
-                    style={'height': '600px'}
-                )
+                html.Div([
+                    dcc.Graph(
+                        id='forecast-scatter-chart',
+                        style={
+                            'height': 'calc(100vh - 400px)',
+                            'width': '100%'
+                        },
+                        config={
+                            'responsive': True
+                        }
+                    )
+                ], style={
+                    'width': '90%',
+                    'margin': '0 auto'
+                })
             ], style={
-                'width': '90%',
-                'margin': '0 auto'
+                'flex': '1',
+                'padding': '30px',
+                'minWidth': '0',
+                'overflow': 'hidden'
             })
         ], style={
-            'flex': '1',
-            'padding': '30px',
-            'backgroundColor': '#ffffff'
+            'display': 'flex',
+            'flexDirection': 'row',
+            'minHeight': 'calc(100vh - 40px)',
+            'backgroundColor': '#f8f9fa'
         })
-    ], style={
-        'display': 'flex',
-        'minHeight': 'calc(100vh - 40px)',
-        'backgroundColor': '#ffffff'
-    })
+    ])
 
     return create_base_layout(content)
 
