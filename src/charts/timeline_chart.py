@@ -8,7 +8,7 @@ REPORTING_SCOPE_COLORS = {
     'Both': '#4CAF50'
 }
 
-def create_timeline_chart(filtered_df):
+def create_timeline_bar_plot(filtered_df):
     """Create a heatmap showing companies' reporting patterns over time."""
     if filtered_df.empty:
         return {

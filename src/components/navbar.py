@@ -42,7 +42,6 @@ def create_navbar():
                             dbc.Nav([
                                 dbc.NavItem(dbc.NavLink("Home", href="/")),
                                 dbc.NavItem(dbc.NavLink("About", href="/about")),
-                                
                                 # Dynamic Dropdowns from YAML config
                                 *[
                                     dbc.DropdownMenu(

@@ -20,11 +20,13 @@ from pages.energy_forecast_page import create_forecast_page
 from pages.reporting_page import create_reporting_page
 from pages.data_centers_101_page import create_data_centers_101_page
 
-from callbacks.chart_callbacks import ChartCallbackManager
 from charts.pue_chart import create_pue_scatter_plot
 from charts.wue_chart import create_wue_scatter_plot
 from charts.forecast_chart import create_forecast_scatter_plot
 from charts.reporting_barchart import create_reporting_bar_plot
+from charts.timeline_chart import create_timeline_bar_plot
+from callbacks.base_chart_callback import create_chart_callback
+from callbacks.reporting_callbacks import create_reporting_callback, create_reporting_download_callback
 
 def create_app():
     # Get absolute path to assets folder
@@ -54,74 +56,89 @@ def create_app():
     # Load data
     pue_df, company_counts, pue_industry_avg = load_pue_data()
     wue_df, wue_company_counts, wue_industry_avg = load_wue_data()
-    forecast_df,forecast_avg = load_energyforecast_data()
+    forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
 
     # Create data dictionary for charts
     data_dict = {
         'pue-scatter': {
             'df': pue_df,
-            'industry_avg': None
+            'industry_avg': pue_industry_avg
         },
         'wue-scatter': {
             'df': wue_df,
-            'industry_avg': None
+            'industry_avg': wue_industry_avg
         },
         'forecast-scatter': {
             'df': forecast_df,
             'industry_avg': None
         },
         'reporting-bar': {
-            'df': reporting_df,
-            'industry_avg': None
+            'df': reporting_df
         },
-        'timeline-bar': {
-            'df': reporting_df, # same data source as reporting-bar
-            'industry_avg': None
+        'timeline-bar': {  # Add this for timeline chart
+            'df': reporting_df
         }
     }
 
     # Define chart configurations
     chart_configs = {
         'pue-scatter': {
-            'base_id': 'pue', #which filters to use
+            'base_id': 'pue',
             'chart_id': 'pue-scatter-chart',
             'chart_creator': create_pue_scatter_plot,
             'filename': 'pue-data.csv',
-            'filters': ['facility_scope', 'company', 'iea_region', 'iecc_climate_zone_s_', 'pue_measurement_level']
+            'filters': ['facility_scope', 
+                        'company', 
+                        'iea_region', 
+                        'iecc_climate_zone_s_', 
+                        'pue_measurement_level'],
+            'download_id': 'download-pue-data'  # Add download button ID
         },
         'wue-scatter': {
             'base_id': 'wue',
             'chart_id': 'wue-scatter-chart',
             'chart_creator': create_wue_scatter_plot,
             'filename': 'wue-data.csv',
-            'filters': ['facility_scope', 'company']
+            'filters': ['facility_scope', 
+                        'company'],
+            'download_id': 'download-wue-data'  # Add download button ID
         },
         'forecast-scatter': {
-            'base_id': 'energy',
+            'base_id': 'forecast',
             'chart_id': 'forecast-scatter-chart',
             'chart_creator': create_forecast_scatter_plot,
             'filename': 'forecast-data.csv',
-            'filters': ['geographic_scope', 'peer_reviewed_', 'author_type_s_']
+            'filters': ['geographic_scope', 
+                        'peer_reviewed_', 
+                        'author_type_s_'],
+            'download_id': 'download-forecast-data'  # Add download button ID
         },
         'reporting-bar': {
             'base_id': 'reporting',
             'chart_id': 'reporting-bar-chart',
             'chart_creator': create_reporting_bar_plot,
             'filename': 'reporting-data.csv',
-            'filters': ['year_range_from', 'year_range_to']
+            'filters': ['from_year', 
+                        'to_year'],
+            'download_id': 'download-reporting-data'  # Add download button ID
+        },
+        'timeline-bar': {  # Add timeline chart config
+            'base_id': 'reporting',
+            'chart_id': 'timeline-bar-chart',
+            'chart_creator': create_timeline_bar_plot,
+            'filename': 'reporting-data.csv',
+            'filters': ['from_year', 
+                        'to_year']
         }
-        # 'timeline-bar': {
-        #     'base_id': 'timeline',
-        #     'chart_id': 'timeline-bar-chart',
-        #     'chart_creator': create_timeline_bar_plot,
-        #     'filename': 'reporting-data.csv', # a single download button for reporting and timeline charts
-        #     'filters': ['year_range_from', 'year_range_to']
-        # }
     }
 
-    # Initialize chart callback manager
-    chart_manager = ChartCallbackManager(app, data_dict, chart_configs)
+    # Initialize callbacks
+    pue_callback = create_chart_callback(app, data_dict, chart_configs['pue-scatter'])
+    wue_callback = create_chart_callback(app, data_dict, chart_configs['wue-scatter'])
+    forecast_callback = create_chart_callback(app, data_dict, chart_configs['forecast-scatter'])
+    reporting_callback = create_reporting_callback(app, data_dict, chart_configs)
+    reporting_download_callback = create_reporting_download_callback(app, data_dict)
 
     # URL Routing
     app.layout = html.Div([
@@ -134,21 +151,22 @@ def create_app():
         Input('url', 'pathname')
     )
     def display_page(pathname):
+        print(f"\nRouting request for pathname: {pathname}")  # Debug print
         if pathname == '/pue':
             return create_pue_page(app, pue_df, company_counts)
         elif pathname == '/wue':
             return create_wue_page(app, wue_df, wue_company_counts)
-        elif pathname == '/energy':
+        elif pathname == '/forecast':  # This should match the link in your navigation
+            print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)
         elif pathname == '/reporting':
-            return create_reporting_page(app, reporting_df)
+            return create_reporting_page(app, reporting_df, data_dict, chart_configs)
         elif pathname == '/about':
             return create_about_page()
-        elif pathname == '/data-centers-101':
-            return create_data_centers_101_page()
         elif pathname == '/contact':
             return create_contact_page()
         else:
+            print(f"No route match, defaulting to home page")  # Debug print
             return create_home_page()
 
     # Navbar toggle callback - moved inside create_app()

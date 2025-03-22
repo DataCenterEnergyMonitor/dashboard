@@ -1,13 +1,16 @@
 from dash import html, dcc
+import dash_bootstrap_components as dbc
 from components.year_range import create_year_range_component
+from components.download_button import create_download_button
 from layouts.base_layout import create_base_layout
+from callbacks.reporting_callbacks import create_reporting_callback
 
-def create_reporting_page(app, reporting_df):
+def create_reporting_page(app, reporting_df, data_dict, chart_configs):
     """Create the reporting page with year range filter"""
     years = sorted(reporting_df['reported_data_year'].unique())
     min_year, max_year = min(years), max(years)
     
-    # Create year range filter component
+    # Create year range filter using the component
     year_range_filter = create_year_range_component(
         base_id="reporting",
         years=years,
@@ -33,21 +36,33 @@ def create_reporting_page(app, reporting_df):
                 style={
                     'fontFamily': 'Roboto, sans-serif',
                     'marginBottom': '20px',
-                    'color': '#2c3e50'
+                    'color': '#2c3e50',
+                    'fontSize': '16px'
                 }
             ),
             
-            # Bar Chart
-            dcc.Graph(
-                id='reporting-bar-chart',
-                style={'height': '500px', 'marginBottom': '20px'}
-            ),
-            
-            # Timeline Chart
-            dcc.Graph(
-                id='timeline-chart',
-                style={'height': '600px'}
-            )
+            html.Div([
+                # Download button above charts
+                create_download_button(
+                    button_id="btn-download-reporting-data",
+                    download_id="download-reporting-data"
+                ),
+                
+                # Bar Chart
+                dcc.Graph(
+                    id='reporting-bar-chart',
+                    style={'height': '500px', 'marginBottom': '20px'}
+                ),
+                
+                # Timeline Chart
+                dcc.Graph(
+                    id='timeline-bar-chart',
+                    style={'height': '600px'}
+                )
+            ], style={
+                'width': '90%',
+                'margin': '0 auto'
+            })
         ], style={
             'flex': '1',
             'padding': '20px',

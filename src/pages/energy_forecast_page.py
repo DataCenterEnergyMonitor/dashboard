@@ -1,18 +1,21 @@
 from dash import html, dcc
 from components.filter_manager import FilterManager, FilterConfig
 from components.navbar import create_navbar
+from components.filter_panel import create_filter_panel
+from components.download_button import create_download_button
+from layouts.base_layout import create_base_layout
 
 def create_forecast_page(app, forecast_df):
-    print("Forecast DataFrame shape:", forecast_df.shape)
-    print("Forecast DataFrame columns:", forecast_df.columns)
-    print("Sample data:", forecast_df.head())
+    print("\nCreating forecast page")
+    print("Forecast data shape:", forecast_df.shape)
+    
     # Define Energy Forecast-specific filters with dependencies
     forecast_filters = [
         FilterConfig(
             id="geographic_scope",
             label="Location",
             column="geographic_scope",
-            multi=False,
+            multi=True,
             default_value="Global",
             show_all=False,
             depends_on=None
@@ -26,7 +29,7 @@ def create_forecast_page(app, forecast_df):
             show_all=True,
             depends_on=None
         ),
-                FilterConfig(
+        FilterConfig(
             id="author_type_s_",
             label="Author Type",
             column="author_type_s_",
@@ -37,30 +40,74 @@ def create_forecast_page(app, forecast_df):
         ) 
     ]
     
-    # Initialize forecast-specific filter manager
-    forecast_filter_manager = FilterManager(app, "energy", forecast_df, forecast_filters)
+    print("Filter configurations:", [f.id for f in forecast_filters])
     
-    return html.Div([
-        create_navbar(),
+    # Initialize forecast-specific filter manager
+    forecast_filter_manager = FilterManager(app, "forecast", forecast_df, forecast_filters)
+    filter_components = forecast_filter_manager.create_filter_components()
+    
+    print("Created filter components")
+    
+    content = html.Div([
+        # Left side - Filter Panel
+        html.Div([
+            create_filter_panel(filter_components)
+        ], style={
+            'width': '260px',
+            'padding': '20px',
+            'backgroundColor': '#f8f9fa',
+            'borderRight': '1px solid #dee2e6'
+        }),
+        
+        # Right side - Main Content
         html.Div([
             html.H1(
                 "Energy Forecasts for Data Centers",
-                style={'fontFamily': 'Roboto', 'fontWeight': '500', 'marginBottom': '30px', 'fontSize': '32px'}
+                style={
+                    'fontFamily': 'Roboto, sans-serif',
+                    'fontWeight': '500',
+                    'marginBottom': '10px',
+                    'fontSize': '32px'
+                }
             ),
             html.Div([
                 html.P([
                     "Reported Energy Consumption Trends and Predictions for Data Center",
                     html.Br()
                 ], style={
-                    'fontFamily': 'Roboto',
+                    'fontFamily': 'Roboto, sans-serif',
                     'marginBottom': '20px',
                     'color': '#404040',
-                    'maxWidth': '800px',
                     'fontSize': '16px'
                 })
             ]),
-            forecast_filter_manager.create_filter_components(),
-            dcc.Graph(id='forecast-scatter-chart')
-        ], style={'padding': '20px', 'maxWidth': '1200px', 'margin': 'auto'})
-    ])
+            
+            html.Div([
+                # Download button above chart
+                create_download_button(
+                    button_id="btn-download-forecast-data",
+                    download_id="download-forecast-data"
+                ),
+                
+                # Chart
+                dcc.Graph(
+                    id='forecast-scatter-chart',
+                    style={'height': '600px'}
+                )
+            ], style={
+                'width': '90%',
+                'margin': '0 auto'
+            })
+        ], style={
+            'flex': '1',
+            'padding': '30px',
+            'backgroundColor': '#ffffff'
+        })
+    ], style={
+        'display': 'flex',
+        'minHeight': 'calc(100vh - 40px)',
+        'backgroundColor': '#ffffff'
+    })
+
+    return create_base_layout(content)
 

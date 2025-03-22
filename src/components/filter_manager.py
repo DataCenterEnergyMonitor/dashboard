@@ -26,10 +26,12 @@ class FilterManager:
     _registered_callbacks = set()  # Track registered callbacks
 
     def __init__(self, app, base_id: str, df: pd.DataFrame, filters: List[FilterConfig]):
+        print(f"\nInitializing FilterManager for {base_id}")
         self.app = app
         self.base_id = base_id
         self.df = df
         self.filters = {f.id: f for f in filters}
+        print(f"Filter configs: {[f.id for f in filters]}")
         self._register_callbacks()
 
     def _register_callbacks(self):
@@ -162,7 +164,7 @@ class FilterManager:
         return df
 
     def create_filter_components(self) -> html.Div:
-        """Create all filter components"""
+        print(f"\nCreating filter components for {self.base_id}")
         filter_components = []
         
         # Create filter components for all filters

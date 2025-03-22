@@ -9,7 +9,7 @@ Industry Trends:
     preview: assets/previews/wue_preview.png
     description: Water Usage Effectiveness trends
   Energy Forecast:
-    route: /energy
+    route: /forecast
     preview: assets/previews/energy_forecast_preview.png
     description: Predictive energy consumption analysis
   Company Analysis:
@@ -30,10 +30,6 @@ Learn:
     route: /data-centers-101
     preview: assets/previews/data_center_101_preview.svg
     description: Introduction to data center operations
-  AI Energy Demand:
-    route: /ai-energy
-    preview: assets/previews/pue_preview.png
-    description: AI impact on energy consumption
   Methods:
     route: /methods
     preview: assets/previews/pue_preview.png

@@ -3,7 +3,8 @@ from dash.dependencies import Output, Input, State
 from dash import callback, Input, Output, ALL, MATCH, callback_context, no_update
 from dash import dcc
 from typing import List
-from charts.timeline_chart import create_timeline_chart
+from charts.timeline_chart import create_timeline_bar_plot
+from .reporting_callbacks import register_reporting_callbacks
 
 class ChartCallbackManager:
     _registered_callbacks = set()  # Track registered callbacks
@@ -15,97 +16,67 @@ class ChartCallbackManager:
         self._register_callbacks()
 
     def _register_callbacks(self):
+        """Register callbacks for this specific chart manager instance"""
         for chart_type, config in self.chart_configs.items():
-            callback_key = f"chart_{config['base_id']}"
-            if callback_key in self._registered_callbacks:
-                continue
+            if chart_type not in ['reporting-bar', 'timeline']:  # Skip reporting charts as they're handled separately
+                callback_key = f"chart_{config['base_id']}"
+                if callback_key in self._registered_callbacks:
+                    continue
+                
+                self._register_chart_callback(chart_type, config)
+                self._registered_callbacks.add(callback_key)
 
-            base_id = config['base_id']
-            chart_id = config['chart_id']
+    def _register_chart_callback(self, chart_type, config):
+        """Register callback for a specific chart type"""
+        base_id = config['base_id']
+        chart_id = config['chart_id']
+
+        @self.app.callback(
+            Output(chart_id, 'figure'),
+            [Input('url', 'pathname')] + [
+                Input(
+                    {"type": "filter-dropdown", "base_id": base_id, "filter_id": filter_id},
+                    "value"
+                )
+                for filter_id in config['filters']
+            ]
+        )
+        def update_chart(pathname, *args, chart_type=chart_type, config=config):
+            print(f"Update chart callback for {chart_type}")
+            expected_pathname = f'/{chart_type.split("-")[0]}'  # Handle 'pue-scatter' -> '/pue'
+            if pathname != expected_pathname:
+                return dash.no_update
             
-            if base_id == 'reporting':
-                @self.app.callback(
-                    [Output('reporting-bar-chart', 'figure'),
-                     Output('timeline-chart', 'figure')],
-                    [Input('url', 'pathname'),
-                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "from_year"}, "value"),
-                     Input({"type": "filter-dropdown", "base_id": "reporting", "filter_id": "to_year"}, "value")]
-                )
-                def update_reporting_charts(pathname, year_from, year_to):
-                    if pathname != '/reporting':
-                        return dash.no_update, dash.no_update
-                    
-                    df = self.data_dict['reporting-bar']['df'].copy()
-                    
-                    # Ensure we have valid year values
-                    if year_from is None or year_to is None:
-                        return dash.no_update, dash.no_update
-                        
-                    # Create filter values dict
-                    filter_values = {
-                        'year_range': {
-                            'from': int(year_from),
-                            'to': int(year_to)
-                        }
+            df = self.data_dict[chart_type]['df'].copy()
+            print(f"Initial {chart_type} dataframe shape: {df.shape}")
+            
+            filter_ids = config['filters']
+            filter_values = dict(zip(filter_ids, args))
+            print(f"Filter values for {chart_type}: {filter_values}")
+            
+            filtered_df = self._apply_filters(df, filter_values)
+            print(f"Filtered {chart_type} dataframe shape: {filtered_df.shape}")
+            
+            try:
+                figure = config['chart_creator'](filtered_df)
+                print(f"Chart created successfully for {chart_type}")
+                return figure
+            except Exception as e:
+                print(f"Error creating {chart_type} chart: {e}")
+                return {
+                    'data': [],
+                    'layout': {
+                        'xaxis': {'visible': True},
+                        'yaxis': {'visible': True},
+                        'annotations': [{
+                            'text': f'Error creating chart: {str(e)}',
+                            'xref': 'paper',
+                            'yref': 'paper',
+                            'showarrow': False,
+                            'font': {'size': 20}
+                        }]
                     }
-                    
-                    try:
-                        filtered_df = self._apply_filters(df, filter_values)
-                        bar_chart = self.chart_configs['reporting-bar']['chart_creator'](filtered_df)
-                        timeline_chart = create_timeline_chart(filtered_df)
-                        return bar_chart, timeline_chart
-                    except Exception as e:
-                        print(f"Error creating charts: {e}")
-                        return dash.no_update, dash.no_update
-            else:
-                @self.app.callback(
-                    Output(chart_id, 'figure'),
-                    [Input('url', 'pathname')] + [
-                        Input(
-                            {"type": "filter-dropdown", "base_id": base_id, "filter_id": filter_id},
-                            "value"
-                        )
-                        for filter_id in config['filters']  # Use config's filters directly
-                    ]
-                )
-                def update_chart(pathname, *args, chart_type=chart_type, config=config):
-                    print(f"Update chart callback for {chart_type}")
-                    expected_pathname = f'/{chart_type.split("-")[0]}'  # Handle 'pue-scatter' -> '/pue'
-                    if pathname != expected_pathname:
-                        return dash.no_update
-                    
-                    df = self.data_dict[chart_type]['df'].copy()
-                    print(f"Initial {chart_type} dataframe shape: {df.shape}")
-                    
-                    filter_ids = config['filters']
-                    filter_values = dict(zip(filter_ids, args))
-                    print(f"Filter values for {chart_type}: {filter_values}")
-                    
-                    filtered_df = self._apply_filters(df, filter_values)
-                    print(f"Filtered {chart_type} dataframe shape: {filtered_df.shape}")
-                    
-                    try:
-                        figure = config['chart_creator'](filtered_df)
-                        print(f"Chart created successfully for {chart_type}")
-                        return figure
-                    except Exception as e:
-                        print(f"Error creating {chart_type} chart: {e}")
-                        return {
-                            'data': [],
-                            'layout': {
-                                'xaxis': {'visible': True},
-                                'yaxis': {'visible': True},
-                                'annotations': [{
-                                    'text': f'Error creating chart: {str(e)}',
-                                    'xref': 'paper',
-                                    'yref': 'paper',
-                                    'showarrow': False,
-                                    'font': {'size': 20}
-                                }]
-                            }
-                        }
-
-            self._registered_callbacks.add(callback_key)
+                }
 
     def _get_filter_ids_for_chart(self, chart_type: str) -> List[str]:
         """Return the filter IDs needed for each chart type"""
