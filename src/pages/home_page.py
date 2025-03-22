@@ -1,6 +1,6 @@
 from dash import html
 import dash_bootstrap_components as dbc
-from components.navbar import create_navbar
+from layouts.base_layout import create_base_layout
 import yaml
 import os
 
@@ -76,54 +76,39 @@ def create_home_page():
     menu_config = load_menu_config()
     site_config = menu_config.get('site_config', {})
     
-    return html.Div([
-        # Navigation Bar
-        create_navbar(),
-        
-        # Main Content
+    content = html.Div([
+        # Site Header with Icon above title
         html.Div([
-            # Site Header with Icon above title
+            # Icon centered above title
             html.Div([
-                # Icon centered above title
-                html.Div([
-                    html.Img(
-                        src=site_config.get('header_logo', 'assets/icon.png'),
-                        style={'height': '80px', 'marginBottom': '15px'}  # Added bottom margin
-                    ),
-                ], className="text-center"),
-                # Title
-                html.H1(
-                    site_config.get('title', 'Data Center Energy Monitor'),
-                    className="text-center"
-                )
-            ], className="my-5"),
+                html.Img(
+                    src=site_config.get('header_logo', 'assets/icon.png'),
+                    style={'height': '80px', 'marginBottom': '15px'}
+                ),
+            ], className="text-center"),
+            # Title
+            html.H1(
+                site_config.get('title', 'Data Center Energy Monitor'),
+                className="text-center"
+            )
+        ], className="my-5"),
 
-            # # Description
-            # dbc.Card(
-            #     dbc.CardBody([
-            #         html.P(
-            #             "Welcome to the Data Center Analytics Dashboard. "
-            #             "This platform provides comprehensive insights into data center energy reporting metrics.",
-            #             className="lead text-center mb-0"
-            #         )
-            #     ]),
-            #     className="mb-5",
-            #     style={'borderColor': '#14AE5C'}  # Custom green border
-            # ),
-
-            # Sections
+        # Sections container with responsive margins
+        html.Div([
             *[create_section(category, pages) 
               for category, pages in menu_config.items() 
               if category != 'site_config'],
 
-            # Footer
-            html.Footer([
-                html.Hr(className="mt-5"),
-                html.P(
-                    "© 2024 Data Center Energy Monitor. All rights reserved.",
-                    className="text-center text-muted"
-                )
-            ], className="mt-5")
-            
-        ], className="container py-4")
+            # # Footer
+            # html.Footer([
+            #     html.Hr(className="mt-5"),
+            #     html.P(
+            #         "© 2024 Data Center Energy Monitor. All rights reserved.",
+            #         className="text-center text-muted"
+            #     )
+            # ], className="mt-5")
+        ], className="container-fluid px-2 px-sm-3 px-md-4 px-lg-5", 
+           style={'maxWidth': '1400px'})  # Responsive padding classes
     ])
+
+    return create_base_layout(content)

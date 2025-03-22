@@ -165,6 +165,8 @@ def create_app():
             return create_about_page()
         elif pathname == '/contact':
             return create_contact_page()
+        elif pathname == '/data-centers-101':
+            return create_data_centers_101_page()
         else:
             print(f"No route match, defaulting to home page")  # Debug print
             return create_home_page()
