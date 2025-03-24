@@ -5,8 +5,8 @@ from .styles import get_bar_chart_layout
 REPORTING_SCOPE_COLORS = {
     'Company Wide Electricity Use': 'rgba(23, 79, 138, 0.8)' , # '#174F8AE6', where E6 = 90% opacity
     'Data Center Electricity Use': '#C16597',  
-    'Data Center Fuel Use': '#AACE63', 
-    'Data Center Water Use': '#23CDC6'  
+    'Data Center Fuel Use': '#AACE63'
+    #'Data Center Water Use': '#23CDC6'  
 }
 
 def create_timeline_bar_plot(filtered_df):

@@ -96,14 +96,15 @@ def create_pue_page(app, pue_df, company_counts):
             # Right side - Main Content
             html.Div([
                 html.H1(
-                    "Data Center Power Usage Effectiveness (PUE)",
-                    style={
-                        'fontFamily': 'Roboto, sans-serif',
-                        'fontWeight': '500',
-                        'marginBottom': '10px',
-                        'fontSize': '32px',
-                        'paddingTop': '0px'
-                    }
+                    "Data Center Power Usage Effectiveness",
+                    className="page-title"
+                    # style={
+                    #     'fontFamily': 'Roboto, sans-serif',
+                    #     'fontWeight': '500',
+                    #     'marginBottom': '10px',
+                    #     'fontSize': '28px',
+                    #     'paddingTop': '0px'
+                    # }
                 ),
                 html.Div([
                     html.P([

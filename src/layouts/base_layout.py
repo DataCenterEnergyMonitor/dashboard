@@ -7,13 +7,13 @@ def create_base_layout(content):
         style={
             'display': 'flex',
             'flexDirection': 'column',
-            'minHeight': '100vh'  # Ensure the layout takes at least the full height of the viewport
+            'minHeight': '100vh'  # ensure the layout takes at least the full height of the viewport
         },
         children=[
             create_navbar(),
             html.Div(
                 content,
-                style={'flex': '1'}  # Allow the content area to grow and fill space
+                style={'flex': '1'}  # allow the content area to grow and fill space
             ),
             create_footer()
         ]

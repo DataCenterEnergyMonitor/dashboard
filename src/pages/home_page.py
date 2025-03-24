@@ -94,7 +94,7 @@ def create_home_page():
             html.H1(
                 site_config.get('title', 'Data Center Energy Monitor'),
                 className="text-center",
-                style={'fontFamily': 'Poppins, sans-serif'}
+                style={'fontFamily': 'Montserrat, sans-serif'}
             )
         ], className="my-5"),
 
@@ -104,7 +104,7 @@ def create_home_page():
               for category, pages in menu_config.items() 
               if category != 'site_config'],
         ], className="container-fluid px-2 px-sm-3 px-md-4 px-lg-5", 
-           style={'maxWidth': '1400px'}),  # Added comma here
+           style={'maxWidth': '1400px', 'font-family': 'Inter, sans-serif'}),  # Added comma here
 
         # Back to Top button
         html.Button(

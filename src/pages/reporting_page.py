@@ -33,12 +33,13 @@ def create_reporting_page(app, reporting_df, data_dict, chart_configs):
         html.Div([
             html.H1(
                 "Trends in Data Center Energy Reporting Over Time",
-                style={
-                    'fontFamily': 'Roboto, sans-serif',
-                    'marginBottom': '20px',
-                    'color': '#2c3e50',
-                    'fontSize': '16px'
-                }
+                className="section-title"
+                # style={
+                #     'fontFamily': 'Roboto, sans-serif',
+                #     'marginBottom': '20px',
+                #     'color': '#2c3e50',
+                #     'fontSize': '16px'
+                # }
             ),
             
             html.Div([

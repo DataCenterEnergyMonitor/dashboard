@@ -48,7 +48,8 @@ def create_app():
         external_stylesheets=[
             dbc.themes.BOOTSTRAP,
             'https://use.fontawesome.com/releases/v5.15.4/css/all.css',
-            'https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Montserrat:wght@400;700&family=Poppins:wght@400;700&display=swap'],
+            'https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500&family=Inter:wght@400;500&display=swap',
+            'https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500&display=swap'],
         suppress_callback_exceptions=True,
         assets_folder=assets_path,  # Set absolute path to assets
         assets_url_path='assets'    # Explicitly set the assets URL path

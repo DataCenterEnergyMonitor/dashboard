@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 import janitor
 from janitor import clean_names
+import datetime
 
 def load_pue_data():
     # Get the current file's directory (src folder)
@@ -123,11 +124,50 @@ def load_reporting_data():
     dc_water_df.loc[:, 'reporting_scope'] = 'Data Center Water Use'
 
     # combine all the dfs into one - maintaining the original columns
-    reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df, dc_water_df], axis=0)
+    reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df], axis=0)
     reporting_df['reported_data_year'] = reporting_df['reported_data_year'].astype(int)
 
     # strip whitespace from all string columns
     for col in reporting_df.select_dtypes(include='object').columns:
         reporting_df[col] = reporting_df[col].str.strip()
-    
+
+
+    # companies report the data one year later than the current year
+    current_reporting_year = datetime.datetime.now().year - 1
+    previous_reporting_year = current_reporting_year - 1
+
+    # Strip whitespace from the 'company_name' and 'reporting_scope' columns
+    reporting_df['company_name'] = reporting_df['company_name'].str.strip()
+    reporting_df['reporting_scope'] = reporting_df['reporting_scope'].str.strip()
+
+    # Create a unique DataFrame with necessary columns
+    unique_companies_and_scopes = reporting_df[['company_name', 'reporting_scope', 'reported_data_year']].drop_duplicates(ignore_index=True).dropna()
+
+    # Identify combinations of company_name and reporting_scope with reported_data_year == 2024
+    combinations_to_remove = unique_companies_and_scopes[unique_companies_and_scopes['reported_data_year'] == current_reporting_year][['company_name', 'reporting_scope']]
+
+    # Filter out the combinations to remove using merge
+    unique_companies_and_scopes = unique_companies_and_scopes.merge(combinations_to_remove, on=['company_name', 'reporting_scope'], how='left', indicator=True)
+    unique_companies_and_scopes = unique_companies_and_scopes[unique_companies_and_scopes['_merge'] == 'left_only'].drop(columns='_merge')
+
+    # Filter out the combinations of company_name and reporting_scope with reported_data_year == previous_year
+    unique_companies_and_scopes = unique_companies_and_scopes[unique_companies_and_scopes['reported_data_year'] == previous_reporting_year][['company_name', 'reporting_scope']]
+
+    # Set the reported_data_year to the current year and add reporting_status
+    unique_companies_and_scopes = unique_companies_and_scopes.assign(
+        reported_data_year=  current_reporting_year,
+        reporting_status='Pending data submission'
+    ).drop_duplicates(ignore_index=True)
+
+    # Prepare reporting_df
+    reporting_df['reporting_status'] = 'Reported'
+
+    # Replace 'Samgung' with 'Samsung' in the entire DataFrame
+    reporting_df.replace('Samgung', 'Samsung', inplace=True)
+    reporting_df.dropna(inplace=True)
+
+    # Add unique_companies_and_scopes to the reporting_df
+    reporting_df = pd.concat([reporting_df, unique_companies_and_scopes], ignore_index=True)
+    reporting_df = reporting_df[['company_name', 'reporting_scope', 'reported_data_year','reporting_status']].drop_duplicates(ignore_index=True).dropna()
+        
     return  reporting_df
