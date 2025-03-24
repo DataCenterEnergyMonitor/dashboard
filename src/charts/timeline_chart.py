@@ -2,21 +2,9 @@ import plotly.graph_objects as go
 
 # Update color palette with green shades and better contrast
 REPORTING_SCOPE_COLORS = {
-    # 'No Reporting': '#e0e0e0',  # Light gray
-    # 'Pending': '#E8F5E9',  # Very light green
-    # 'Total Company Energy Use': '#81C784',  # Light green
-    # 'Total Company Electricity Use': '#2E7D32',  # Medium green
-    # 'Data Center Electricity Use': '#1B5E20'  # Dark green
-
-    # 'No Reporting': '#D9DDDC' ,#'rgba(255, 0, 0, 0.15)',  # Light gray '#D9DDDC' E0E0E0
-    # 'Pending': '#F3F8E7',  # Chetwode Green '#F0FFF0' | '#B8E986'
-    # 'Total Company Electricity Use': '#D8E4BC',  # Gin Green | '#5CCD5C',
-    # 'Data Center Fuel Use': '#9DC183',  # Granny Smith | '#2ECC40'
-    # 'Data Center Electricity Use':  '#568203' # Avocado Green | '#568203'
-
     'No Reporting': '#D9DDDC' ,#'rgba(255, 0, 0, 0.15)',  # Light gray '#D9DDDC' E0E0E0
     'Pending': '#EBF4DF',  # Chetwode Green '#F0FFF0' | '#F3F8E7'
-    'Total Company Electricity Use': '#6EC259',  # Gin Green | '#9DC183',
+    'Company Wide Electricity Use': '#6EC259',  # Gin Green | '#9DC183',
     'Data Center Fuel Use': '#337F1A',  # Granny Smith | '#337F1A'
     'Data Center Electricity Use':  '#1A6210' # Avocado Green | '#0B6623'
 }
@@ -87,7 +75,7 @@ def create_timeline_bar_plot(filtered_df):
                         text = f"{company} ({year})<br>Reporting: Data Center Fuel Use"
                     elif 'Company Wide Electricity Use' in scopes:
                         value = 0.4
-                        text = f"{company} ({year})<br>Reporting: Total Company Electricity Use"
+                        text = f"{company} ({year})<br>Reporting: Company Wide Electricity Use"
                     else:
                         value = 0
                         text = f"{company} ({year})<br>No Reporting"
@@ -111,8 +99,8 @@ def create_timeline_bar_plot(filtered_df):
             [0.05, REPORTING_SCOPE_COLORS['No Reporting']],
             [0.05, REPORTING_SCOPE_COLORS['Pending']],         # Pending
             [0.15, REPORTING_SCOPE_COLORS['Pending']],
-            [0.15, REPORTING_SCOPE_COLORS['Total Company Electricity Use']],    # Energy Use
-            [0.45, REPORTING_SCOPE_COLORS['Total Company Electricity Use']],
+            [0.15, REPORTING_SCOPE_COLORS['Company Wide Electricity Use']],    # Energy Use
+            [0.45, REPORTING_SCOPE_COLORS['Company Wide Electricity Use']],
             [0.45, REPORTING_SCOPE_COLORS['Data Center Fuel Use']], # Electricity Use
             [0.75, REPORTING_SCOPE_COLORS['Data Center Fuel Use']],
             [0.75, REPORTING_SCOPE_COLORS['Data Center Electricity Use']],   # Data Center
