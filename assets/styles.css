@@ -106,10 +106,18 @@ body {
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500&display=swap');
 
 /* Typography hierarchy */
-.page-title {
+.landing-page-title {
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
     font-size: 28px;
+    color: #2C3E50;
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 26px;
     color: #2C3E50;
     margin-bottom: 20px;
 }

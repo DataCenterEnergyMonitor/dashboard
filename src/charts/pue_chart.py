@@ -20,6 +20,13 @@ def create_pue_scatter_plot(filtered_df, selected_scope="Fleet-wide", industry_a
             }
         }
 
+    # First create the text columns - only include text if value exists
+    filtered_df['region_text'] = filtered_df['iea_region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+    filtered_df['climate_text'] = filtered_df['iecc_climate_zone_s_'].apply(lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+    filtered_df['location_text'] = filtered_df['geographical_scope'].apply(lambda x: f'Location: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+    filtered_df['measurement_text'] = filtered_df['pue_measurement_level'].apply(lambda x: f'Measurement Level: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+
+    # Then create the scatter plot with the new columns
     pue_fig = px.scatter(
         filtered_df,
         x='applicable_year',
@@ -30,7 +37,7 @@ def create_pue_scatter_plot(filtered_df, selected_scope="Fleet-wide", industry_a
             "real_pue": "Power Usage Effectiveness (PUE)",
             "company": "Company Name"
         },
-        custom_data=['company', 'iea_region', 'iecc_climate_zone_s_','geographical_scope', 'pue_measurement_level']  # Set custom data for hover
+        custom_data=['company', 'region_text', 'climate_text', 'location_text', 'measurement_text']
     )
 
     # Add industry average line
@@ -79,13 +86,14 @@ def create_pue_scatter_plot(filtered_df, selected_scope="Fleet-wide", industry_a
         marker=dict(size=10),
         selector=dict(mode='markers'),
         hovertemplate=(
-            '<b>Company: %{customdata[0]}</b><br>'
-            'Year: %{x}<br>'
-            'PUE: %{y:.2f}<br>'
-            'Region: %{customdata[1]}<br>'
-            'IECC Climate Zone: %{customdata[2]}<br>'
-            'Location: %{customdata[3]}<br>'
-            'Measurement Level: %{customdata[4]}<extra></extra>'
+            '<b>%{customdata[0]}</b><br>' +
+            'Year: %{x}<br>' +
+            'PUE: %{y:.2f}<br>' +
+            '%{customdata[1]}' +  # Region (if exists)
+            '%{customdata[2]}' +  # Climate zone (if exists)
+            '%{customdata[3]}' +  # Location (if exists)
+            '%{customdata[4]}'    # Measurement level (if exists)
+            '<extra></extra>'
         )
     )
 
