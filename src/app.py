@@ -65,11 +65,11 @@ def create_app():
     data_dict = {
         'pue-scatter': {
             'df': pue_df,
-            'industry_avg': pue_industry_avg
+            'industry_avg': None
         },
         'wue-scatter': {
             'df': wue_df,
-            'industry_avg': wue_industry_avg
+            'industry_avg': None
         },
         'forecast-scatter': {
             'df': forecast_df,
@@ -78,7 +78,7 @@ def create_app():
         'reporting-bar': {
             'df': reporting_df
         },
-        'timeline-bar': {  # Add this for timeline chart
+        'timeline-bar': { 
             'df': reporting_df
         }
     }

@@ -22,7 +22,7 @@ def create_pue_page(app, pue_df, company_counts):
             label="Company",
             column="company",
             multi=True,
-            default_value=company_counts,  # List of top 5 companies
+            default_value="All",#company_counts,  # List of top 5 companies
             show_all=True,
             depends_on=["facility_scope"] #fleet/location
         ),
