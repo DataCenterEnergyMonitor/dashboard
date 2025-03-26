@@ -4,6 +4,7 @@ from components.filter_manager import FilterManager, FilterConfig
 from components.navbar import create_navbar
 from components.filter_panel import create_filter_panel
 from layouts.base_layout import create_base_layout
+from components.download_button import create_download_button
 
 def create_pue_page(app, pue_df, company_counts):
     # Define PUE-specific filters with dependencies
@@ -114,8 +115,10 @@ def create_pue_page(app, pue_df, company_counts):
                 
                 # Download button above chart
                 html.Div([
-                    download_button,
-                    download_component
+                    create_download_button(
+                        button_id="btn-download-pue-data",
+                        download_id="download-pue-data"
+                    ),
                 ], style={
                     'display': 'flex',
                     'justifyContent': 'right',

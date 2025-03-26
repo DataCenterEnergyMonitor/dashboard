@@ -9,16 +9,15 @@ from layouts.base_layout import create_base_layout
 current_reporting_year = datetime.now().year - 1
 previous_reporting_year = current_reporting_year - 1
 
-def create_energy_use_page(app, energy_use_df):
-    # Define energy use filters
-    energy_filters = [
+def get_energy_use_filters():
+    return [
         FilterConfig(
             id="reported_data_year",
             label="Reporting Year",
             column="reported_data_year",
             type="dropdown",
             multi=False,
-            default_value=current_reporting_year - 1,
+            default_value=previous_reporting_year,
             show_all=False,
             depends_on=None
         ),
@@ -29,31 +28,14 @@ def create_energy_use_page(app, energy_use_df):
             type="radio",
             multi=False,
             default_value="All",
-            show_all=False,
+            show_all=True,
             depends_on=None,
             options={
                 "options": [
                     {"label": "Company Wide", "value": "Company Wide Electricity Use"},
                     {"label": "Data Centers", "value": "Data Center Electricity Use"},
                     {"label": "All", "value": "All"}
-                ],
-                "style": {
-                    'marginTop': '10px',
-                    'display': 'flex',
-                    'flexDirection': 'column',
-                    'gap': '12px'
-                },
-                "labelStyle": {
-                    'display': 'flex',
-                    'alignItems': 'center',
-                    'fontFamily': 'Inter',
-                    'fontSize': '14px',
-                    'gap': '8px',
-                    'cursor': 'pointer'
-                },
-                "inputStyle": {
-                    "margin": "0"
-                }
+                ]
             }
         ),
         FilterConfig(
@@ -62,17 +44,24 @@ def create_energy_use_page(app, energy_use_df):
             column="company_name",
             type="dropdown",
             multi=True,
-            default_value="All",
+            default_value=None,
             show_all=True,
             depends_on=None
         )
     ]
+
+def create_energy_use_page(app, energy_use_df):
+    # Define energy use filters
+    energy_filters = get_energy_use_filters()
     
     # Initialize filter manager
     filter_manager = FilterManager(app, "energy-use", energy_use_df, energy_filters)
     filter_components = filter_manager.create_filter_components()
     
     content = html.Div([
+        # Add download component at the top level
+        dcc.Download(id="download-energy-use-data"),
+        
         # Main content container
         html.Div([
             # Left side - Filter Panel
@@ -92,9 +81,9 @@ def create_energy_use_page(app, energy_use_df):
                 ]),
                 # Download button
                 html.Div([
-                    create_download_button(
-                        button_id="btn-download-energy-data",
-                        download_id="download-energy-data"
+                create_download_button(
+                    button_id="btn-download-energy-use-data",
+                        download_id="download-energy-use-data"
                     ),
                 ], style={
                     'display': 'flex',
@@ -105,7 +94,7 @@ def create_energy_use_page(app, energy_use_df):
                     'paddingRight': '10px',
                     'paddingBottom': '10px'
                 }),
-                # Chart
+                # Bar Chart
                 html.Div([
                     dcc.Graph(
                         id='energy-use-bar-chart',

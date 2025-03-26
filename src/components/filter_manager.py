@@ -41,23 +41,36 @@ class FilterManager:
         if callback_key in self._registered_callbacks:
             return
         
-        outputs = [
-            Output(
-                {"type": "filter-dropdown", "base_id": self.base_id, "filter_id": filter_id},
-                "options"
-            )
-            for filter_id in self.filters.keys()
-        ]
-
-        # Value inputs
-        value_inputs = [
-            Input(
-                {"type": "filter-dropdown", "base_id": self.base_id, "filter_id": filter_id},
-                "value"
-            )
-            for filter_id in self.filters.keys()
-        ]
-
+        outputs = []
+        value_inputs = []
+        
+        # Create outputs and inputs based on filter type
+        for filter_id, filter_config in self.filters.items():
+            if filter_config.type == "dropdown":
+                outputs.append(
+                    Output(
+                        {"type": "filter-dropdown", "base_id": self.base_id, "filter_id": filter_id},
+                        "options"
+                    )
+                )
+                value_inputs.append(
+                    Input(
+                        {"type": "filter-dropdown", "base_id": self.base_id, "filter_id": filter_id},
+                        "value"
+                    )
+                )
+            elif filter_config.type == "radio":
+                # Radio buttons don't need dynamic options
+                value_inputs.append(
+                    Input(
+                        {"type": "filter-radio", "base_id": self.base_id, "filter_id": filter_id},
+                        "value"
+                    )
+                )
+        
+        if not outputs:  # If no dropdowns, no need to register callback
+            return
+        
         @self.app.callback(
             outputs,
             value_inputs,
@@ -81,10 +94,11 @@ class FilterManager:
                 triggered_id = eval(ctx.triggered[0]['prop_id'].split('.')[0])
                 triggered_filter = triggered_id.get('filter_id')
 
-            # Process each filter
+            # Process each dropdown filter
             results = []
-            for filter_id in self.filters.keys():
-                filter_config = self.filters[filter_id]
+            for filter_id, filter_config in self.filters.items():
+                if filter_config.type != "dropdown":
+                    continue
                 
                 # If it's initial load and filter has a default value, don't update options
                 if not ctx.triggered and filter_config.default_value is not None:

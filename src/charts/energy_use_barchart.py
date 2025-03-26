@@ -27,6 +27,9 @@ def create_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
     """
     print("Creating energy use bar plot")
     
+    # Ensure electricity_usage_kwh is numeric
+    df['electricity_usage_kwh'] = pd.to_numeric(df['electricity_usage_kwh'], errors='coerce')
+    
     # Remove rows with NaN values
     df = df.dropna(subset=['electricity_usage_kwh'])
     
@@ -47,7 +50,7 @@ def create_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
 
     try:
         # Convert to billions for better readability
-        df['electricity_usage_billions'] = df['electricity_usage_kwh'] / 1e9
+        df['electricity_usage_billions'] = df['electricity_usage_kwh'].astype(float) / 1e9
         
         # Sort companies by company-wide electricity usage (descending)
         companies_order = (df[df['reporting_scope'] == 'Company Wide Electricity Use']
@@ -73,7 +76,7 @@ def create_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                 hovertemplate="<b>%{y}</b><br>" +
                              "Company Wide Usage: %{x:.1f}B kWh<br>" +
                              "<extra></extra>",
-                width=0.4
+                width=0.8
             ))
 
         # Add data center bars
@@ -84,12 +87,12 @@ def create_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                 x=dc_data['electricity_usage_billions'],
                 name='Data Centers',
                 orientation='h',
-                marker_color='#3EBCD2',  # Updated color
+                marker_color='#3EBCD2',
                 opacity=0.7,
                 hovertemplate="<b>%{y}</b><br>" +
                              "Data Center Usage: %{x:.1f}B kWh<br>" +
                              "<extra></extra>",
-                width=0.4
+                width=0.8
             ))
 
         # Get the selected year
@@ -97,7 +100,13 @@ def create_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
         
         # Calculate max value for x-axis
         max_value = df['electricity_usage_billions'].max()
-        tick_interval = 5 if max_value > 50 else 2  # Adjust interval based on max value
+        tick_interval = 5 if max_value > 50 else 2
+        
+        # Calculate dynamic height based on number of companies
+        num_companies = len(companies_order)
+        min_height_per_company = 30  # Minimum pixels per company
+        margin_height = 100  # Space for margins, title, etc.
+        total_height = max(400, num_companies * min_height_per_company + margin_height)
         
         # Update layout
         fig.update_layout(
@@ -107,18 +116,19 @@ def create_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
             plot_bgcolor='white',
             paper_bgcolor='white',
             barmode='overlay',
-            height=max(400, len(companies_order) * 50),
+            height=total_height,
             margin=dict(l=20, r=20, t=40, b=20),
             showlegend=True,
             legend_title=f"Reporting Scope ({year})",
-            bargap=0.15,
+            bargap=0.1,
+            bargroupgap=0.05,
             xaxis={
-                'type': 'linear',  # Changed to linear scale
+                'type': 'linear',
                 'showgrid': True,
                 'gridcolor': 'lightgray',
                 'side': 'top',
                 'dtick': tick_interval,
-                'range': [0, max_value * 1.1]  # Add 10% padding
+                'range': [0, max_value * 1.1]
             },
             yaxis={
                 'automargin': True,
@@ -127,7 +137,8 @@ def create_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                 'categoryarray': companies_order,
                 'tickson': 'boundaries',
                 'ticklen': 0,
-                'fixedrange': True
+                'fixedrange': True,
+                'constrain': 'domain'
             }
         )
         

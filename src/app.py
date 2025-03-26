@@ -28,7 +28,7 @@ from charts.timeline_chart import create_timeline_bar_plot
 from charts.energy_use_barchart import create_energy_use_bar_plot
 from callbacks.base_chart_callback import create_chart_callback
 from callbacks.reporting_callbacks import create_reporting_callback, create_reporting_download_callback
-from callbacks.energy_use_callbacks import create_energy_use_callback
+from callbacks.energy_use_callbacks import create_energy_use_callback, create_energy_use_download_callback
 
 def create_app():
     # Get absolute path to assets folder
@@ -143,6 +143,10 @@ def create_app():
             'chart_id': 'energy-use-bar-chart',
             'chart_creator': create_energy_use_bar_plot,
             'filename': 'energy-use-data.csv',
+            'filters': ['reported_data_year', 
+                        'reporting_scope', 
+                        'company_name'],
+            'download_id': 'download-energy-use-data'
         }
     }
 
@@ -153,7 +157,7 @@ def create_app():
     reporting_callback = create_reporting_callback(app, data_dict, chart_configs)
     reporting_download_callback = create_reporting_download_callback(app, data_dict)
     energy_use_callback = create_energy_use_callback(app, data_dict, chart_configs['energy-use-bar'])
-    
+    energy_use_download_callback = create_energy_use_download_callback(app, data_dict)
     # URL Routing
     app.layout = html.Div([
         dcc.Location(id='url', refresh=False),

@@ -62,7 +62,7 @@ def create_wue_page(app, wue_df, company_counts):
             html.Div([
 
                 create_download_button(
-                    button_id="btn-download-reporting-data",
+                    button_id="btn-download-wue-data",
                         download_id="download-wue-data"
                     ),
                 ], style={
