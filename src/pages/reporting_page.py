@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 from components.year_range import create_year_range_component
 from components.download_button import create_download_button
 from layouts.base_layout import create_base_layout
-from callbacks.reporting_callbacks import create_reporting_callback
+# from callbacks.reporting_callbacks import create_reporting_callback
 
 def create_reporting_page(app, reporting_df, data_dict, chart_configs):
     """Create the reporting page with year range filter"""
@@ -33,13 +33,7 @@ def create_reporting_page(app, reporting_df, data_dict, chart_configs):
         html.Div([
             html.H1(
                 "Trends in Data Center Energy Reporting Over Time",
-                className="section-title"
-                # style={
-                #     'fontFamily': 'Roboto, sans-serif',
-                #     'marginBottom': '20px',
-                #     'color': '#2c3e50',
-                #     'fontSize': '16px'
-                # }
+                className="page-title"
             ),
             
             html.Div([

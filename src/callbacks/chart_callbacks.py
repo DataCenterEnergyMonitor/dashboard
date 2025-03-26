@@ -18,13 +18,16 @@ class ChartCallbackManager:
     def _register_callbacks(self):
         """Register callbacks for this specific chart manager instance"""
         for chart_type, config in self.chart_configs.items():
-            if chart_type not in ['reporting-bar', 'timeline']:  # Skip reporting charts as they're handled separately
-                callback_key = f"chart_{config['base_id']}"
-                if callback_key in self._registered_callbacks:
-                    continue
-                
-                self._register_chart_callback(chart_type, config)
-                self._registered_callbacks.add(callback_key)
+            # Exclude charts that have their own specialized callbacks
+            if chart_type in ['reporting-bar', 'timeline', 'energy-use-bar']:
+                continue
+            
+            callback_key = f"chart_{config['base_id']}"
+            if callback_key in self._registered_callbacks:
+                continue
+            
+            self._register_chart_callback(chart_type, config)
+            self._registered_callbacks.add(callback_key)
 
     def _register_chart_callback(self, chart_type, config):
         """Register callback for a specific chart type"""
@@ -114,18 +117,3 @@ class ChartCallbackManager:
                     filtered_df = filtered_df[filtered_df[filter_id] == value]
         
         return filtered_df
-
-# Remove this callback as it's causing the conflict
-# @callback(
-#     Output('reporting-bar-chart', 'figure'),
-#     [Input('url', 'pathname'),
-#      Input({'type': 'filter-dropdown', 'base_id': 'reporting', 'filter_id': ALL}, 'value')]
-# )
-# def update_reporting_chart(pathname, filter_values):
-#     """Update the reporting bar chart"""
-#     if pathname != '/reporting':
-#         return dash.no_update
-# 
-#     # Create the bar chart with the full dataset since we have no filters
-#     return create_reporting_bar_plot(reporting_df)
-  

@@ -105,23 +105,23 @@ def load_reporting_data():
     company_total_ec_df = company_total_ec_df[['company_name', 'reported_data_year']]
     company_total_ec_df = company_total_ec_df.dropna(subset=['reported_data_year']) # remove rows with no data
 
-    dc_ec_df = pd.read_excel(data_path, sheet_name='Data Center Electricity Use', skiprows=1)
+    dc_ec_df = pd.read_excel(data_path, sheet_name='Data Center Electricity Use ', skiprows=1)
     dc_ec_df = dc_ec_df.clean_names()
     dc_ec_df = dc_ec_df[['company_name', 'reported_data_year']]
 
-    dc_fuel_df = pd.read_excel(data_path, sheet_name='Data Center Fuel Use', skiprows=1)
+    dc_fuel_df = pd.read_excel(data_path, sheet_name='Data Center Fuel Use ', skiprows=1)
     dc_fuel_df = dc_fuel_df.clean_names()
     dc_fuel_df = dc_fuel_df[['company_name', 'reported_data_year']]
 
-    dc_water_df = pd.read_excel(data_path, sheet_name='Data Center Water Use ', skiprows=1)
-    dc_water_df = dc_water_df.clean_names()
-    dc_water_df = dc_water_df[['company_name', 'reported_data_year']]
+    # dc_water_df = pd.read_excel(data_path, sheet_name='Data Center Water Use ', skiprows=1)
+    # dc_water_df = dc_water_df.clean_names()
+    # dc_water_df = dc_water_df[['company_name', 'reported_data_year']]
 
     # add a reporting_scope column to each DataFrame
     company_total_ec_df.loc[:, 'reporting_scope'] = 'Company Wide Electricity Use'
     dc_ec_df.loc[:, 'reporting_scope'] = 'Data Center Electricity Use'
     dc_fuel_df.loc[:, 'reporting_scope'] = 'Data Center Fuel Use'
-    dc_water_df.loc[:, 'reporting_scope'] = 'Data Center Water Use'
+    # dc_water_df.loc[:, 'reporting_scope'] = 'Data Center Water Use'
 
     # combine all the dfs into one - maintaining the original columns
     reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df], axis=0)
@@ -171,3 +171,79 @@ def load_reporting_data():
     reporting_df = reporting_df[['company_name', 'reporting_scope', 'reported_data_year','reporting_status']].drop_duplicates(ignore_index=True).dropna()
         
     return  reporting_df
+
+
+
+def load_energy_use_data():
+    current_dir = Path(__file__).parent
+    data_path = current_dir.parent / 'data' / 'modules.xlsx'
+
+    print("\nLoading energy use data...")
+    
+    # load company total electricity use data
+    company_total_ec_df = pd.read_excel(data_path, sheet_name='Company Total Electricity Use', skiprows=1)
+    print(f"\nInitial company total records: {len(company_total_ec_df)}")
+    
+    company_total_ec_df = company_total_ec_df.clean_names()
+    
+    # First rename, then clean
+    company_total_ec_df.rename(columns={
+        'company': 'company_name',
+        'reported_total_company_electricity_use_kwh_': 'electricity_usage_kwh'
+    }, inplace=True)
+    
+    # Clean company names
+    company_total_ec_df['company_name'] = company_total_ec_df['company_name'].str.strip()
+    
+    company_total_ec_df = company_total_ec_df[['company_name', 'reported_data_year', 'electricity_usage_kwh']]
+    print("\nCompany total data sample:")
+    print(company_total_ec_df.head())
+    print(f"Null values in company total electricity: {company_total_ec_df['electricity_usage_kwh'].isna().sum()}")
+
+    # load data center electricity use data
+    dc_ec_df = pd.read_excel(data_path, sheet_name='Data Center Electricity Use ', skiprows=1)
+    print(f"\nInitial data center records: {len(dc_ec_df)}")
+    
+    dc_ec_df = dc_ec_df.clean_names()
+    
+    # First rename, then clean
+    dc_ec_df.rename(columns={
+        'company': 'company_name',
+        'reported_data_center_electricity_use_kwh_': 'electricity_usage_kwh'
+    }, inplace=True)
+    
+    # Clean company names
+    dc_ec_df['company_name'] = dc_ec_df['company_name'].str.strip()
+    
+    dc_ec_df = dc_ec_df[['company_name', 'reported_data_year', 'electricity_usage_kwh']]
+    
+    # Clean electricity usage values - preserve numbers that are already clean
+    dc_ec_df['electricity_usage_kwh'] = dc_ec_df['electricity_usage_kwh'].apply(
+        lambda x: str(x).replace('<', '').replace(',', '') if isinstance(x, str) else x
+    )
+    dc_ec_df['electricity_usage_kwh'] = pd.to_numeric(dc_ec_df['electricity_usage_kwh'], errors='coerce')
+    
+    print("\nData center data sample:")
+    print(dc_ec_df.head())
+    print(f"Null values in data center electricity: {dc_ec_df['electricity_usage_kwh'].isna().sum()}")
+
+    # Group by company and year for data centers
+    dc_ec_df = dc_ec_df.groupby(['company_name', 'reported_data_year'])['electricity_usage_kwh'].sum().reset_index()
+
+    # add a reporting_scope column to each DataFrame
+    company_total_ec_df['reporting_scope'] = 'Company Wide Electricity Use'
+    dc_ec_df['reporting_scope'] = 'Data Center Electricity Use'
+
+    # combine all the dfs into one
+    energy_use_df = pd.concat([company_total_ec_df, dc_ec_df], axis=0)
+    energy_use_df['reported_data_year'] = energy_use_df['reported_data_year'].astype(int)
+    
+    print("\nFinal dataset:")
+    print(f"Total records: {len(energy_use_df)}")
+    print(f"Unique companies: {len(energy_use_df['company_name'].unique())}")
+    print(f"Years range: {energy_use_df['reported_data_year'].min()} - {energy_use_df['reported_data_year'].max()}")
+    print(f"Null values in final electricity usage: {energy_use_df['electricity_usage_kwh'].isna().sum()}")
+    print("\nSample of final data:")
+    print(energy_use_df.head())
+    
+    return energy_use_df

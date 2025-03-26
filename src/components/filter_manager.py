@@ -15,6 +15,7 @@ class FilterConfig:
     show_all: bool = True
     depends_on: List[str] = None
     options: Dict[str, Any] = None  # For additional filter-specific options
+    component: Optional[Any] = None  # Add this parameter
 
     def __post_init__(self):
         if self.depends_on is None:
@@ -172,14 +173,12 @@ class FilterManager:
             for filter_config in self.filters.values():
                 if filter_config.type == "dropdown":
                     filter_components.append(self._create_dropdown(filter_config))
+                elif filter_config.type == "radio":  # Add radio button handling
+                    filter_components.append(self._create_radio(filter_config))
                 elif filter_config.type == "year_range_pair":
                     filter_components.append(self._create_year_range_pair(filter_config))
 
-        return html.Div(
-            [
-                html.Div(filter_components),
-            ]
-        )
+        return html.Div(filter_components)
 
     def _create_dropdown(self, config: FilterConfig) -> html.Div:
         """Create a dropdown filter component"""
@@ -192,7 +191,7 @@ class FilterManager:
             return html.Div([
                 html.Label(
                     config.label,
-                    style={'fontFamily': 'Roboto, sans-serif', 'fontWeight': '500'}
+                    style={'fontFamily': 'Inter', 'fontWeight': '500'}
                 ),
                 html.Div([
                     # From Year dropdown
@@ -206,7 +205,7 @@ class FilterManager:
                             options=[{'label': str(year), 'value': year} for year in years],
                             value=config.default_value.get('from', min_year),
                             placeholder="From",
-                            style={'fontFamily': 'Roboto, sans-serif'},
+                            style={'fontFamily': 'Inter'},
                             clearable=False
                         ),
                     ], style={'width': '48%'}),
@@ -222,7 +221,7 @@ class FilterManager:
                             options=[{'label': str(year), 'value': year} for year in years],
                             value=config.default_value.get('to', max_year),
                             placeholder="To",
-                            style={'fontFamily': 'Roboto, sans-serif'},
+                            style={'fontFamily': 'Inter'},
                             clearable=False
                         ),
                     ], style={'width': '48%'})
@@ -244,7 +243,7 @@ class FilterManager:
         return html.Div([
             html.Label(
                 config.label,
-                style={'fontFamily': 'Roboto, sans-serif', 'fontWeight': '500'}
+                style={'fontFamily': 'Inter', 'fontWeight': '500'}
             ),
             dcc.Dropdown(
                 id={
@@ -257,7 +256,7 @@ class FilterManager:
                 multi=config.multi,
                 placeholder=f"Select {config.label}",
                 style={
-                    'fontFamily': 'Roboto, sans-serif'
+                    'fontFamily': 'Inter'
                 },
                 clearable=False if not config.multi else True,
                 persistence=True,
@@ -282,7 +281,7 @@ class FilterManager:
         return html.Div([
             html.Label(
                 config.label,
-                style={'fontFamily': 'Roboto, sans-serif', 'fontWeight': '500'}
+                style={'fontFamily': 'Inter', 'fontWeight': '500'}
             ),
             html.Div([
                 # From Year dropdown
@@ -296,7 +295,7 @@ class FilterManager:
                         options=[{'label': str(year), 'value': year} for year in years],
                         value=config.default_value.get('from', min_year),
                         placeholder="From Year",
-                        style={'fontFamily': 'Roboto, sans-serif'},
+                        style={'fontFamily': 'Inter'},
                         clearable=False
                     ),
                 ], style={'width': '48%'}),
@@ -312,7 +311,7 @@ class FilterManager:
                         options=[{'label': str(year), 'value': year} for year in years],
                         value=config.default_value.get('to', max_year),
                         placeholder="To Year",
-                        style={'fontFamily': 'Roboto, sans-serif'},
+                        style={'fontFamily': 'Inter'},
                         clearable=False
                     ),
                 ], style={'width': '48%'})
@@ -328,4 +327,29 @@ class FilterManager:
             "width": "100%",
             "position": "relative",
             "zIndex": "auto"
+        })
+
+    def _create_radio(self, config: FilterConfig) -> html.Div:
+        """Create a radio button filter component"""
+        return html.Div([
+            html.Label(
+                config.label,
+                style={'fontFamily': 'Inter', 'fontWeight': '500'}
+            ),
+            dcc.RadioItems(
+                id={
+                    "type": "filter-radio",  # Match the callback Input type
+                    "base_id": self.base_id,
+                    "filter_id": config.id
+                },
+                options=config.options["options"],
+                value=config.default_value,
+                style=config.options.get("style", {}),
+                labelStyle=config.options.get("labelStyle", {}),
+                inputStyle=config.options.get("inputStyle", {}),
+                className=config.options.get("className", "")
+            )
+        ], style={
+            "marginBottom": "20px",
+            "width": "100%"
         })

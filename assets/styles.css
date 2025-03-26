@@ -53,7 +53,7 @@ a:hover {
 }
 
 .navbar {
-    background-color: #0F4D8B !important; /* #343a40; /* Change this to your desired color */
+    background-color: #00588D !important; /* #343a40; /* Change this to your desired color */ /*Default #0F4D8B */
 }
 
 /* Change navbar brand color */
@@ -66,7 +66,7 @@ a:hover {
 }
 
 body {
-    font-family: 'Roboto', sans-serif; /* Example font */
+    font-family: 'Inter'; /* Example font */
 }
 
 /* Range Slider Styles */
@@ -109,32 +109,51 @@ body {
 .landing-page-title {
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
-    font-size: 28px;
+    font-size: clamp(24px, 4vw, 32px);
     color: #2C3E50;
     margin-bottom: 20px;
 }
 
 .page-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 26px;
-    color: #2C3E50;
+    color: #404040;
     margin-bottom: 20px;
+    font-size: clamp(20px, 3vw, 28px);
 }
 
-.section-title {
-    font-family: 'Montserrat', sans-serif;
+/* Section headers (h2) */
+.section-header {
+    font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 26px;
-    color: #2C3E50;
+    color: #404040;
     margin-bottom: 16px;
+    font-size: clamp(18px, 2vw, 26px);
 }
 
+/* Subsection headers (h3) */
+.subsection-header {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: #404040;
+    margin-bottom: 12px;
+    font-size: clamp(16px, 2.5vw, 24px);
+}
+
+/* Body text */
 .body-text {
     font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
-    color: #4A5568;
+    color: #404040;
+    margin-bottom: 16px;
+    font-size: clamp(14px, 2vw, 16px);
+    line-height: 1.5;
+}
+
+/* Small text / captions */
+.small-text {
+    font-family: 'Inter', sans-serif;
+    color: #666666;
+    font-size: clamp(12px, 1.5vw, 14px);
 }
 
 .filter-label {

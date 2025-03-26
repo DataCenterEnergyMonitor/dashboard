@@ -4,7 +4,7 @@ def get_common_chart_layout():
     This ensures visual consistency across the dashboard.
     """
     return {
-        'font_family': "Roboto, sans-serif",
+        'font_family': "Inter",
         'plot_bgcolor': 'white',
         'xaxis': dict(
             showgrid=False,

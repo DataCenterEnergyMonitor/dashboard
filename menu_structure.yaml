@@ -20,8 +20,8 @@ Industry Trends:
     route: /reporting
     preview: assets/previews/reporting_trends_preview.png
     description: Industry reporting patterns and insights
-  Energy Data Trends:
-    route: /energy-data-trends
+  Data Center Energy Use:
+    route: /energy-use
     preview: assets/previews/energy_data_trends_preview.png
     description: Data center energy consumption metrics
 

@@ -22,7 +22,7 @@ def create_download_button(button_id: str, download_id: str) -> html.Div:
                 'border': 'none',
                 'borderRadius': '4px',
                 'cursor': 'pointer',
-                'fontFamily': 'Roboto, sans-serif',
+                'fontFamily': 'Inter',
                 'fontWeight': '500',
                 'fontSize': '14px'
             }

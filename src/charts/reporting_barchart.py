@@ -5,10 +5,14 @@ from .styles import get_bar_chart_layout
 
 # Define color palette for reporting scopes
 REPORTING_SCOPE_COLORS = {
-    'Company Wide Electricity Use': 'rgba(23, 79, 138, 0.8)',
-    'Data Center Electricity Use': '#C16597',
-    'Data Center Fuel Use': '#AACE63',
-    #'Data Center Water Use': '#23CDC6'
+    # 'Company Wide Electricity Use': 'rgba(23, 79, 138, 0.8)',
+    # 'Data Center Electricity Use': '#C16597',
+    # 'Data Center Fuel Use': '#AACE63',
+    # #'Data Center Water Use': '#23CDC6'
+
+    'Company Wide Electricity Use': '#00588D',
+    'Data Center Electricity Use': '#3EBCD2',
+    'Data Center Fuel Use': '#AD7291'
 }
 
 def create_reporting_bar_plot(df: pd.DataFrame) -> go.Figure:

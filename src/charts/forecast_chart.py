@@ -65,7 +65,7 @@ def create_forecast_scatter_plot(filtered_df):
 
         # Update layout
         forecast_fig.update_layout(
-            font_family="Roboto",
+            font_family="Inter",
             plot_bgcolor='white',
             xaxis=dict(
                 showgrid=True,

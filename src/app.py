@@ -8,25 +8,27 @@ import dash
 from dash import Dash, dcc, html, Input, Output, callback
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from data_loader import load_pue_data, load_wue_data, load_energyforecast_data, load_reporting_data
+from data_loader import load_pue_data, load_wue_data, load_energyforecast_data, load_reporting_data, load_energy_use_data
 
 from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
 from pages.contact_page import create_contact_page
-
 from pages.energy_forecast_page import create_forecast_page
 from pages.reporting_page import create_reporting_page
 from pages.data_centers_101_page import create_data_centers_101_page
+from pages.energy_use_page import create_energy_use_page
 
 from charts.pue_chart import create_pue_scatter_plot
 from charts.wue_chart import create_wue_scatter_plot
 from charts.forecast_chart import create_forecast_scatter_plot
 from charts.reporting_barchart import create_reporting_bar_plot
 from charts.timeline_chart import create_timeline_bar_plot
+from charts.energy_use_barchart import create_energy_use_bar_plot
 from callbacks.base_chart_callback import create_chart_callback
 from callbacks.reporting_callbacks import create_reporting_callback, create_reporting_download_callback
+from callbacks.energy_use_callbacks import create_energy_use_callback
 
 def create_app():
     # Get absolute path to assets folder
@@ -60,7 +62,7 @@ def create_app():
     wue_df, wue_company_counts, wue_industry_avg = load_wue_data()
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
-
+    energy_use_df = load_energy_use_data()
     # Create data dictionary for charts
     data_dict = {
         'pue-scatter': {
@@ -80,6 +82,9 @@ def create_app():
         },
         'timeline-bar': { 
             'df': reporting_df
+        },
+        'energy-use-bar': {
+            'df':  energy_use_df
         }
     }
 
@@ -132,6 +137,12 @@ def create_app():
             'filename': 'reporting-data.csv',
             'filters': ['from_year', 
                         'to_year']
+        },
+        'energy-use-bar': {
+            'base_id': 'energy-use-bar',
+            'chart_id': 'energy-use-bar-chart',
+            'chart_creator': create_energy_use_bar_plot,
+            'filename': 'energy-use-data.csv',
         }
     }
 
@@ -141,7 +152,8 @@ def create_app():
     forecast_callback = create_chart_callback(app, data_dict, chart_configs['forecast-scatter'])
     reporting_callback = create_reporting_callback(app, data_dict, chart_configs)
     reporting_download_callback = create_reporting_download_callback(app, data_dict)
-
+    energy_use_callback = create_energy_use_callback(app, data_dict, chart_configs['energy-use-bar'])
+    
     # URL Routing
     app.layout = html.Div([
         dcc.Location(id='url', refresh=False),
@@ -163,6 +175,8 @@ def create_app():
             return create_forecast_page(app, forecast_df)
         elif pathname == '/reporting':
             return create_reporting_page(app, reporting_df, data_dict, chart_configs)
+        elif pathname == '/energy-use':
+            return create_energy_use_page(app, energy_use_df)
         elif pathname == '/about':
             return create_about_page()
         elif pathname == '/contact':

@@ -51,7 +51,7 @@ def create_pue_scatter_plot(filtered_df, selected_scope="Fleet-wide", industry_a
         )
 
     pue_fig.update_layout(
-    font_family="Roboto, sans-serif",
+    font_family="Inter",
     plot_bgcolor='white',
     xaxis=dict(
         showgrid=False,  # disable gridlines

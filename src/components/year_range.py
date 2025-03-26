@@ -31,7 +31,7 @@ def create_year_range_component(
             html.Label(
                 "Select Date Range",
                 style={
-                    'fontFamily': 'Roboto, sans-serif',
+                    'fontFamily': 'Inter',
                     'fontWeight': '500',
                     'color': '#333',
                     'fontSize': '14px'
@@ -56,7 +56,7 @@ def create_year_range_component(
                     options=[{'label': str(year), 'value': year} for year in sorted(years, reverse=True)],
                     value=default_from,
                     style={
-                        'fontFamily': 'Roboto, sans-serif',
+                        'fontFamily': 'Inter',
                         'fontSize': '13px'
                     },
                     clearable=False,
@@ -84,7 +84,7 @@ def create_year_range_component(
                     options=[{'label': str(year), 'value': year} for year in sorted(years, reverse=True)],
                     value=default_to,
                     style={
-                        'fontFamily': 'Roboto, sans-serif',
+                        'fontFamily': 'Inter',
                         'fontSize': '13px'
                     },
                     clearable=False,

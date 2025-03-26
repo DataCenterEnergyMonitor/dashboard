@@ -65,23 +65,12 @@ def create_forecast_page(app, forecast_df):
             html.Div([
                 html.H1(
                     "Energy Forecasts for Data Centers",
-                    style={
-                        'fontFamily': 'Roboto, sans-serif',
-                        'fontWeight': '500',
-                        'marginBottom': '10px',
-                        'fontSize': '32px',
-                        'paddingTop': '0px'
-                    }
+                    className="page-title"
                 ),
                 html.Div([
                     html.P([
                         "Reported Energy Consumption Trends and Predictions for Data Center",
-                    ], style={
-                        'fontFamily': 'Roboto, sans-serif',
-                        'marginBottom': '20px',
-                        'color': '#404040',
-                        'fontSize': '16px'
-                    })
+                    ], className="body-text")
                 ]),
                 
                 # Download button above chart
