@@ -12,8 +12,8 @@ Industry Trends:
     route: /forecast
     preview: assets/previews/energy_forecast_preview.png
     description: Predictive energy consumption analysis
-  Company Analysis:
-    route: /company-analysis
+  Company Profile:
+    route: /company-profile
     preview: assets/previews/pue_preview.png
     description: Comparative company performance metrics
   Energy Reporting Trends:

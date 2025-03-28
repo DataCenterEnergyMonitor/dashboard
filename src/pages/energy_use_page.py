@@ -9,6 +9,7 @@ from layouts.base_layout import create_base_layout
 current_reporting_year = datetime.now().year - 1
 previous_reporting_year = current_reporting_year - 1
 
+
 def get_energy_use_filters():
     return [
         FilterConfig(
@@ -19,7 +20,7 @@ def get_energy_use_filters():
             multi=False,
             default_value=previous_reporting_year,
             show_all=False,
-            depends_on=None
+            depends_on=None,
         ),
         FilterConfig(
             id="reporting_scope",
@@ -34,9 +35,9 @@ def get_energy_use_filters():
                 "options": [
                     {"label": "Company Wide", "value": "Company Wide Electricity Use"},
                     {"label": "Data Centers", "value": "Data Center Electricity Use"},
-                    {"label": "All", "value": "All"}
+                    {"label": "All", "value": "All"},
                 ]
-            }
+            },
         ),
         FilterConfig(
             id="company_name",
@@ -46,75 +47,99 @@ def get_energy_use_filters():
             multi=True,
             default_value=None,
             show_all=True,
-            depends_on=None
-        )
+            depends_on=None,
+        ),
     ]
+
 
 def create_energy_use_page(app, energy_use_df):
     # Define energy use filters
     energy_filters = get_energy_use_filters()
-    
+
     # Initialize filter manager
     filter_manager = FilterManager(app, "energy-use", energy_use_df, energy_filters)
     filter_components = filter_manager.create_filter_components()
-    
-    content = html.Div([
-        # Add download component at the top level
-        dcc.Download(id="download-energy-use-data"),
-        
-        # Main content container
-        html.Div([
-            # Left side - Filter Panel
-            html.Div([
-                create_filter_panel(filter_components)
-            ], style={'width': '260px', 'flexShrink': '0'}),
 
-            # Right side - Main Content
-            html.Div([
-                html.H1("Data Center Energy Usage by Company", className="page-title"),
-                html.Div([
-                    html.P([
-                        "Compare electricity usage across different companies and reporting scopes.",
-                        html.Br(),
-                        "Use the filters to select specific years, companies, and reporting scopes."
-                    ], className="body-text")
-                ]),
-                # Download button
-                html.Div([
-                create_download_button(
-                    button_id="btn-download-energy-use-data",
-                        download_id="download-energy-use-data"
+    content = html.Div(
+        [
+            # Add download component at the top level
+            dcc.Download(id="download-energy-use-data"),
+            # Main content container
+            html.Div(
+                [
+                    # Left side - Filter Panel
+                    html.Div(
+                        [create_filter_panel(filter_components)],
+                        style={"width": "260px", "flexShrink": "0"},
                     ),
-                ], style={
-                    'display': 'flex',
-                    'justifyContent': 'right',
-                    'marginBottom': '10px',
-                    'width': '90%',
-                    'margin': '0 auto',
-                    'paddingRight': '10px',
-                    'paddingBottom': '10px'
-                }),
-                # Bar Chart
-                html.Div([
-                    dcc.Graph(
-                        id='energy-use-bar-chart',
-                        style={'height': 'calc(100vh - 400px)', 'width': '100%'},
-                        config={'responsive': True}
-                    )
-                ], style={'width': '90%', 'margin': '0 auto'})
-            ], style={
-                'flex': '1',
-                'padding': '30px',
-                'minWidth': '0',
-                'overflow': 'hidden'
-            })
-        ], style={
-            'display': 'flex',
-            'flexDirection': 'row',
-            'minHeight': 'calc(100vh - 40px)',
-            'backgroundColor': '#f8f9fa'
-        })
-    ])
+                    # Right side - Main Content
+                    html.Div(
+                        [
+                            html.H1(
+                                "Data Center Energy Usage by Company",
+                                className="page-title",
+                            ),
+                            html.Div(
+                                [
+                                    html.P(
+                                        [
+                                            "Compare electricity usage across different companies and reporting scopes.",
+                                            html.Br(),
+                                            "Use the filters to select specific years, companies, and reporting scopes.",
+                                        ],
+                                        className="body-text",
+                                    )
+                                ]
+                            ),
+                            # Download button
+                            html.Div(
+                                [
+                                    create_download_button(
+                                        button_id="btn-download-energy-use-data",
+                                        download_id="download-energy-use-data",
+                                    ),
+                                ],
+                                style={
+                                    "display": "flex",
+                                    "justifyContent": "right",
+                                    "marginBottom": "10px",
+                                    "width": "90%",
+                                    "margin": "0 auto",
+                                    "paddingRight": "10px",
+                                    "paddingBottom": "10px",
+                                },
+                            ),
+                            # Bar Chart
+                            html.Div(
+                                [
+                                    dcc.Graph(
+                                        id="energy-use-bar-chart",
+                                        style={
+                                            "height": "calc(100vh - 400px)",
+                                            "width": "100%",
+                                        },
+                                        config={"responsive": True},
+                                    )
+                                ],
+                                style={"width": "90%", "margin": "0 auto"},
+                            ),
+                        ],
+                        style={
+                            "flex": "1",
+                            "padding": "30px",
+                            "minWidth": "0",
+                            "overflow": "hidden",
+                        },
+                    ),
+                ],
+                style={
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "minHeight": "calc(100vh - 40px)",
+                    "backgroundColor": "#f8f9fa",
+                },
+            ),
+        ]
+    )
 
     return create_base_layout(content)
-
