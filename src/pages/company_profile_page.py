@@ -31,7 +31,7 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
 
     # Prepare the table columns with renamed headers
     table_columns = [
-        {"name": "Reporting Metric", "id": "metric"},
+        {"name": "Reporting Metric", "id": "metric", "presentation": "markdown"},
         {"name": "Status", "id": "status", "presentation": "markdown"},
     ]
 
@@ -82,10 +82,19 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
                                     ),
                                     dash_table.DataTable(
                                         id="company-profile-data-table",
-                                        columns=table_columns,
-                                        data=company_profile_df[
-                                            ["metric", "status"]
-                                        ].to_dict("records"),
+                                        columns=[
+                                            {
+                                                "name": "Reporting Metric",
+                                                "id": "metric",
+                                                "presentation": "markdown",
+                                            },
+                                            {
+                                                "name": "Status",
+                                                "id": "status",
+                                                "presentation": "markdown",
+                                            },
+                                        ],
+                                        data=[],  # Start with empty data
                                         style_table={
                                             "overflowY": "auto",
                                             "overflowX": "hidden",
@@ -129,7 +138,16 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
                                             {
                                                 "if": {"row_index": "odd"},
                                                 "backgroundColor": "#f9f9f9",
-                                            }
+                                            },
+                                            {
+                                                "if": {
+                                                    "filter_query": "{is_category} eq true"
+                                                },
+                                                "backgroundColor": "#eef2f5",
+                                                "fontWeight": "bold",
+                                                "border-top": "2px solid #dee2e6",
+                                                "border-bottom": "1px solid #dee2e6",
+                                            },
                                         ],
                                         page_size=22,
                                         page_action="native",
