@@ -6,11 +6,11 @@ from components.filter_panel import create_filter_panel
 from components.download_button import create_download_button
 from layouts.base_layout import create_base_layout
 
-current_reporting_year = datetime.now().year - 1
-previous_reporting_year = current_reporting_year - 1
-
 
 def get_energy_use_filters():
+    current_reporting_year = datetime.now().year - 1
+    previous_reporting_year = current_reporting_year - 1
+
     return [
         FilterConfig(
             id="reported_data_year",
@@ -18,7 +18,7 @@ def get_energy_use_filters():
             column="reported_data_year",
             type="dropdown",
             multi=False,
-            default_value=previous_reporting_year,
+            default_value=2024,  # previous_reporting_year,
             show_all=False,
             depends_on=None,
         ),
@@ -45,7 +45,7 @@ def get_energy_use_filters():
             column="company_name",
             type="dropdown",
             multi=True,
-            default_value=None,
+            default_value="All",
             show_all=True,
             depends_on=None,
         ),
