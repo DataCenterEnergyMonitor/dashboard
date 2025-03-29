@@ -106,7 +106,7 @@ def create_company_profile_callback(app, data_dict, chart_configs):
                         table_data.append(
                             {
                                 "metric": f"**{category}**",
-                                "status": "",
+                                "status": None,
                                 "is_category": True,
                             }
                         )

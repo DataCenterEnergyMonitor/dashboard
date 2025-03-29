@@ -182,23 +182,13 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
             - reporting_scope
     """
     if df.empty:
-        return {
-            "data": [],
-            "layout": {
-                "title": "No data available",
-                "xaxis": {"visible": False},
-                "yaxis": {"visible": False},
-            },
-        }
+        return create_empty_chart("No data available")
 
     try:
-        # Convert electricity_usage_kwh to numeric, handling any non-numeric values
-        df["electricity_usage_kwh"] = pd.to_numeric(
-            df["electricity_usage_kwh"], errors="coerce"
+        # Convert electricity_usage_kwh to numeric and billions
+        df["electricity_usage_billions"] = (
+            pd.to_numeric(df["electricity_usage_kwh"], errors="coerce") / 1e9
         )
-
-        # Convert to billions for better readability
-        df["electricity_usage_billions"] = df["electricity_usage_kwh"] / 1e9
 
         # Create the figure
         fig = go.Figure()
@@ -213,6 +203,7 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                     y=scope_data["electricity_usage_billions"],
                     name=scope,
                     marker_color=REPORTING_SCOPE_COLORS.get(scope, "#999999"),
+                    width=0.4,  # Set fixed bar width
                     hovertemplate=(
                         "<b>%{x}</b><br>"
                         "Usage: %{y:.1f}B kWh<br>"
@@ -222,7 +213,7 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                 )
             )
 
-        # Update layout with legend above the chart
+        # Update layout
         fig.update_layout(
             title=None,
             xaxis_title="Reporting Year",
@@ -230,13 +221,13 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
             plot_bgcolor="white",
             paper_bgcolor="white",
             barmode="group",
-            bargap=0.15,
-            bargroupgap=0.1,
+            bargap=0.2,
+            bargroupgap=0,
             showlegend=True,
             legend=dict(
-                orientation="h",  # horizontal orientation
+                orientation="h",
                 yanchor="bottom",
-                y=1.02,  # Position above the chart
+                y=1.02,
                 xanchor="left",
                 x=0,
                 font=dict(
@@ -244,12 +235,16 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                     size=12,
                 ),
             ),
-            legend_title=None,  # Remove legend title since it's self-explanatory
+            legend_title=None,
             xaxis=dict(
                 showgrid=False,
                 gridwidth=1,
                 gridcolor="lightgray",
                 tickmode="linear",
+                range=[
+                    df["reported_data_year"].min() - 0.5,
+                    df["reported_data_year"].max() + 0.5,
+                ],  # Add padding to x-axis
             ),
             yaxis=dict(
                 showgrid=True,
@@ -259,7 +254,6 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                 zerolinewidth=1,
                 zerolinecolor="lightgray",
             ),
-            # Add more top margin to accommodate the legend
             margin=dict(t=50, r=20, b=20, l=20),
         )
 
@@ -270,11 +264,4 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
         import traceback
 
         traceback.print_exc()
-        return {
-            "data": [],
-            "layout": {
-                "title": f"Error creating chart: {str(e)}",
-                "xaxis": {"visible": False},
-                "yaxis": {"visible": False},
-            },
-        }
+        return create_empty_chart(f"Error creating chart: {str(e)}")

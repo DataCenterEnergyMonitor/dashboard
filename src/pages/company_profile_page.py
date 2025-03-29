@@ -76,7 +76,7 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
                                             "fontFamily": "Inter",
                                             "fontWeight": "500",
                                             "fontSize": "18px",
-                                            "marginBottom": "12px",
+                                            "marginBottom": "10px",
                                             "color": "#2c3e50",
                                         },
                                     ),
@@ -84,55 +84,44 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
                                         id="company-profile-data-table",
                                         columns=[
                                             {
-                                                "name": "Reporting Metric",
+                                                "name": "REPORTING METRIC",
                                                 "id": "metric",
-                                                "presentation": "markdown",
                                             },
-                                            {
-                                                "name": "Status",
-                                                "id": "status",
-                                                "presentation": "markdown",
-                                            },
+                                            {"name": "STATUS", "id": "status"},
                                         ],
-                                        data=[],  # Start with empty data
+                                        data=[],
                                         style_table={
-                                            "overflowY": "auto",
+                                            "overflowY": "hidden",
                                             "overflowX": "hidden",
-                                            "height": "500px",
-                                            "backgroundColor": "white",
+                                            "height": "auto",
                                             "width": "100%",
                                         },
                                         style_cell={
                                             "textAlign": "left",
-                                            "padding": "8px 12px",
+                                            "padding": "4px 16px",
                                             "fontFamily": "Inter",
                                             "fontSize": "13px",
                                             "whiteSpace": "normal",
-                                            "height": "auto",
+                                            "height": "30px",
+                                            "lineHeight": "30px",
                                         },
                                         style_cell_conditional=[
                                             {
                                                 "if": {"column_id": "metric"},
-                                                "width": "60%",
-                                                "minWidth": "180px",
+                                                "width": "75%",
+                                                "minWidth": "200px",
                                             },
                                             {
                                                 "if": {"column_id": "status"},
-                                                "width": "40%",
-                                                "minWidth": "120px",
+                                                "width": "25%",
+                                                "minWidth": "100px",
                                             },
                                         ],
-                                        style_header={
-                                            "backgroundColor": "#f8f9fa",
-                                            "fontWeight": "600",
-                                            "fontFamily": "Inter",
-                                            "fontSize": "14px",
-                                            "color": "#2c3e50",
-                                            "borderBottom": "2px solid #dee2e6",
-                                        },
                                         style_data={
                                             "backgroundColor": "white",
                                             "borderBottom": "1px solid #f0f0f0",
+                                            "height": "30px",
+                                            "lineHeight": "30px",
                                         },
                                         style_data_conditional=[
                                             {
@@ -143,16 +132,51 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
                                                 "if": {
                                                     "filter_query": "{is_category} eq true"
                                                 },
-                                                "backgroundColor": "#eef2f5",
-                                                "fontWeight": "bold",
-                                                "border-top": "2px solid #dee2e6",
-                                                "border-bottom": "1px solid #dee2e6",
+                                                "backgroundColor": "#2c3e50",
+                                                "color": "white",
+                                                "fontSize": "15px",
+                                                "letterSpacing": "0.7px",
+                                                "borderTop": "16px solid white",
+                                                "height": "44px",
+                                                "lineHeight": "44px",
+                                                "textTransform": "none",
+                                                "fontWeight": "600",
+                                            },
+                                            {
+                                                "if": {
+                                                    "filter_query": "{is_category} eq true",
+                                                    "column_id": "metric",
+                                                },
+                                                "textAlign": "left",
+                                                "paddingLeft": "16px",
+                                            },
+                                            {
+                                                "if": {
+                                                    "filter_query": "{is_category} eq true",
+                                                    "column_id": "status",
+                                                },
+                                                "backgroundColor": "#2c3e50",
+                                            },
+                                            {
+                                                "if": {
+                                                    "filter_query": '{status} contains "Yes"',
+                                                    "column_id": "status",
+                                                },
+                                                "color": "#047857",
+                                            },
+                                            {
+                                                "if": {
+                                                    "filter_query": '{status} contains "No"',
+                                                    "column_id": "status",
+                                                },
+                                                "color": "#dc2626",
                                             },
                                         ],
                                         page_size=22,
                                         page_action="native",
                                         sort_action="native",
                                         sort_mode="single",
+                                        merge_duplicate_headers=True,
                                     ),
                                 ],
                                 style={
@@ -175,7 +199,7 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
                                             "fontFamily": "Inter",
                                             "fontWeight": "500",
                                             "fontSize": "18px",
-                                            "marginBottom": "12px",
+                                            "marginBottom": "10px",
                                             "color": "#2c3e50",
                                         },
                                     ),
