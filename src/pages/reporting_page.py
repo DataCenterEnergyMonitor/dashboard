@@ -18,6 +18,22 @@ def create_reporting_page(app, reporting_df, data_dict, chart_configs):
 
     content = html.Div(
         [
+            # Error notification toast
+            dbc.Toast(
+                id="reporting-error-toast",
+                is_open=False,
+                dismissable=True,
+                duration=4000,  # Auto-dismiss after 4 seconds
+                style={
+                    "position": "fixed",
+                    "top": 20,
+                    "right": 20,
+                    "zIndex": 999,
+                    "width": "300px",
+                    "backgroundColor": "#f8d7da",  # Light red background
+                    "color": "#721c24",  # Dark red text
+                },
+            ),
             # Left side - Filter Panel
             html.Div(
                 [

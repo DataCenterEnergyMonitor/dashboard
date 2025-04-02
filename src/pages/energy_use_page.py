@@ -18,7 +18,7 @@ def get_energy_use_filters():
             column="reported_data_year",
             type="dropdown",
             multi=False,
-            default_value=2024,  # previous_reporting_year,
+            default_value=previous_reporting_year,
             show_all=False,
             depends_on=None,
         ),
