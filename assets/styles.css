@@ -53,7 +53,10 @@ a:hover {
 }
 
 .navbar {
-    background-color: #00588D !important; /* #343a40; /* Change this to your desired color */ /*Default #0F4D8B */
+    background-color: #00588D !important; /* #343a40; */
+    font-family: 'Inter', sans-serif;
+    color: #404040;
+    font-size: clamp(14px, 2vw, 16px);
 }
 
 /* Change navbar brand color */

@@ -23,76 +23,110 @@ def create_reporting_page(app, reporting_df, data_dict, chart_configs):
                 id="reporting-error-toast",
                 is_open=False,
                 dismissable=True,
-                duration=4000,  # Auto-dismiss after 4 seconds
+                duration=4000,
                 style={
                     "position": "fixed",
                     "top": 20,
                     "right": 20,
                     "zIndex": 999,
                     "width": "300px",
-                    "backgroundColor": "#f8d7da",  # Light red background
-                    "color": "#721c24",  # Dark red text
                 },
+                className="bg-danger text-white",
             ),
-            # Left side - Filter Panel
-            html.Div(
+            # Main content area
+            dbc.Col(
                 [
-                    # Filter icon header - left aligned
-                    html.Div(
-                        html.I(
-                            className="fas fa-filter",
-                            style={
-                                "fontSize": "24px",
-                                "color": "#4CAF50",
-                                "marginBottom": "20px",
-                            },
-                        ),
-                        style={
-                            "display": "flex",
-                            "justifyContent": "flex-start",  # Left aligned
-                            "width": "100%",
-                        },
-                    ),
-                    year_range_filter,
-                ],
-                style={
-                    "width": "260px",
-                    "padding": "20px",
-                    "backgroundColor": "#f8f9fa",
-                    "borderRight": "1px solid #dee2e6",
-                },
-            ),
-            # Right side - Charts
-            html.Div(
-                [
+                    # Header section
                     html.H1(
                         "Trends in Data Center Energy Reporting Over Time",
-                        className="page-title",
+                        className="page-title h2 mb-3",
                     ),
-                    html.Div(
+                    # Date range filter
+                    dbc.Row(
+                        dbc.Col(
+                            [
+                                html.Label(
+                                    "Select Date Range",
+                                    className="text-muted mb-2",
+                                ),
+                                year_range_filter,
+                            ],
+                            width=12,
+                            lg=4,
+                            className="mb-1",
+                        ),
+                    ),
+                    # Charts container
+                    dbc.Container(
                         [
-                            # Download button above charts
-                            create_download_button(
-                                button_id="btn-download-reporting-data",
-                                download_id="download-reporting-data",
-                            ),
-                            # Bar Chart
-                            dcc.Graph(
-                                id="reporting-bar-chart",
-                                style={"height": "500px", "marginBottom": "20px"},
-                            ),
-                            # Timeline Chart
-                            dcc.Graph(
-                                id="timeline-bar-chart", style={"height": "600px"}
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        [
+                                            # Download button
+                                            create_download_button(
+                                                button_id="btn-download-reporting-data",
+                                                download_id="download-reporting-data",
+                                            ),
+                                            # Bar Chart
+                                            dbc.Card(
+                                                dcc.Graph(
+                                                    id="reporting-bar-chart",
+                                                    className="h-100",
+                                                    config={
+                                                        "responsive": True,
+                                                        "staticPlot": False,
+                                                        "scrollZoom": False,
+                                                        "doubleClick": False,
+                                                        "showTips": False,
+                                                    },
+                                                    style={"height": "100%"},
+                                                ),
+                                                className="mb-3",
+                                                style={
+                                                    "height": "52vh",
+                                                    "border": "1px solid rgba(0,0,0,.125)",
+                                                    "transition": "none",
+                                                },
+                                            ),
+                                            # Timeline Chart
+                                            dbc.Card(
+                                                dcc.Graph(
+                                                    id="timeline-bar-chart",
+                                                    config={
+                                                        "responsive": True,
+                                                        "staticPlot": False,
+                                                        "scrollZoom": False,
+                                                        "doubleClick": False,
+                                                        "showTips": False,
+                                                    },
+                                                    style={
+                                                        "height": "100%",
+                                                        "minHeight": "400px",
+                                                    },
+                                                ),
+                                                style={
+                                                    "minHeight": "400px",
+                                                    "border": "1px solid rgba(0,0,0,.125)",
+                                                    "transition": "none",
+                                                },
+                                            ),
+                                        ],
+                                        lg={"size": 10, "offset": 1},
+                                        className="px-2",
+                                    ),
+                                ]
                             ),
                         ],
-                        style={"width": "90%", "margin": "0 auto"},
+                        fluid=True,
+                        className="px-3 mt-2",
                     ),
                 ],
-                style={"flex": "1", "padding": "20px", "backgroundColor": "#ffffff"},
+                width=12,
+                className="p-4 bg-white",
             ),
         ],
-        style={"display": "flex", "minHeight": "100vh", "backgroundColor": "#ffffff"},
+        className="min-vh-100",
     )
 
     return create_base_layout(content)
