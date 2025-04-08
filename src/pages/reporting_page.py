@@ -41,33 +41,45 @@ def create_reporting_page(app, reporting_df, data_dict, chart_configs):
                         "Trends in Data Center Energy Reporting Over Time",
                         className="page-title h2 mb-3",
                     ),
-                    # Date range filter
-                    dbc.Row(
-                        dbc.Col(
-                            [
-                                html.Label(
-                                    "Select Date Range",
-                                    className="text-muted mb-2",
-                                ),
-                                year_range_filter,
-                            ],
-                            width=12,
-                            lg=4,
-                            className="mb-1",
-                        ),
-                    ),
-                    # Charts container
                     dbc.Container(
                         [
+                            # Filter and Download button row
+                            dbc.Row(
+                                [
+                                    # Left offset to align with chart
+                                    dbc.Col(lg=1),
+                                    # Date range filter
+                                    dbc.Col(
+                                        [
+                                            # html.Label(
+                                            #     "Select Date Range",
+                                            #     className="text-muted mb-2",
+                                            # ),
+                                            year_range_filter,
+                                        ],
+                                        width=12,
+                                        lg=4,
+                                    ),
+                                    # Spacer that takes remaining space
+                                    dbc.Col(className="flex-grow-1"),
+                                    # Download button (right-aligned)
+                                    dbc.Col(
+                                        create_download_button(
+                                            button_id="btn-download-reporting-data",
+                                            download_id="download-reporting-data",
+                                        ),
+                                        width="auto",
+                                    ),
+                                    # Right offset to match chart container
+                                    dbc.Col(lg=1),
+                                ],
+                                className="mb-1 align-items-end",
+                            ),
+                            # Charts
                             dbc.Row(
                                 [
                                     dbc.Col(
                                         [
-                                            # Download button
-                                            create_download_button(
-                                                button_id="btn-download-reporting-data",
-                                                download_id="download-reporting-data",
-                                            ),
                                             # Bar Chart
                                             dbc.Card(
                                                 dcc.Graph(
@@ -82,11 +94,17 @@ def create_reporting_page(app, reporting_df, data_dict, chart_configs):
                                                     },
                                                     style={"height": "100%"},
                                                 ),
-                                                className="mb-3",
+                                                className="mb-4",
                                                 style={
                                                     "height": "52vh",
                                                     "border": "1px solid rgba(0,0,0,.125)",
                                                     "transition": "none",
+                                                    "box-shadow": "none",
+                                                    "transform": "none",
+                                                    "cursor": "default",
+                                                    "userSelect": "none",
+                                                    "-webkit-transform": "none",
+                                                    "-webkit-transition": "none",
                                                 },
                                             ),
                                             # Timeline Chart
@@ -102,13 +120,19 @@ def create_reporting_page(app, reporting_df, data_dict, chart_configs):
                                                     },
                                                     style={
                                                         "height": "100%",
-                                                        "minHeight": "400px",
+                                                        "minHeight": "500px",
                                                     },
                                                 ),
                                                 style={
-                                                    "minHeight": "400px",
+                                                    "minHeight": "500px",
                                                     "border": "1px solid rgba(0,0,0,.125)",
                                                     "transition": "none",
+                                                    "box-shadow": "none",
+                                                    "transform": "none",
+                                                    "cursor": "default",
+                                                    "userSelect": "none",
+                                                    "-webkit-transform": "none",
+                                                    "-webkit-transition": "none",
                                                 },
                                             ),
                                         ],
