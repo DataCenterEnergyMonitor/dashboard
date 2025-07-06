@@ -8,13 +8,13 @@ Industry Trends:
     route: /wue
     preview: assets/previews/wue_preview.png
     description: Water Usage Effectiveness trends
-  Energy Forecast:
-    route: /forecast
-    preview: assets/previews/energy_forecast_preview.png
-    description: Predictive energy consumption analysis
+  # Energy Forecast:
+  #   route: /forecast
+  #   preview: assets/previews/energy_forecast_preview.png
+  #   description: Predictive energy consumption analysis
   Company Reporting Profile:
     route: /company-profile
-    preview: assets/previews/pue_preview.png
+    preview: assets/previews/company_profile_preview.png
     description: Comparative company performance metrics
   Energy Reporting Trends:
     route: /reporting

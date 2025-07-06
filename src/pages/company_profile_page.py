@@ -40,13 +40,6 @@ def create_company_profile_page(app, company_profile_df, energy_use_df):
                     html.H1(
                         "Company Reporting Profile",
                         className="page-title",
-                        # style={
-                        #     "marginBottom": "24px",
-                        #     #"fontSize": "24px",
-                        #     "fontWeight": "500",
-                        #     "color": "#1f2937",
-                        #     "fontFamily": "Inter",
-                        # },
                     ),
                     # Dropdown Filter Container
                     html.Div(
