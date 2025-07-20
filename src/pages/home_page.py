@@ -18,7 +18,7 @@ def create_section_divider(title):
     return html.Div([
         dbc.Row([
             dbc.Col(
-                html.H2(title, style={'color': '#343a40'}), # section title color: green 14AE5C   
+                #html.H2(title, style={'color': '#343a40'}), # section title color: green 14AE5C   
                 width="auto",
                 className="px-2"
             ),
@@ -48,7 +48,7 @@ def create_card(title, page_info):
             ])
         ], 
         className="h-100 shadow-sm",  # Make all cards same height with subtle shadow
-        style={'width': '300px'}
+        style={'width': '400px'}
         ),
         href=page_info['route'],
         style={'textDecoration': 'none'},  # Remove underline from links
@@ -67,7 +67,7 @@ def create_section(title, pages_dict):
             )
             for page_title, page_info in pages_dict.items()
         ],
-        className="flex-wrap justify-content-start g-0",
+        className="flex-wrap justify-content-center g-0",
         style={
             'margin': '0',
             'background': '#f8f9fa',  # Light background
@@ -83,26 +83,31 @@ def create_home_page():
     content = html.Div([
         # Site Header with Icon above title
         html.Div([
-            # Icon centered above title
+            # Title
+            html.H1(
+                site_config.get('title'),
+                className="text-center landing-page-title",
+            ),
+            # Subitle
+            html.H2(
+                site_config.get('subtitle'),
+                className="text-center landing-page-description",
+            ),
+            # Icon centered below title
             html.Div([
                 html.Img(
                     src=site_config.get('header_logo', 'assets/icon.png'),
-                    style={'height': '80px', 'marginBottom': '15px'}
+                            style={'maxWidth': '150px', 'marginBottom': '15px'
+                            }   
                 ),
-            ], className="text-center"),
-            # Title
-            html.H1(
-                site_config.get('title', 'Data Center Energy Monitor'),
-                className="text-center",
-                style={'fontFamily': 'Montserrat, sans-serif'}
-            )
-        ], className="my-5"),
+            ], className="img-fluid mx-auto d-block mb-3", style={'textAlign': 'center'})
+        ], className="my-4 container px-3", style={'maxWidth': '1000px', 'margin': '0 auto'}),
 
         # Sections container with responsive margins
         html.Div([
             *[create_section(category, pages) 
               for category, pages in menu_config.items() 
-              if category != 'site_config'],
+              if category == 'landing_page_cards'],
         ], className="container-fluid px-2 px-sm-3 px-md-4 px-lg-5", 
            style={'maxWidth': '1400px', 'font-family': 'Inter, sans-serif'}),  # Added comma here
 
