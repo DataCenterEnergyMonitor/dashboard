@@ -1,36 +1,94 @@
-# Page categories
-Industry Trends:
-  PUE:
-    route: /pue
+# Site configuration
+site_config:
+  title: Data Center Energy and Water Monitor
+  subtitle: A data repository for understanding, quantifying, and monitoring the energy and water use of the data center industry
+  header_logo: assets/icon.png
+
+navbar:
+  About Us:
+    route: /about
+  Learn:
+    Data Centers Energy 101:
+      route: /data-centers-101
+      #preview: assets/previews/data_center_101_preview.svg
+    Data Centers Water 101:
+      route: /data-centers-101
+  Companies:
+    route: /companies
+  Methods/FAQs:
+    route: /methods
+  Datasets:
+    PUE/WUE:
+      route: /pue_wue
+    # WUE:
+    #   route: /wue
+    # Energy Forecast:
+    #   route: /forecast
+    Company Reporting Trends:
+      route: /reporting
+    Company Reported Data:
+      route: /company-profile
+    Energy Demand Estimates and Projections:
+      route: /forecast
+    Water Demand Estimates and Projections:
+      route: /forecast
+    Global policies:
+      route: /global-policies
+    # Data Center Energy Use:
+    #   route: /energy-use
+  Research:
+    route: /research
+  Newsletter:
+    route: /newsletter
+  Contact:
+    route: /contact
+
+# FIXED: Proper indentation for landing_page_cards
+landing_page_cards:
+  PUE/WUE:
+    route: /pue_wue
     preview: assets/previews/pue_preview.png
-    description: Power Usage Effectiveness trends
-  WUE:
-    route: /wue
-    preview: assets/previews/wue_preview.png
-    description: Water Usage Effectiveness trends
-  # Energy Forecast:
-  #   route: /forecast
-  #   preview: assets/previews/energy_forecast_preview.png
-  #   description: Predictive energy consumption analysis
-  Company Reporting Profile:
+    description: 200+ PUE and WUE values by company, region, and operator type
+  Company Reporting Trends:
+    route: /reporting
+    preview: assets/previews/reporting_trends_preview.png
+    description: Review who has reported, and who hasn't, since 2007
+  Company Reported Data:
     route: /company-profile
     preview: assets/previews/company_profile_preview.png
     description: Comparative company performance metrics
-  Energy Reporting Trends:
-    route: /reporting
-    preview: assets/previews/reporting_trends_preview.png
-    description: Industry reporting patterns and insights
-  Data Center Energy Use:
-    route: /energy-use
-    preview: assets/previews/energy_data_trends_preview.png
-    description: Data center energy consumption metrics
+  Energy Demand Estimates and Projections:
+    route: /forecast
+    preview: assets/previews/energy_forecast_preview.png
+    description: Estimates and projections from 100+ studies
+  Water Demand Estimates and Projections:
+    route: /forecast
+    preview: assets/previews/energy_forecast_preview.png
+    description: Estimates and projections from 10+ studies
+  Global policies:
+    route: /global-policies
+    preview: assets/previews/global_policies_preview.png
+    description: Summaries of 100+ global data center sustainability policies
 
-Learn:
-  Data Centers 101:
-    route: /data-centers-101
-    preview: assets/previews/data_center_101_preview.svg
-    description: Introduction to data center operations
-  Methods:
-    route: /methods
-    preview: assets/previews/pue_preview.png
-    description: Methodology and calculations 
+# KPI Cards Configuration
+kpi_cards:
+  - id: "companies_monitored"
+    title: "Companies Monitored"
+    icon: "fas fa-building"
+    color: "primary"
+    enabled: true
+  - id: "pue_values"
+    title: "PUE Values"
+    icon: "fas fa-bolt"
+    color: "success"
+    enabled: true
+  - id: "wue_values"
+    title: "WUE Values"
+    icon: "fas fa-tint"
+    color: "info"
+    enabled: true
+  - id: "studies_assessed"
+    title: "Studies Assessed"
+    icon: "fas fa-chart-line"
+    color: "warning"
+    enabled: true

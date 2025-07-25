@@ -4,7 +4,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
 import os
-
 import dash
 from dash import Dash, dcc, html, Input, Output, callback
 from dash.dependencies import Input, Output, State
@@ -49,6 +48,7 @@ from callbacks.company_profile_callbacks import (
     create_company_profile_callback,
     create_company_profile_download_callback,
 )
+from components.kpi_data_cards import create_kpi_cards
 
 
 def create_app():
@@ -183,6 +183,7 @@ def create_app():
     company_profile_download_callback = create_company_profile_download_callback(
         app, data_dict
     )
+
     # URL Routing
     app.layout = html.Div(
         [dcc.Location(id="url", refresh=False), html.Div(id="page-content")]
@@ -212,7 +213,7 @@ def create_app():
             return create_data_centers_101_page()
         else:
             print(f"No route match, defaulting to home page")  # Debug print
-            return create_home_page()
+            return create_home_page(pue_df)
 
     # Navbar toggle callback - moved inside create_app()
     @app.callback(
