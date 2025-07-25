@@ -57,7 +57,7 @@ def create_kpi_cards(df, config):
                     ]
                 )
             ],
-            className="kpi-card",
+            className=f"kpi-card",
         )
 
         cards.append(card)

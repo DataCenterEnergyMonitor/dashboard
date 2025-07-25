@@ -49,7 +49,10 @@ def create_card(title, page_info):
                 dbc.CardImg(
                     src=page_info["preview"],
                     top=True,
-                    style={"height": "180px", "objectFit": "cover"},
+                    style={
+                        "height": "200px",
+                        "objectFit": "cover",
+                    },  # Increased height from 180px
                 ),
                 dbc.CardBody(
                     [
@@ -65,8 +68,8 @@ def create_card(title, page_info):
                     ]
                 ),
             ],
-            className="h-100 shadow-sm",  # Make all cards same height with subtle shadow
-            style={"width": "400px"},
+            className="h-100 shadow-sm content-tile",  # Added content-tile class for hover effects
+            style={"width": "450px"},  # Increased width from 400px
         ),
         href=page_info["route"],
         style={"textDecoration": "none"},  # Remove underline from links
@@ -78,7 +81,41 @@ def create_section(title, pages_dict):
     """Create a section with cards for each page"""
     return html.Div(
         [
-            create_section_divider(title),
+            # create_section_divider(title),
+            dbc.Row(
+                html.P(
+                    [
+                        "Click on the tiles below to explore our datasets ",
+                        html.Span(
+                            "↓",
+                            style={
+                                "color": "rgba(64, 64, 64, 0.7)",
+                                "fontSize": "1.2em",
+                                "marginLeft": "4px",
+                            },
+                        ),
+                        html.Br(),
+                        "To review the basics, start with our ",
+                        html.A(
+                            "Data Center Energy Use 101",
+                            href="/energy-101",
+                        ),
+                        " and ",
+                        html.A(
+                            "Data Center Water Use 101",
+                            href="/water-101",
+                        ),
+                        " primers. ",
+                        html.Br(),
+                        "For a current view of the companies we track and our progress, visit ",
+                        html.A(
+                            "Companies",
+                            href="/companies",
+                        ),
+                    ],
+                    className="text-center page-description px-2 flex-wrap justify-content-center g-0",
+                ),
+            ),
             dbc.Row(
                 [
                     dbc.Col(
@@ -89,17 +126,18 @@ def create_section(title, pages_dict):
                     for page_title, page_info in pages_dict.items()
                 ],
                 className="flex-wrap justify-content-center g-0",
-                style={
-                    "margin": "0",
-                    "background": "#fafbfc",  # Light background
-                    "borderRadius": "8px",
-                    "padding": "20px",
-                    "padding-top": "0px",
-                    "padding-bottom": "50px",
-                },
             ),
         ],
         className="mb-5",
+        style={
+            "margin": "0",
+            "background": "#fafbfc",  # Light background
+            "borderRadius": "8px",
+            "padding": "20px",
+            "padding-top": "20px",
+            "padding-bottom": "50px",
+            "margin-top": "20px",
+        },
     )
 
 
@@ -156,7 +194,7 @@ def create_home_page(df=None):
                 ],
                 className="container-fluid px-2 px-sm-3 px-md-4 px-lg-4",
                 style={"maxWidth": "1600px", "font-family": "Inter, sans-serif"},
-            ),  # Added comma here
+            ),
             # Back to Top button
             html.Button(
                 "↑",

@@ -28,15 +28,15 @@
     color: white !important;
 }
 
-/* Card hover effect */
-.card {
+/* Card hover effect - only for content tiles */
+.content-tile {
     transition: transform 0.2s ease-in-out;
 }
 
-.card:hover {
+/* .content-tile:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 15px rgba(20, 174, 92, 0.2);
-}
+} */
 
 .hover-shadow:hover {
     transform: translateY(-3px);
@@ -111,19 +111,125 @@ body {
 /* Typography hierarchy */
 .landing-page-title {
     font-family: 'Montserrat', sans-serif;
-    font-weight: 500;
-    /* font-size: clamp(1.5rem, 4vw, 2.5rem); font-size: clamp(24px, 4vw, 32px); */
+    font-weight: 600; /* Increased from 500 for better hierarchy */
     font-size: calc(1.2rem + 1.5vw);
     font-style: normal;
     color: #2C3E50;
     margin: 0.67em 0;
-    margin-bottom: 20px;
-    line-height: 120%; /* 57.6px */
+    margin-bottom: 24px; /* Reduced from 32px */
+    line-height: 120%;
     letter-spacing: -0.96px;
 }
 
 /* Subsection headers (h3) */
 .landing-page-description {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400; /* Increased from 100 for better readability */
+    font-style: normal;
+    color: rgba(64, 64, 64, 0.8); /* Increased opacity for better contrast */
+    text-align: center;
+    max-width: 70%; /* Reduced from 80% for better readability */
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem; /* Reduced from 2rem */
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6; /* Increased from 120% */
+    font-size: calc(0.8rem + 0.5vw); 
+}
+
+/* Hero section improvements */
+.hero-section {
+    padding: 2rem 0 1.5rem 0; /* Reduced padding */
+    margin-bottom: 1rem; /* Reduced from 2rem */
+}
+
+.hero-icon {
+    margin: 1.5rem 0; /* Reduced from 2rem */
+    transition: transform 0.3s ease;
+}
+
+.hero-icon:hover {
+    transform: scale(1.05);
+}
+
+/* KPI Cards improvements - alternating green borders */
+.kpi-card {
+    padding: 1.5rem 1rem; /* Increased padding */
+    min-height: 120px; /* Increased minimum height */
+    height: auto;
+    border-radius: 8px; /* Increased from 3px */
+    margin-bottom: 1rem; /* Reduced from 1.5rem */
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); /* Restored subtle gradient */
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-bottom: 0.15rem solid #00bf63;
+    /* No hover effects - static cards */
+}
+
+.kpi-value {
+    font-size: 2.8rem; /* Increased from 2.5rem */
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-title {
+    font-size: 1.1rem; /* Increased from 1.2rem but with better proportion */
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Content tiles improvements - enhanced hover effects */
+.content-tile {
+    border-radius: 12px; /* Increased from default */
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.content-tile:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid #00bf63; /* Green border on hover */
+}
+
+.content-tile .card-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+}
+
+.content-tile .card-text {
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+/* Section spacing improvements */
+.section-container {
+    padding: 1.5rem 0; /* Reduced from 3rem */
+    margin: 1rem 0; /* Reduced from 2rem */
+}
+
+.section-divider {
+    margin: 2rem 0 1.5rem 0; /* Reduced margins */
+    border-color: #e9ecef;
+    opacity: 0.6;
+}
+
+.page-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: #404040;
+    margin-bottom: 20px;
+    font-size: clamp(20px, 3vw, 28px);
+}
+
+.page-description {
     font-family: 'Inter', sans-serif;
     font-weight: 100;
     font-style: normal;
@@ -134,16 +240,8 @@ body {
     margin-bottom: 1rem;
     margin-left: auto;
     margin-right: auto;
-    line-height: 120%; /* 24px */
-    font-size: calc(0.8rem + 0.5vw); 
-}
-
-.page-title {
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    color: #404040;
-    margin-bottom: 20px;
-    font-size: clamp(20px, 3vw, 28px);
+    line-height: 1.8; /* 24px */
+    font-size: calc(0.6rem + 0.5vw); 
 }
 
 /* Section headers (h2) */
@@ -207,63 +305,62 @@ body {
     background-color: #246B42 !important; /* #4CAF50 */
 }
 
-.kpi-card {
-      border-left: 0.2rem solid #00bf63;
-      padding: 0.3rem 1rem;
-      min-height: 30px;
-      height: auto;
-      /* box-shadow: 0 1px 4px rgba(0,0,0,0.1); */
-      border-radius: 3px;
-      margin-bottom: 1rem;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-  }
-
-  .kpi-card:hover {
-    transform: none;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1); /* or your default shadow */
-}
-
-.kpi-value {
-    font-size: 2.5rem;
-}
-.kpi-title {
-    font-size: 1.2rem;
-}
-
-.kpi-value, .kpi-title {
-    /*word-break: break-word;
-    white-space: normal; */
-}
-
   @media (max-width: 600px) {
       .kpi-card {
           max-width: 180px;
           min-width: 100px;
           width: 90%;
-          height: 80px;
-          padding: 0.1rem;
-          margin-bottom: 0.1rem;
+          height: 100px; /* Increased from 80px */
+          padding: 1rem 0.5rem; /* Increased padding */
+          margin-bottom: 1rem; /* Increased from 0.1rem */
           text-align: center;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          border-radius: 8px; /* Consistent with desktop */
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       .kpi-card * {
-          font-size: 0.75em; /* makes all text inside smaller */
+          font-size: 0.85em; /* Increased from 0.75em */
       }
           .kpi-value {
-        font-size: 1.2rem;
+        font-size: 1.4rem; /* Increased from 1.2rem */
     }
     .kpi-title {
-        font-size: 0.80rem;
+        font-size: 0.9rem; /* Increased from 0.80rem */
     }
       .kpi-row {
           display: flex;
           flex-direction: column;
           align-items: center;
+          gap: 1rem; /* Added gap between cards */
+      }
+      
+      /* Mobile hero improvements */
+      .landing-page-title {
+          font-size: calc(1rem + 2vw);
+          margin-bottom: 1rem; /* Reduced from 1.5rem */
+      }
+      
+      .landing-page-description {
+          max-width: 90%;
+          font-size: calc(0.7rem + 0.8vw);
+          margin-bottom: 1rem; /* Reduced from 1.5rem */
+      }
+      
+      /* Mobile content tiles */
+      .content-tile {
+          margin-bottom: 1rem;
+      }
+      
+      .content-tile .card-img {
+          height: 140px !important; /* Reduced from 180px for mobile */
+      }
+      
+      /* Mobile section spacing */
+      .section-container {
+          padding: 1rem 0; /* Reduced for mobile */
+          margin: 0.5rem 0; /* Reduced for mobile */
       }
   }
 
@@ -272,26 +369,123 @@ body {
           max-width: 800px;
           min-width: 120px;
           width: 95%;
-          height: 90px;
-          padding: 0.2rem;
-          margin-bottom: 0.2rem;
+          height: 100px; /* Increased from 90px */
+          padding: 1.2rem 0.8rem; /* Increased padding */
+          margin-bottom: 1rem; /* Increased from 0.2rem */
           text-align: center;
           white-space: nowrap;
           overflow: clip;
           text-overflow: ellipsis;
+          border-radius: 8px; /* Consistent with desktop */
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       .kpi-card * {
-          font-size: 1.4em; /* makes all text inside smaller */
+          font-size: 1.2em; /* Reduced from 1.4em for better proportion */
       }
           .kpi-value {
-        font-size: 1.4rem;
+        font-size: 1.6rem; /* Increased from 1.4rem */
     }
     .kpi-title {
-        font-size: 1rem;
+        font-size: 1.1rem; /* Increased from 1rem */
     }
       .kpi-row {
           display: flex;
           flex-direction: column;
           align-items: center;
+          gap: 1rem; /* Added gap between cards */
+      }
+      
+      /* Tablet hero improvements */
+      .landing-page-title {
+          font-size: calc(1.1rem + 1.8vw);
+      }
+      
+      .landing-page-description {
+          max-width: 80%;
+          font-size: calc(0.75rem + 0.6vw);
+      }
+      
+      /* Tablet section spacing */
+      .section-container {
+          padding: 1.25rem 0; /* Reduced for tablet */
+          margin: 0.75rem 0; /* Reduced for tablet */
       }
   }
+
+/* Loading and interaction states */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus states for accessibility */
+.content-tile:focus {
+    outline: 2px solid #00588D;
+    outline-offset: 2px;
+}
+
+/* Button improvements */
+.btn-primary {
+    background-color: #00588D;
+    border-color: #00588D;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #004a73;
+    border-color: #004a73;
+    transform: translateY(-1px);
+}
+
+/* Back to top button improvements */
+.back-to-top-btn {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.back-to-top-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+}
+
+/* Navigation improvements */
+.navbar-nav .nav-link {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 50%;
+    background-color: #00bf63;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover::after {
+    width: 100%;
+}
+
+/* Card image improvements */
+.content-tile .card-img {
+    transition: transform 0.3s ease;
+}
+
+/* .content-tile:hover .card-img {
+    transform: scale(1.02);
+} */
