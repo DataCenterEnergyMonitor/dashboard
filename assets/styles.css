@@ -68,6 +68,63 @@ a:hover {
     color: #ffffff !important; 
 }
 
+.navbar_data_page {
+    background-color: #ffffff !important; /* #343a40; */
+    font-family: 'Inter', sans-serif;
+    color: RGB(26,27,37) !important;
+    font-size: clamp(14px, 2vw, 16px);
+    padding: 0.5rem 1rem;
+}
+
+.navbar_data_page .nav-link {
+    color: RGB(26,27,37) !important; /* Dark text for white background */
+    transition: all 0.3s ease;
+    padding: 0.5rem 2rem 0.5rem 1rem !important;
+    border-radius: 4px;
+}
+
+.navbar_data_page .nav-link:hover {
+    color: RGB(26,27,37) !important; /* Keep same color */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    background-color: #f5f6f8;
+}
+
+.navbar_data_page .dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #e9ecef; /* Light border for contrast f5f6f8 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+}
+
+.navbar_data_page .dropdown-item {
+    color: RGB(26,27,37) !important;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+}
+
+.navbar_data_page .dropdown-item:hover {
+    background-color: #f5f6f8; 
+    color: RGB(26,27,37) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    background-color: #fafbfc;
+}
+
+.navbar_data_page .navbar-brand {
+    color: RGB(26,27,37) !important;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem 0.5rem 2rem;
+    border-radius: 4px;
+}
+
+.navbar_data_page .navbar-brand:hover {
+    color: RGB(26,27,37) !important; /* Keep same color */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    background-color: #fafbfc;
+}
+
 body {
     font-family: 'Inter'; /* Example font */
 }
@@ -130,7 +187,7 @@ body {
     text-align: center;
     max-width: 70%; /* Reduced from 80% for better readability */
     margin-top: 0.5rem;
-    margin-bottom: 1.5rem; /* Reduced from 2rem */
+    margin-bottom: 0.5rem; /* Reduced from 2rem */
     margin-left: auto;
     margin-right: auto;
     line-height: 1.6; /* Increased from 120% */
@@ -199,7 +256,7 @@ body {
 }
 
 .content-tile .card-title {
-    font-weight: 600;
+    font-weight: 500;
     color: #2c3e50;
     margin-bottom: 0.75rem;
 }

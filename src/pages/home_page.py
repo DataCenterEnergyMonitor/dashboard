@@ -113,7 +113,7 @@ def create_section(title, pages_dict):
                             href="/companies",
                         ),
                     ],
-                    className="text-center page-description px-2 flex-wrap justify-content-center g-0",
+                    className="text-center page-description justify-content-center g-0",
                 ),
             ),
             dbc.Row(

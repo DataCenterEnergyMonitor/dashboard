@@ -3,21 +3,25 @@ import dash_bootstrap_components as dbc
 import yaml
 import os
 
+
 def load_menu_config():
     """Load menu configuration from YAML file"""
-    config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'menu_structure.yaml')
-    with open(config_path, 'r') as file:
+    config_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "menu_structure.yaml"
+    )
+    with open(config_path, "r") as file:
         return yaml.safe_load(file)
+
 
 def create_navbar():
     menu_structure = load_menu_config()
-    site_config = menu_structure.get('site_config', {})
-    navbar_items = menu_structure.get('navbar', {}).get('main', {})
+    site_config = menu_structure.get("site_config", {})
+    navbar_items = menu_structure.get("navbar", {}).get("data_page", {})
 
     nav_links = generate_nav_links(navbar_items)
 
     return html.Nav(
-        className="navbar navbar-expand-lg navbar-dark bg-dark",
+        className="navbar_data_page navbar-expand-lg navbar-light bg-light",
         children=[
             html.Div(
                 className="container-fluid d-flex align-items-center justify-content-between",
@@ -26,33 +30,35 @@ def create_navbar():
                     html.Div(
                         className="d-flex align-items-center",
                         children=[
-                            dbc.NavbarToggler(id="navbar-toggler", className="me-2"),
+                            dbc.NavbarToggler(id="navbar-toggler", className="me-3"),
                             html.A(
                                 html.Img(
-                                    src=site_config.get('navbar_logo', 'assets/isalab-logo.png'),
+                                    src=site_config.get(
+                                        "navbar_logo", "assets/icon.png"
+                                    ),
                                     className="img-fluid",
-                                    style={'maxHeight': '45px'}
+                                    style={"maxHeight": "45px"},
                                 ),
-                                className="navbar-brand mb-0 h1",
-                                href="/"
-                            )
-                        ]
+                                className="navbar-brand mb-0 h1 px-3",
+                                href="/",
+                            ),
+                        ],
                     ),
-
                     # Right-aligned collapse menu
                     dbc.Collapse(
                         id="navbar-collapse",
                         is_open=False,
                         navbar=True,
-                        className= "position-absolute start-50 translate-middle-x", #"justify-content-center",
+                        className="justify-content-end",
                         children=[
-                            dbc.Nav(nav_links, navbar=True), #className="ms-auto"
-                        ]
-                    )
-                ]
+                            dbc.Nav(nav_links, navbar=True, className="ms-auto"),
+                        ],
+                    ),
+                ],
             )
-        ]
+        ],
     )
+
 
 def generate_nav_links(items, parent_label=None):
     nav_links = []
@@ -76,10 +82,15 @@ def generate_nav_links(items, parent_label=None):
                     elif isinstance(sub_content, dict):
                         # Third-level nesting
                         for subsub_label, subsub_content in sub_content.items():
-                            if isinstance(subsub_content, dict) and "route" in subsub_content:
+                            if (
+                                isinstance(subsub_content, dict)
+                                and "route" in subsub_content
+                            ):
                                 combined_label = f"{sub_label} / {subsub_label}"
                                 dropdown_items.append(
-                                    dbc.DropdownMenuItem(combined_label, href=subsub_content["route"])
+                                    dbc.DropdownMenuItem(
+                                        combined_label, href=subsub_content["route"]
+                                    )
                                 )
 
                 if dropdown_items:
@@ -88,7 +99,7 @@ def generate_nav_links(items, parent_label=None):
                             label=label,
                             nav=True,
                             in_navbar=True,
-                            children=dropdown_items
+                            children=dropdown_items,
                         )
                     )
     return nav_links

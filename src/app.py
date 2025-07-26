@@ -19,6 +19,7 @@ from data_loader import (
 
 from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
+from pages.pue_wue_page import create_pue_wue_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -196,7 +197,9 @@ def create_app():
             return create_pue_page(app, pue_df, company_counts)
         elif pathname == "/wue":
             return create_wue_page(app, wue_df, wue_company_counts)
-        elif pathname == "/forecast":  # This should match the link in your navigation
+        elif pathname == "/pue_wue":
+            return create_pue_wue_page(app, pue_df, wue_df)
+        elif pathname == "/forecast": 
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)
         elif pathname == "/reporting":
@@ -215,7 +218,7 @@ def create_app():
             print(f"No route match, defaulting to home page")  # Debug print
             return create_home_page(pue_df)
 
-    # Navbar toggle callback - moved inside create_app()
+    # Navbar toggle callback
     @app.callback(
         Output("navbar-collapse", "is_open"),
         [Input("navbar-toggler", "n_clicks")],
@@ -227,7 +230,6 @@ def create_app():
         return is_open
 
     return app
-
 
 if __name__ == "__main__":
     app = create_app()

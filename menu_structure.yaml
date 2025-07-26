@@ -5,43 +5,58 @@ site_config:
   header_logo: assets/icon.png
 
 navbar:
-  About Us:
-    route: /about
-  Learn:
-    Data Centers Energy 101:
-      route: /data-centers-101
-      #preview: assets/previews/data_center_101_preview.svg
-    Data Centers Water 101:
-      route: /data-centers-101
-  Companies:
-    route: /companies
-  Methods/FAQs:
-    route: /methods
-  Datasets:
-    PUE/WUE:
-      route: /pue_wue
-    # WUE:
-    #   route: /wue
-    # Energy Forecast:
-    #   route: /forecast
-    Company Reporting Trends:
-      route: /reporting
-    Company Reported Data:
-      route: /company-profile
-    Energy Demand Estimates and Projections:
-      route: /forecast
-    Water Demand Estimates and Projections:
-      route: /forecast
-    Global policies:
-      route: /global-policies
-    # Data Center Energy Use:
-    #   route: /energy-use
-  Research:
-    route: /research
-  Newsletter:
-    route: /newsletter
-  Contact:
-    route: /contact
+  main:
+    About:
+      route: /about
+    Learn:
+      Data Centers Energy 101:
+        route: /data-centers-101
+        #preview: assets/previews/data_center_101_preview.svg
+      Data Centers Water 101:
+        route: /data-centers-101
+    Companies:
+      route: /companies
+    Methods:
+      route: /methods
+    Data:
+      PUE/WUE:
+        route: /pue_wue
+      # WUE:
+      #   route: /wue
+      # Energy Forecast:
+      #   route: /forecast
+      Company Reporting Trends:
+        route: /reporting
+      Company Reported Data:
+        route: /company-profile
+      Energy Demand Estimates and Projections:
+        route: /forecast
+      Water Demand Estimates and Projections:
+        route: /forecast
+      Global policies:
+        route: /global-policies
+      # Data Center Energy Use:
+      #   route: /energy-use
+    Research:
+      route: /research
+    Newsletter:
+      route: /newsletter
+    Contact:
+      route: /contact
+  data_page:
+    Home:
+      route: /
+    Methodology:
+      route: /pue_wue_methodology
+    Data:
+      route: /pue_wue_data
+    Learn:
+      Data Centers Energy 101:
+        route: /data-centers-101
+      Data Centers Water 101:
+        route: /data-centers-101
+
+
 
 # FIXED: Proper indentation for landing_page_cards
 landing_page_cards:
