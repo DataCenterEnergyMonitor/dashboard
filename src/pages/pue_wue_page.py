@@ -29,51 +29,140 @@ def create_pue_wue_page(app, pue_df, wue_df):
             ),
 
             # Charts section
-            dbc.Row(
-                [
-                    # First row - two charts side by side
-                    dbc.Col(
-                        [
+            dbc.Row([
+                # First row - chart takes more space, starts at left edge
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Data Center Power Usage Effectiveness (PUE)", className="mb-0 text-center"),
+                            dbc.Button(html.I(className="fas fa-expand"), 
+                                id="expand-pue", 
+                                size="md", 
+                                color="light", 
+                                className="float-end"
+                            )
+                        ], style={"border": 'none', "padding": "5px 15px", "backgroundColor": "#ffffff"}),
+                        dbc.CardBody([
                             dcc.Graph(
                                 id="pue-scatter-chart",
-                                #style={"height": "400px"},
-                                config={"responsive": True}
+                                config={"responsive": True, "displayModeBar": True},
+                                figure={
+                                    "layout": {
+                                        "margin": {"l": 20, "r": 20, "t": 40, "b": 40}  # Minimal margins
+                                    }
+                                }
                             )
-                        ],
-                        xs=12, sm=12, md=6, lg=6
-                    ),  # Takes half width on medium+ screens
+                        ], style={"border": 'none', "padding": "0px", "backgroundColor": "#ffffff"})
+                    ],style={"border": "none", "boxShadow": "none"})
+                ], xs=12, sm=12, md=9, lg=9, className="ps-0 pe-3"),  # More space, no left padding
+                
+                dbc.Col([
+                    html.Div([
+                        dcc.Markdown('''
+                        ##### Power Utilization Effectiveness
 
-                    dbc.Col(
-                        [
-                            dcc.Graph(
-                                id="wue-scatter-chart",
-                                #style={"height": "400px"},
-                                config={"responsive": True}
-                            )
-                        ],
-                        xs=12, sm=12, md=6, lg=6
-                    ),  # Takes half width on medium+ screens
-                ],
-                className="mb-4"
-            ),
+                        Dash supports [Markdown](http://commonmark.org/help).
 
-            dbc.Row(
-                [
-                    # Second row - one chart full width
-                    dbc.Col(
-                        [
-                            dcc.Graph(
-                                id="combined-chart",
-                                #style={"height": "500px"},
-                                config={"responsive": True}
+                        Markdown is a simple way to write and format text.
+                        It includes a syntax for things like **bold text** and *italics*,
+                        [links](http://commonmark.org/help), inline `code` snippets, lists,
+                        quotes, and more.
+                        ''', style={"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px"})
+                    ], className="d-flex align-items-center justify-content-center h-100")
+                ], xs=12, sm=12, md=3, lg=3, className="ps-2 pe-0"),
+            ], className="mb-3 gx-2"),
+            html.Br(),
+            dbc.Row([
+                # First row - chart takes more space, starts at left edge
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Data Center Water Usage Effectiveness (WUE)", className="mb-0 text-center"),
+                            dbc.Button(html.I(className="fas fa-expand"), 
+                                id="expand-wue", 
+                                size="md", 
+                                color="light", 
+                                className="float-end"
                             )
-                        ],
-                        xs=12, sm=12, md=6, lg=6,
-                        className="mx-auto"
-                    ),  # Full width
-                ],
-                className = "justify-content-center"
-            ),
+                        ], style={"border": 'none', "padding": "5px 15px", "backgroundColor": "#ffffff"}),
+                        dbc.CardBody([
+                            dcc.Graph(
+                                id="pue-scatter-chart",
+                                config={"responsive": True, "displayModeBar": True},
+                                figure={
+                                    "layout": {
+                                        "margin": {"l": 20, "r": 20, "t": 40, "b": 40}  # Minimal margins
+                                    }
+                                }
+                            )
+                        ], style={"border": 'none', "padding": "0px", "backgroundColor": "#ffffff"})
+                    ],style={"border": "none", "boxShadow": "none"})
+                ], xs=12, sm=12, md=9, lg=9, className="ps-0 pe-3"),  # More space, no left padding
+                html.Br(),
+                dbc.Col([
+                    html.Div([
+                        dcc.Markdown('''
+                        ##### Water Utilization Effectiveness
+
+                        Dash supports [Markdown](http://commonmark.org/help).
+
+                        Markdown is a simple way to write and format text.
+                        It includes a syntax for things like **bold text** and *italics*,
+                        [links](http://commonmark.org/help), inline `code` snippets, lists,
+                        quotes, and more.
+                        ''', style={"textAlign": "center", "backgroundColor": "#f8f9fa"})
+                    ], className="d-flex align-items-center justify-content-center h-100")
+                ], xs=12, sm=12, md=3, lg=3, className="ps-2 pe-0"),
+            ], className="mb-3 gx-2"),
+                        dbc.Row([
+                # First row - chart takes more space, starts at left edge
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("WUE vs PUE", className="mb-0 text-center"),
+                            dbc.Button(html.I(className="fas fa-expand"), 
+                                id="expand-pue-wue", 
+                                size="md", 
+                                color="light", 
+                                className="float-end"
+                            )
+                        ], style={"border": 'none', "padding": "5px 15px", "backgroundColor": "#ffffff"}),
+                        dbc.CardBody([
+                            dcc.Graph(
+                                id="pue-scatter-chart",
+                                config={"responsive": True, "displayModeBar": True},
+                                figure={
+                                    "layout": {
+                                        "margin": {"l": 20, "r": 20, "t": 40, "b": 40}  # Minimal margins
+                                    }
+                                }
+                            )
+                        ], style={"border": 'none', "padding": "0px", "backgroundColor": "#ffffff"})
+                    ],style={"border": "none", "boxShadow": "none"})
+                ], xs=12, sm=12, md=9, lg=9, className="ps-0 pe-3"),  # More space, no left padding
+                
+                dbc.Col([
+                    html.Div([
+                        dcc.Markdown('''
+                        ##### WUE vs PUE Relationship
+
+                        Dash supports [Markdown](http://commonmark.org/help).
+
+                        Markdown is a simple way to write and format text.
+                        It includes a syntax for things like **bold text** and *italics*,
+                        [links](http://commonmark.org/help), inline `code` snippets, lists,
+                        quotes, and more.
+                        ''', style={"textAlign": "center", "backgroundColor": "#f8f9fa"})
+                    ], className="d-flex align-items-center justify-content-center h-100")
+                ], xs=12, sm=12, md=3, lg=3, className="ps-2 pe-0"),
+            ], className="mb-3 gx-2"),
+                # Modal for expanded view
+            dbc.Modal([
+            dbc.ModalHeader(dbc.ModalTitle(id="modal-title")),
+            dbc.ModalBody([
+                dcc.Graph(id="expanded-graph", style={"height": "70vh"})
+            ], style={"padding": "0"}),
+        ], id="graph-modal", size="xl", is_open=False),
         ]
     )
 
