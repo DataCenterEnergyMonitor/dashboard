@@ -543,6 +543,69 @@ html {
     transition: transform 0.3s ease;
 }
 
-/* .content-tile:hover .card-img {
-    transform: scale(1.02);
+/* Filters */
+
+.filter-accordion .accordion-item.show {
+    /*border-bottom: 3px solid #00bf63 !important; /* Only green bottom border */
+    box-shadow: none;/*0 4px 8px rgba(0, 191, 99, 0.1); /* Subtle green shadow */
+    border-bottom: 1px solid #ced4da !important; /* Green line under header */
+}
+
+.filter-accordion .accordion-button:not(.collapsed) {
+    background-color: #ffffff;/*#f8fff9; /* Very light green background */
+    color: #333;
+    font-weight: 500;
+    border-bottom: 1px solid #c1c6ca !important; /* Green line under header */
+}
+
+/* .filter-accordion .accordion-button .fas.fa-filter {
+    color: #00bf63 !important; /* Green color to match your theme 
 } */
+
+.filter-accordion.accordion .accordion-button:focus {
+    border-color: #ffffff;
+    box-shadow: none;
+    border-bottom: 1px solid #ced4da !important; /* Green line under header */
+}
+
+.filter-group-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+.filter-label {
+    font-size: 0.9rem;
+    /*font-weight: bold;*/
+    display: block;
+    margin-bottom: 0.09rem;
+    color: #333;
+}
+
+.filter-box {
+    font-size: 0.85rem;
+    padding-bottom: 5px;
+    /*border: 1px solid #babdc0;*/
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.filter-box .dash-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Space between checkbox rows */
+}
+
+.filter-box .dash-checklist input[type="checkbox"] {
+    margin-right: 8px; /* Space between checkbox and text */
+}
+
+/* Style individual checkbox items */
+.filter-box .dash-checklist label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between checkbox and text */
+    font-size: 0.85rem;
+    color: #333;
+    cursor: pointer;
+}
