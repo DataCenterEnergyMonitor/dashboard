@@ -14,10 +14,11 @@ def create_kpi_cards(df, config):
         "companies_monitored": df["company_name"].nunique()
         if "company_name" in df.columns
         else 0,
-        "pue_values": df["real_pue"].dropna().count()
-        if "real_pue" in df.columns
+        "pue_values": df[df['metric']=='pue']["metric_value"].dropna().count(),
+        "wue_values": df[df['metric']=='wue']["metric_value"].dropna().count()
+        if "metric_value" in df.columns
         else 0,
-        "wue_values": df["wue"].dropna().count() if "WUE" in df.columns else 0,
+        # "wue_values": df["metric_value"].dropna().count() if "metric_value" in df.columns else 0,
         "studies_assessed": df["study_id"].nunique() if "study_id" in df.columns else 0,
     }
 

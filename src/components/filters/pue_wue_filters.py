@@ -8,39 +8,35 @@ def create_pue_wue_filters(df):
         html.Div([
             html.H4("Company & Scope", className="filter-group-title"),
             html.Label("Company Name:", className="filter-label"),
-            dcc.Dropdown(id='company', 
-                         options=sorted(df['company'].unique()), 
+            dcc.Dropdown(id='company_name', 
+                         options=sorted(df['company_name'].unique()), 
                          multi=True, 
                          placeholder="Select companies",
                          className="filter-box"),
             html.Label("Time Period Category:", className="filter-label"),
             dcc.Checklist(
-                id='time_period', 
+                id='time_period_category', 
                 options=['Monthly', 'Quarterly', 'Biannual', 'Annual', 'Not evident'], 
                 value=[],
-                className="filter-box",
-),
+                className="filter-box"),
             html.Label("Measurement Category:", className="filter-label"),
             dcc.Checklist(
-                id='measurement', 
+                id='measurement_category', 
                 options=['Category 1', 'Category 2', 'Category 3', 'Not evident'], 
                 value=[],
-                className="filter-box",
-),
+                className="filter-box"),
             html.Label("PUE/WUE Type:", className="filter-label"),
             dcc.Checklist(
-                id='pue_wue_type', 
+                id='metric_type', 
                 options=['Measured', 'Design'], 
                 value=[],
-                className="filter-box",
-),
+                className="filter-box"),
             html.Label("Facility Scope:", className="filter-label"),
             dcc.Checklist(
                 id='facility_scope', 
                 options=['Single location', 'Fleet-wide', 'Not evident'], 
                 value=[],
-                className="filter-box",
-),
+                className="filter-box"),
         ], style={'width': '30%', 'display': 'inline-block', 'verticalAlign': 'top', 'padding': '10px'}),
         
         # Column 2: Facility Location
@@ -74,27 +70,42 @@ def create_pue_wue_filters(df):
         html.Div([
             html.H4("Climate & Cooling", className="filter-group-title"),
             html.Label("Assigned Climate Zone:", className="filter-label"),
-            dcc.Dropdown(id='climate_zone', options=[], multi=True, placeholder="Select climate zones", className="filter-box"),
+            dcc.Dropdown(id='assigned_climate_zones', options=[], multi=True, placeholder="Select climate zones", className="filter-box"),
             html.Label("Default Climate Zone:", className="filter-label"),
-            dcc.Dropdown(id='default_zone', options=[], multi=True, placeholder="Select climate zones", className="filter-box"),
+            dcc.Dropdown(id='default_climate_zones', options=[], multi=True, placeholder="Select climate zones", className="filter-box"),
             html.Label("Cooling Technology:", className="filter-label"),
-            dcc.Dropdown(id='cooling_tech', options=[], multi=True, placeholder="Select cooling technologies", className="filter-box"),
+            dcc.Dropdown(id='cooling_technologies', options=[], multi=True, placeholder="Select cooling technologies", className="filter-box"),
         ], style={'width': '30%', 'display': 'inline-block', 'verticalAlign': 'top', 'padding': '10px'}, id='climate-section'),
         
+        # Apply/Clear buttons
+        dbc.Row([
+            dbc.Col([
+                dbc.ButtonGroup([
+                    dbc.Button(
+                        ["Apply"],
+                        id="apply-filters-btn",
+                        color="primary",
+                        size="sm",
+                        n_clicks=0,
+                        style={"marginRight": "10px", "borderRadius": "20px"}
+
+                    ),
+                    dbc.Button(
+                        ["Clear All"],
+                        id="clear-filters-btn",
+                        color="outline-secondary",
+                        size="sm",
+                        n_clicks=0,
+                        style={"marginRight": "10px", "borderRadius": "20px"}
+                    )
+                ], className="w-100")
+            ], width=4, className="text-center")
+        ], className="mt-3 mb-3"),
+        
+        # Hidden div to store applied filter state
+        html.Div(id="applied-filters-store", style={"display": "none"}),
     ], style={'marginBottom': '30px'})
 
-
-def create_pue_wue_filters_layout(df):
-    return dbc.Accordion([
-            dbc.AccordionItem([
-            create_pue_wue_filters(df),
-            html.Div(id='output-container'),
-            ],
-            title=html.Span([
-                html.I(className="fas fa-filter me-2"), 
-                "Filters"]),
-                className="filter-accordion .accordion-item"),
-        ],
-        flush=True,
-        start_collapsed=True,
-        className="filter-accordion",)
+def get_options(column, filtered_df):
+    """Get unique options from filtered dataframe"""
+    return [{'label': val, 'value': val} for val in sorted(filtered_df[column].unique())]

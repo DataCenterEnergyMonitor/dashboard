@@ -1,25 +1,43 @@
 import plotly.express as px
 import pandas as pd
 
-def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
+def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     """
-    Create PUE scatter plot
+    Create WUE vs PUE scatter plot
     
     Args:
         filtered_df: DataFrame to display
         filters_applied: Boolean indicating if filters are actively applied
         full_df: unfiltered DataFrame
     """
-
+    print(f"=== PUE/WUE CHART DEBUG ===")
+    print(f"filtered_df shape: {filtered_df.shape}")
+    print(f"filters_applied: {filters_applied}")
+    if not filtered_df.empty:
+        print(f"Columns: {list(filtered_df.columns)}")
+        print(f"Sample data:")
+        print(filtered_df[['company_name', 'metric_value', 'wue_value']].head())
+        print(f"Unique companies: {filtered_df['company_name'].unique()}")
+        print(f"Company name nulls: {filtered_df['company_name'].isnull().sum()}")
+        print(f"metric_value nulls: {filtered_df['metric_value'].isnull().sum()}")
+        print(f"wue_value nulls: {filtered_df['wue_value'].isnull().sum()}")
+        print(f"Company name dtype: {filtered_df['company_name'].dtype}")
+        
+        # Check for actual values vs empty strings
+        print(f"Company name empty strings: {(filtered_df['company_name'] == '').sum()}")
+        print(f"Company name sample values: {filtered_df['company_name'].head().tolist()}")
+    else:
+        print("❌ filtered_df is empty!")
+        
     if filtered_df.empty:
         return {
             'data': [],
             'layout': {
-                'xaxis': {'title': 'Time Period', 'visible': True},
-                'yaxis': {'title': 'Power Usage Effectiveness (PUE)', 'visible': True},
+                'xaxis': {'title': 'Power Usage Effectiveness (PUE)', 'visible': True},
+                'yaxis': {'title': 'Water Usage Effectiveness (WUE)', 'visible': True},
                 'showlegend': False,
                 'annotations': [{
-                    'text': 'Select filters to view PUE trends',
+                    'text': 'Select filters to view WUE trends',
                     'xref': 'paper',
                     'yref': 'paper',
                     'x': 0.5,
@@ -30,7 +48,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 'plot_bgcolor': 'white'
             }
         }
-
+    
     # Create fields for hover text
     filtered_df = filtered_df.copy()
     filtered_df['region_text'] = filtered_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
@@ -38,38 +56,26 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     filtered_df['measurement_text'] = filtered_df['measurement_category'].apply(lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
 
     # Create the scatter plot
-    try: 
-        print("🔄 Creating scatter plot...")
-        pue_fig = px.scatter(
-            filtered_df,
-            x='time_period_value',
-            y='metric_value',
-            color='company_name' if filters_applied else None,
-            labels={
-                "time_period_value": "Time Period",
-                "metric_value": "Power Usage Effectiveness (PUE)",
-                "company_name": "Company Name"
-            },
-            custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
-        )
-        print(f"✅ Scatter plot created successfully with {len(pue_fig.data)} traces")
-        # Check if traces have data
-        for i, trace in enumerate(pue_fig.data):
-            print(f"  Trace {i}: {len(trace.x)} data points")
-            
-    except Exception as e:
-        print(f"❌ Error creating scatter plot: {e}")
-        return {"data": [], "layout": {"title": f"Chart error: {e}"}}
-
-        
+    pue_wue_fig = px.scatter(
+        filtered_df,
+        x='metric_value',
+        y='wue_value',
+        color='company_name' if filters_applied else None,
+        labels={
+            "metric_value": "Power Usage Effectiveness (PUE)",
+            "wue_value": "Water Usage Effectiveness (WUE)",
+            "company_name": "Company Name"
+        },
+        custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
+    )
 
     if not filters_applied:
-        pue_fig.update_traces(
+        pue_wue_fig.update_traces(
             marker=dict(color='lightgray', size=10, opacity=0.7),
             showlegend=False
         )
     else:
-        pue_fig.update_traces(marker=dict(size=10))
+        pue_wue_fig.update_traces(marker=dict(size=10))
         
         # Add background traces to foreground figure
         if full_df is not None and len(full_df) > len(filtered_df):
@@ -86,8 +92,8 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 
                 background_fig = px.scatter(
                     background_df, 
-                    x='time_period_value', 
-                    y='metric_value',
+                    x='metric_value', 
+                    y='wue_value',
                     custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
                 )
                 background_fig.update_traces(
@@ -97,53 +103,54 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 
                 # Add to main figure
                 for trace in background_fig.data:
-                    pue_fig.add_trace(trace)
+                    pue_wue_fig.add_trace(trace)
                 
                 # Reorder so background appears behind colored data
-                pue_fig.data = pue_fig.data[-len(background_fig.data):] + pue_fig.data[:-len(background_fig.data)]
+                pue_wue_fig.data = pue_wue_fig.data[-len(background_fig.data):] + pue_wue_fig.data[:-len(background_fig.data)]
     
-    pue_fig.update_layout(
+    pue_wue_fig.update_layout(
         font_family="Inter",
         plot_bgcolor='white',
         xaxis=dict(
             showgrid=False,  # disable gridlines
-            dtick=1,  # force yearly intervals
+            dtick=0.2,  # force yearly intervals
+            range=[0.8, 2.4],  # set y-axis to start at 1.0,
             showline=True,
             linecolor='black',
             linewidth=1,
             title_font=dict(size=14)
         ),
-    yaxis=dict(
-        showgrid=False,  # Disable gridlines
-        range=[1, max(filtered_df['metric_value'].max() * 1.1, 2.2)],  # set y-axis to start at 1.0
-        showline=True,
-        linecolor='black',
-        linewidth=1,
-        title_font=dict(size=14)
-    ),
-        legend=dict(
-            orientation='h',
-            yanchor='bottom',
-            y=1.02,
-            xanchor='right',
-            x=1
+
+        yaxis=dict(
+            showgrid=False,  # Disable gridlines
+            showline=True,
+            linecolor='black',
+            linewidth=1,
+            title_font=dict(size=14)
         ),
-        margin=dict(t=100, b=100),  # set bottom margin for citation
-        showlegend=filters_applied,
-        template='simple_white'
-    )
+            legend=dict(
+                orientation='h',
+                yanchor='bottom',
+                y=1.02,
+                xanchor='right',
+                x=1
+            ),
+            margin=dict(t=100, b=100),  # set bottom margin for citation
+            showlegend=filters_applied,
+            template='simple_white'
+        )
 
     # Update marker size and hover template
-    pue_fig.update_traces(
+    pue_wue_fig.update_traces(
         hovertemplate=(
             '<b>%{customdata[0]}</b><br>' +
-            'Time Period: %{x}<br>' +
-            'PUE: %{y:.2f}<br>' +
+            'PUE: %{x:.2f}<br>' +
+            'WUE: %{y:.2f}<br>' +
             '%{customdata[1]}' +  # Region (if exists)
             '%{customdata[2]}' +  # Climate zone (if exists)
             '%{customdata[3]}'    # Measurement level (if exists)
             '<extra></extra>'
         )
     )
-    print(f"🎯 FINAL: Returning figure with {len(pue_fig.data)} traces")
-    return pue_fig
+
+    return pue_wue_fig

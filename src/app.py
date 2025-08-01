@@ -11,6 +11,7 @@ import dash_bootstrap_components as dbc
 from data_loader import (
     load_pue_data,
     load_wue_data,
+    create_pue_wue_data,
     load_energyforecast_data,
     load_reporting_data,
     load_energy_use_data,
@@ -49,6 +50,9 @@ from callbacks.company_profile_callbacks import (
     create_company_profile_callback,
     create_company_profile_download_callback,
 )
+from callbacks.pue_wue_page_callback import (
+    register_pue_wue_callbacks
+)
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -58,13 +62,6 @@ def create_app():
         os.path.join(os.path.dirname(__file__), "..", "assets")
     )
 
-    # Debug logging
-    print(f"Current working directory: {os.getcwd()}")
-    print(f"Assets folder path: {assets_path}")
-    print(f"Assets folder exists: {os.path.exists(assets_path)}")
-
-    # List all files in assets directory
-    print("\nFiles in assets directory:")
     for root, dirs, files in os.walk(assets_path):
         for file in files:
             file_path = os.path.join(root, file)
@@ -83,8 +80,15 @@ def create_app():
     )
 
     # Load data
-    pue_df, company_counts, pue_industry_avg = load_pue_data()
-    wue_df, wue_company_counts, wue_industry_avg = load_wue_data()
+    pue_df = load_pue_data()
+    print("PUE DataFrame loaded successfully", pue_df.shape)
+    print(pue_df.info())  # Display first 5 rows for debugging
+    print(pue_df.head())  # Display first 5 rows for debugging
+    wue_df = load_wue_data()
+    pue_wue_df = create_pue_wue_data(pue_df, wue_df)
+    print("PUE-WUE DataFrame loaded successfully", pue_df.shape)
+    print(pue_wue_df.info())  # Display first 5 rows for debugging
+    print(pue_wue_df.head())  # Display first 5 rows for debugging
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
@@ -167,8 +171,10 @@ def create_app():
     }
 
     # Initialize callbacks
-    pue_callback = create_chart_callback(app, data_dict, chart_configs["pue-scatter"])
-    wue_callback = create_chart_callback(app, data_dict, chart_configs["wue-scatter"])
+    register_pue_wue_callbacks(app, pue_wue_df)
+
+    #pue_callback = create_chart_callback(app, data_dict, chart_configs["pue-scatter"])
+    #wue_callback = create_chart_callback(app, data_dict, chart_configs["wue-scatter"])
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -194,11 +200,11 @@ def create_app():
     def display_page(pathname):
         print(f"\nRouting request for pathname: {pathname}")  # Debug print
         if pathname == "/pue":
-            return create_pue_page(app, pue_df, company_counts)
+            return create_pue_page(app, pue_df)
         elif pathname == "/wue":
-            return create_wue_page(app, wue_df, wue_company_counts)
+            return create_wue_page(app, wue_df)
         elif pathname == "/pue_wue":
-            return create_pue_wue_page(app, pue_df, wue_df)
+            return create_pue_wue_page(app, pue_wue_df)
         elif pathname == "/forecast": 
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)
