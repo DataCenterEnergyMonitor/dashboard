@@ -7,6 +7,7 @@ from components.filters.pue_wue_filters import create_pue_wue_filters
 
 # define bookmark sections
 sections = [
+        #{"id": "filters", "title": "Filters"},
         {"id": "pue", "title": "PUE Trends"},
         {"id": "wue", "title": "WUE Trends"},
         {"id": "comparison", "title": "PUE vs WUE"}
@@ -93,7 +94,7 @@ def create_pue_wue_page(app, pue_wue_df):
                 ],
                 title=html.Span([
                     html.I(className="fas fa-filter me-2"),
-                    "Filters"
+                    "Show Filters"
                 ]),
                 className="filter-accordion .accordion-item"
                 ),
@@ -116,9 +117,7 @@ def create_pue_wue_page(app, pue_wue_df):
                 description_md='''
                 ##### Power Utilization Effectiveness
                 
-                **PUE** measures how efficiently a data center uses energy.
-                
-                **PUE = 1.0**: Perfect efficiency (ideal)
+                To be updated...
                 ''',
                 filename="pue_chart"
             )
@@ -136,13 +135,7 @@ def create_pue_wue_page(app, pue_wue_df):
                 description_md='''
                 ##### Water Utilization Effectiveness
                 
-                **WUE** measures water efficiency in data centers.
-                
-                - **WUE = Liters/kWh** of IT energy
-                - **Lower is better**
-                - Varies by climate and cooling method
-                
-                Typical ranges: 0.5 - 3.0 L/kWh
+                To be updated...
                 ''',
                 filename="wue_chart"
             )
@@ -160,12 +153,7 @@ def create_pue_wue_page(app, pue_wue_df):
                 description_md='''
                 ##### PUE vs WUE Relationship
                 
-                **Correlation Analysis** between power and water efficiency.
-                
-                - **Positive correlation**: Higher PUE → Higher WUE
-                - **Climate impact**: Hot climates increase both metrics
-                
-                Optimal: Low PUE + Low WUE
+                To be updated...
                 ''',
                 filename="pue_wue_comparison"
             )
@@ -175,7 +163,8 @@ def create_pue_wue_page(app, pue_wue_df):
         html.Div(
             id='summary',
             style={
-                "backgroundColor": "#f8f9fa",
+                #"backgroundColor": "#f8f9fa",
+                "font-size": "14px",
                 "padding": "10px",
                 "borderRadius": "5px",
                 "marginTop": "20px",

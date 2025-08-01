@@ -210,12 +210,12 @@ def register_pue_wue_callbacks(app, df):
             if default_climate_zones: active_filters.append(f"Default Zone: {', '.join(default_climate_zones)}")
             if cooling_technologies: active_filters.append(f"Cooling Tech: {', '.join(cooling_technologies)}")
             
-        status_text = f"Showing {len(filtered_df)} filtered records" if filters_applied else f"Showing all {len(filtered_df)} records"
+        #status_text = f"Showing {len(filtered_df)} filtered records" if filters_applied else f"Showing all {len(filtered_df)} records"
         
         summary = [
-            html.H4("Active Filters:"),
+            html.H6("Active Filters:"),
             html.Ul([html.Li(f) for f in active_filters]) if active_filters else html.P("No filters applied"),
-            html.P(f"📊 {status_text}")
+            #html.P(f"📊 {status_text}")
         ]
 
         return pue_fig, wue_fig, pue_wue_fig, summary

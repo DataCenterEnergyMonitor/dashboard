@@ -636,6 +636,16 @@ html {
     border-color: transparent !important;
 }
 
+.bookmark-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: white;
+    /*border-bottom: 1px solid #dee2e6;*/
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
 /* Smooth scrolling */
 html {
     scroll-behavior: smooth;

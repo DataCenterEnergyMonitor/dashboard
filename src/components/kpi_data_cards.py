@@ -14,7 +14,9 @@ def create_kpi_cards(df, config):
         "companies_monitored": df["company_name"].nunique()
         if "company_name" in df.columns
         else 0,
-        "pue_values": df[df['metric']=='pue']["metric_value"].dropna().count(),
+        "pue_values": df[df['metric']=='pue']["metric_value"].dropna().count()
+        if "metric_value" in df.columns
+        else 0,
         "wue_values": df[df['metric']=='wue']["metric_value"].dropna().count()
         if "metric_value" in df.columns
         else 0,

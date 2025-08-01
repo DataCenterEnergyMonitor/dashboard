@@ -19,7 +19,7 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 'yaxis': {'title': 'Water Usage Effectiveness (WUE)', 'visible': True},
                 'showlegend': False,
                 'annotations': [{
-                    'text': 'Select filters to view WUE trends',
+                    'text': 'No data available for selected filters',
                     'xref': 'paper',
                     'yref': 'paper',
                     'x': 0.5,
@@ -30,7 +30,7 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 'plot_bgcolor': 'white'
             }
         }
-    
+          
     # Create fields for hover text
     filtered_df = filtered_df.copy()
     filtered_df['region_text'] = filtered_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
@@ -51,7 +51,7 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
     )
 
-    if not filters_applied:
+    if not filters_applied or filtered_df.empty:
         wue_fig.update_traces(
             marker=dict(color='lightgray', size=10, opacity=0.7),
             showlegend=False

@@ -222,7 +222,7 @@ def create_app():
             return create_data_centers_101_page()
         else:
             print(f"No route match, defaulting to home page")  # Debug print
-            return create_home_page(pue_df)
+            return create_home_page(pue_wue_df)
 
     # Navbar toggle callback
     @app.callback(

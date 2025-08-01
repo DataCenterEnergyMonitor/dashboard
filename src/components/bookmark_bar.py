@@ -35,7 +35,7 @@ def create_bookmark_bar(sections):
             html.Div(buttons, className="d-flex flex-wrap")
         ], className="d-flex align-items-center flex-wrap"),
         html.Hr(style={"margin": "10px 0"})
-    ], className="bookmark-navigation", style={
+    ], className="bookmark-navigation bookmark-bar", style={
         #"background-color": "#f8f9fa",
         #"padding": "15px",
         "border-radius": "8px",

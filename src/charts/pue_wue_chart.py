@@ -28,7 +28,7 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
         print(f"Company name sample values: {filtered_df['company_name'].head().tolist()}")
     else:
         print("❌ filtered_df is empty!")
-        
+
     if filtered_df.empty:
         return {
             'data': [],
@@ -37,7 +37,7 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
                 'yaxis': {'title': 'Water Usage Effectiveness (WUE)', 'visible': True},
                 'showlegend': False,
                 'annotations': [{
-                    'text': 'Select filters to view WUE trends',
+                    'text': 'No data available for selected filters',
                     'xref': 'paper',
                     'yref': 'paper',
                     'x': 0.5,

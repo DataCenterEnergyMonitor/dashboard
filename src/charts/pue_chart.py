@@ -19,7 +19,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 'yaxis': {'title': 'Power Usage Effectiveness (PUE)', 'visible': True},
                 'showlegend': False,
                 'annotations': [{
-                    'text': 'Select filters to view PUE trends',
+                    'text': 'No data available for selected filters',
                     'xref': 'paper',
                     'yref': 'paper',
                     'x': 0.5,
