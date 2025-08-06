@@ -21,6 +21,7 @@ from data_loader import (
 from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
 from pages.pue_wue_page import create_pue_wue_page
+from pages.pue_wue_methods_page import create_pue_wue_methodology_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -78,6 +79,7 @@ def create_app():
         assets_folder=assets_path,  # Set absolute path to assets
         assets_url_path="assets",  # Explicitly set the assets URL path
     )
+
 
     # Load data
     pue_df = load_pue_data()
@@ -198,13 +200,16 @@ def create_app():
 
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
     def display_page(pathname):
-        print(f"\nRouting request for pathname: {pathname}")  # Debug print
+        print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
         if pathname == "/pue":
             return create_pue_page(app, pue_df)
         elif pathname == "/wue":
             return create_wue_page(app, wue_df)
         elif pathname == "/pue_wue":
             return create_pue_wue_page(app, pue_wue_df)
+        elif pathname == '/pue-wue-methodology':  
+            print("📍 Methodology route matched!") 
+            return create_pue_wue_methodology_page()
         elif pathname == "/forecast": 
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)

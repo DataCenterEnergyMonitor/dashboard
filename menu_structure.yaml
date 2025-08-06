@@ -16,8 +16,23 @@ navbar:
         route: /data-centers-101
     Companies:
       route: /companies
-    Methods:
-      route: /methods
+    Methodology:
+      Methodology:
+        route: /about
+      Company Selection:
+        route: /about
+      PUE:
+        route: /pue-wue-methodology
+      WUE:
+        route: /about
+      Reporting Trends:
+        route: /about
+      Reported Data - Energy:
+        route: /about
+      Reported Data - Water:
+        route: /about
+      Policies:
+        route: /about
     Data:
       PUE/WUE:
         route: /pue_wue

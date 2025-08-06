@@ -1,0 +1,9 @@
+[
+  {
+    "objectID": "pue_wue/pue_wue_methodology.html",
+    "href": "pue_wue/pue_wue_methodology.html",
+    "title": "PUE FAQs/Methodology",
+    "section": "",
+    "text": "What is PUE?\nPUE stands for power usage effectiveness. First introduced by the Green Grid in 2007, it is a common energy performance metric utilized by the data center industry. PUE is calculated by dividing the total amount of energy consumed by a data center by the amount of energy consumed by its IT equipment alone. Lower values of PUE indicate that smaller shares of a data center’s energy use go to its non-IT infrastructure systems (such as cooling and power supply systems). The theoretical minimum value of PUE for any data center is 1.0.\n\n\nIs PUE still relevant?\nPUE only captures the shares of IT and non-IT energy used by a data center. Therefore, PUE shouldn’t be interpreted as a stand-alone measure of a data center’s energy efficiency or sustainability. That said, PUE is still relevant to multiple stakeholders for several reasons:\nIt is easy to measure for most data centers When applied to a single data center, trends in PUE can be useful for understanding and tracking infrastructure energy efficiency It is widely used by energy modelers to quantify the infrastructure system energy use of the data center sector Even low PUE values translate into substantial grid loads at large data centers, giving value to its visibility It is a simple metric that policy makers can use to incentivize or require energy-efficient infrastructure systems\n…"
+  }
+]

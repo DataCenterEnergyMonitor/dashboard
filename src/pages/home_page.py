@@ -160,21 +160,21 @@ def create_home_page(df=None):
                         site_config.get("subtitle"),
                         className="text-center landing-page-description",
                     ),
-                    # Icon centered below title
-                    html.Div(
-                        [
-                            html.Img(
-                                src=site_config.get("header_logo", "assets/icon.png"),
-                                style={
-                                    "maxWidth": "150px",
-                                    "marginBottom": "20px",
-                                    "marginTop": "20px",
-                                },
-                            ),
-                        ],
-                        className="img-fluid mx-auto d-block mb-3",
-                        style={"textAlign": "center"},
-                    ),
+                    # # Icon centered below title
+                    # html.Div(
+                    #     [
+                    #         html.Img(
+                    #             src=site_config.get("header_logo", "assets/icon.png"),
+                    #             style={
+                    #                 "maxWidth": "150px",
+                    #                 "marginBottom": "20px",
+                    #                 "marginTop": "20px",
+                    #             },
+                    #         ),
+                    #     ],
+                    #     className="img-fluid mx-auto d-block mb-3",
+                    #     style={"textAlign": "center"},
+                    # ),
                 ],
                 className="my-4 container px-3",
                 style={"maxWidth": "1000px", "margin": "0 auto"},

@@ -1,5 +1,6 @@
 from dash import html
 import dash_bootstrap_components as dbc
+from components.bookmark_bar import create_bookmark_bar
 import yaml
 import os
 
@@ -13,7 +14,7 @@ def load_menu_config():
         return yaml.safe_load(file)
 
 
-def create_navbar():
+def create_navbar(sections):
     menu_structure = load_menu_config()
     site_config = menu_structure.get("site_config", {})
     navbar_items = menu_structure.get("navbar", {}).get("data_page", {})
@@ -22,6 +23,14 @@ def create_navbar():
 
     return html.Nav(
         className="navbar_data_page navbar-expand-lg navbar-light bg-light",
+        style={
+            "position": "fixed",  # Make navbar fixed if not already
+            "top": "0",
+            "left": "0", 
+            "right": "0",
+            "zIndex": "1000",  # Higher than sidebar (999)
+            "height": "60px"  # Define navbar height
+        },
         children=[
             html.Div(
                 className="container-fluid d-flex align-items-center justify-content-between",
@@ -42,6 +51,21 @@ def create_navbar():
                                 className="navbar-brand mb-0 h1 px-3",
                                 href="/",
                             ),
+                            # html.A(
+                            #     html.H4(
+                            #         site_config.get("title", ""),
+                            #         className="mb-0 navbar-data-page-title",
+                            #         # style={
+                            #         #     "color": "#2c3e50",
+                            #         #     "fontFamily": "Moncerat, sans-serif",
+                            #         #     "fontWeight": "500",
+                            #         #     "fontSize": "1.4rem",
+                            #         #     "marginLeft": "10px"
+                            #         # }
+                            #     ),
+                            #     href="/",
+                            #     style={"textDecoration": "none"}
+                            # ),
                         ],
                     ),
                     # Right-aligned collapse menu
@@ -55,10 +79,29 @@ def create_navbar():
                         ],
                     ),
                 ],
-            )
-        ],
-    )
-
+            ),
+                    # Bookmark bar row
+        html.Div(
+            id="bookmark-navbar",
+            className="bg-white border-bottom",
+            style={
+                "position": "fixed",
+                "top": "65px",  # Below main navbar
+                "left": "0", 
+                "right": "0",
+                #"zIndex": "999",
+                #"height": "40px",
+                #"padding": "10px 20px",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+            },
+            children=[
+                create_bookmark_bar(sections)  # Your existing bookmark component
+            ]
+        )
+    ])
 
 def generate_nav_links(items, parent_label=None):
     nav_links = []

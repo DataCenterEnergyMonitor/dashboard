@@ -79,6 +79,12 @@ def register_pue_wue_callbacks(app, df):
         climate_df = base_df.copy()
         if company_name: climate_df = climate_df[climate_df['company_name'].isin(company_name)]
         
+        if city: climate_df = climate_df[climate_df['city'].isin(city)]
+        elif county: climate_df = climate_df[climate_df['county'].isin(county)]
+        elif state: climate_df = climate_df[climate_df['state_province'].isin(state)]
+        elif country: climate_df = climate_df[climate_df['country'].isin(country)]
+        elif region: climate_df = climate_df[climate_df['region'].isin(region)]
+
         # Disable climate filters if Fleet-wide is selected
         climate_disabled = facility_scope and 'Fleet-wide' in facility_scope
         if climate_disabled or (facility_scope and 'Single location' not in facility_scope):
@@ -91,10 +97,9 @@ def register_pue_wue_callbacks(app, df):
         
         # Climate section styling
         climate_style = {
-            'width': '30%', 'display': 'inline-block', 'verticalAlign': 'top', 
-            'padding': '20px',
             'opacity': 0.5 if climate_disabled else 1,
-            'pointerEvents': 'none' if climate_disabled else 'auto'
+            'pointerEvents': 'none' if climate_disabled else 'auto',
+            'transition': 'opacity 0.3s ease'
         }
         
         return (region_opts, country_opts, state_opts, county_opts, city_opts,

@@ -505,7 +505,6 @@ html {
     transform: translateY(-1px);
 }
 
-/* Back to top button improvements */
 .back-to-top-btn {
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
@@ -516,12 +515,11 @@ html {
     box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
 }
 
-/* Navigation improvements */
 .navbar-nav .nav-link {
     position: relative;
     transition: color 0.3s ease;
 }
-
+/*
 .navbar-nav .nav-link::after {
     content: '';
     position: absolute;
@@ -529,13 +527,47 @@ html {
     height: 2px;
     bottom: -2px;
     left: 50%;
-    background-color: #00bf63;
+    /*background-color: #00bf63;
     transition: all 0.3s ease;
     transform: translateX(-50%);
 }
 
 .navbar-nav .nav-link:hover::after {
     width: 100%;
+}
+*/
+.navbar-nav .dropdown-toggle::after {
+    display: inline-block !important;
+    margin-left: 0.5em !important;
+    vertical-align: 0.125em !important;
+    content: "" !important;
+    border-top: 0.3em solid !important;
+    border-right: 0.3em solid transparent !important;
+    border-bottom: 0 !important;
+    border-left: 0.3em solid transparent !important;
+    position: static !important;
+}
+
+.navbar-nav .nav-item:not(:last-child) {
+    margin-right: 1rem !important; /* ✅ 2rem space between items */
+}
+
+/* Fix dropdown toggle layout */
+.navbar-nav .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    position: relative !important;
+}
+.navbar-data-page-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500; /* Increased from 500 for better hierarchy */
+    font-size: calc(0.3rem + 1.5vw);
+    font-style: normal;
+    color: #2C3E50;
+    /*margin: 0.67em 0; */
+    margin-bottom: 0px; /* Reduced from 32px */
+    line-height: 120%;
+    letter-spacing: -0.96px;
 }
 
 /* Card image improvements */
@@ -558,6 +590,12 @@ html {
 
 .filter-accordion.accordion .accordion-button:focus {
     border-color: #ffffff;
+    box-shadow: none;
+}
+
+.filter-accordion.accordion .accordion-flush {
+    border: none !important;
+    border-color: transparent !important;
     box-shadow: none;
 }
 
@@ -610,11 +648,13 @@ html {
     align-items: center;
     justify-content: center;
     text-decoration: none !important;
-    color: #007bff; /* Default blue color */
+    color: #007bff;
     transition: all 0.3s ease;
     border-radius: 20px;
-    padding: 5px 15px;
+    padding: 8px 15px;          /* ✅ Balanced padding for better centering */
     font-size: 0.85rem;
+    margin: 0 5px;              /* ✅ Space between buttons */
+    height: 32px;               /* ✅ Set explicit height for consistent centering */
 }
 
 /* Bookmark button hover state */
@@ -637,12 +677,13 @@ html {
 }
 
 .bookmark-bar {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    left: 320px;            /* ✅ Start after sidebar */
+    right: 0;               /* ✅ Extend to right edge */
     background-color: white;
-    /*border-bottom: 1px solid #dee2e6;*/
-    padding: 10px 0;
+    padding: 30px 10px 10px 10px;
+    height: 35px;
+    display: flex;
+    align-items: center;
     margin-bottom: 20px;
 }
 
@@ -655,7 +696,7 @@ html {
 a[id$="-section"] {
     display: block;
     position: relative;
-    top: -80px; /* Adjust based on your navbar height */
+    top: -160px; /* Adjust based on your navbar height */
     visibility: hidden;
 }
 
@@ -686,6 +727,6 @@ a[id$="-section"] {
     
     /* Adjust anchor offset for mobile */
     a[id$="-section"] {
-        top: -60px;
+        top: -100px;
     }
 }

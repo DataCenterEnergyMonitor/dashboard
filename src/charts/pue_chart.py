@@ -32,15 +32,41 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         }
 
     # Create fields for hover text
-    filtered_df = filtered_df.copy()
-    filtered_df['region_text'] = filtered_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-    filtered_df['climate_text'] = filtered_df['assigned_climate_zones'].apply(lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-    filtered_df['measurement_text'] = filtered_df['measurement_category'].apply(lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+    def create_hover_text(df):
+        """Process DataFrame fields for hover text display"""
+        df['metric_type'] = df['metric_type'].apply(
+            lambda x: f'PUE Type: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['measurement_category'] = df['measurement_category'].apply(
+            lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['time_period_category'] = df['time_period_category'].apply(
+            lambda x: f'Time Period Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['facility_scope'] = df['facility_scope'].apply(
+            lambda x: f'Facility Scope: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['region_text'] = df['region'].apply(
+            lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['country'] = df['country'].apply(
+            lambda x: f'Country: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['city'] = df['city'].apply(
+            lambda x: f'City: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['climate_text'] = df['assigned_climate_zones'].apply(
+            lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
 
+    custom_data = [
+        'company_name', 
+        'metric_type',
+        'measurement_category',
+        'time_period_category',
+        'facility_scope',
+        'region_text',
+        'country',
+        'city',
+        'climate_text'
+    ]
+    
+    filtered_df = filtered_df.copy()
+    create_hover_text(filtered_df)
     # Create the scatter plot
-    try: 
-        print("🔄 Creating scatter plot...")
-        pue_fig = px.scatter(
+    pue_fig = px.scatter(
             filtered_df,
             x='time_period_value',
             y='metric_value',
@@ -50,18 +76,8 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 "metric_value": "Power Usage Effectiveness (PUE)",
                 "company_name": "Company Name"
             },
-            custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
+            custom_data=custom_data
         )
-        print(f"✅ Scatter plot created successfully with {len(pue_fig.data)} traces")
-        # Check if traces have data
-        for i, trace in enumerate(pue_fig.data):
-            print(f"  Trace {i}: {len(trace.x)} data points")
-            
-    except Exception as e:
-        print(f"❌ Error creating scatter plot: {e}")
-        return {"data": [], "layout": {"title": f"Chart error: {e}"}}
-
-        
 
     if not filters_applied:
         pue_fig.update_traces(
@@ -80,15 +96,16 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             background_df = full_df[~full_df['company_name'].isin(filtered_companies)].copy()
             
             if not background_df.empty:  # Only create background if there are companies to show
-                background_df['region_text'] = background_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                background_df['climate_text'] = background_df['assigned_climate_zones'].apply(lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                background_df['measurement_text'] = background_df['measurement_category'].apply(lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                
+                # background_df['region_text'] = background_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+                # background_df['climate_text'] = background_df['assigned_climate_zones'].apply(lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+                # background_df['measurement_category'] = background_df['measurement_category'].apply(lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+                create_hover_text(background_df)
+
                 background_fig = px.scatter(
                     background_df, 
                     x='time_period_value', 
                     y='metric_value',
-                    custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
+                    custom_data=custom_data
                 )
                 background_fig.update_traces(
                     marker=dict(color='lightgray', size=8, opacity=0.5),
@@ -136,14 +153,29 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     # Update marker size and hover template
     pue_fig.update_traces(
         hovertemplate=(
-            '<b>%{customdata[0]}</b><br>' +
-            'Time Period: %{x}<br>' +
-            'PUE: %{y:.2f}<br>' +
-            '%{customdata[1]}' +  # Region (if exists)
-            '%{customdata[2]}' +  # Climate zone (if exists)
-            '%{customdata[3]}'    # Measurement level (if exists)
+            '<b>%{customdata[0]}</b><br>' + # company name
+            'PUE: %{y:.2f}<br>' + # PUE value
+            '%{customdata[1]}' + # metric type (Measured or Design)
+            '%{customdata[2]}' + # measurement level (if exists)
+            '%{customdata[3]}' + # time period category
+            'Time Period: %{x}<br>' + # Time period value
+            '%{customdata[4]}' + # facility scope
+            '%{customdata[5]}' +  # Region (if exists)
+            '%{customdata[6]}' +  # country (if exists)
+            '%{customdata[7]}' +  # city (if exists)
+            '%{customdata[8]}' +  # Climate zone (if exists)
             '<extra></extra>'
         )
     )
-    print(f"🎯 FINAL: Returning figure with {len(pue_fig.data)} traces")
     return pue_fig
+
+#['company_name', 'metric_type','measurement_category','time_period_category','facility_scope','region_text','country','city','climate_text']
+# * -Company name
+# * -PUE value
+# * - Measured or design
+# * -Time period type: annual, quarterly, etc.
+# * -Time period value: 2021, 2022, Q12007, etc.
+# * -Single location or fleet-wide value
+# * -Region (this will always be populated)
+# * -Country (this will only be populated if a country is provided; otherwise show "N/A")
+# * -City (this will only be populated if a city is provided; otherwise show "N/A")
