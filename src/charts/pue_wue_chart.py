@@ -10,25 +10,6 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
         filters_applied: Boolean indicating if filters are actively applied
         full_df: unfiltered DataFrame
     """
-    print(f"=== PUE/WUE CHART DEBUG ===")
-    print(f"filtered_df shape: {filtered_df.shape}")
-    print(f"filters_applied: {filters_applied}")
-    if not filtered_df.empty:
-        print(f"Columns: {list(filtered_df.columns)}")
-        print(f"Sample data:")
-        print(filtered_df[['company_name', 'metric_value', 'wue_value']].head())
-        print(f"Unique companies: {filtered_df['company_name'].unique()}")
-        print(f"Company name nulls: {filtered_df['company_name'].isnull().sum()}")
-        print(f"metric_value nulls: {filtered_df['metric_value'].isnull().sum()}")
-        print(f"wue_value nulls: {filtered_df['wue_value'].isnull().sum()}")
-        print(f"Company name dtype: {filtered_df['company_name'].dtype}")
-        
-        # Check for actual values vs empty strings
-        print(f"Company name empty strings: {(filtered_df['company_name'] == '').sum()}")
-        print(f"Company name sample values: {filtered_df['company_name'].head().tolist()}")
-    else:
-        print("❌ filtered_df is empty!")
-
     if filtered_df.empty:
         return {
             'data': [],
@@ -50,24 +31,52 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
         }
     
     # Create fields for hover text
-    filtered_df = filtered_df.copy()
-    filtered_df['region_text'] = filtered_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-    filtered_df['climate_text'] = filtered_df['assigned_climate_zones'].apply(lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-    filtered_df['measurement_text'] = filtered_df['measurement_category'].apply(lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+    def create_hover_text(df):
+        """Process DataFrame fields for hover text display"""
+        df['metric_type'] = df['metric_type'].apply(
+            lambda x: f'PUE Type: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['measurement_category'] = df['measurement_category'].apply(
+            lambda x: f'PUE Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['time_period_category'] = df['time_period_category'].apply(
+            lambda x: f'Time Period Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['facility_scope'] = df['facility_scope'].apply(
+            lambda x: f'Facility Scope: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['region_text'] = df['region'].apply(
+            lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['country'] = df['country'].apply(
+            lambda x: f'Country: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['city'] = df['city'].apply(
+            lambda x: f'City: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['climate_text'] = df['assigned_climate_zones'].apply(
+            lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
 
+    custom_data = [
+        'company_name', 
+        'metric_type',
+        'measurement_category',
+        'time_period_category',
+        'facility_scope',
+        'region_text',
+        'country',
+        'city',
+        'climate_text'
+    ]
+    
+    filtered_df = filtered_df.copy()
+    create_hover_text(filtered_df)
     # Create the scatter plot
     pue_wue_fig = px.scatter(
-        filtered_df,
-        x='metric_value',
-        y='wue_value',
-        color='company_name' if filters_applied else None,
-        labels={
-            "metric_value": "Power Usage Effectiveness (PUE)",
-            "wue_value": "Water Usage Effectiveness (WUE)",
-            "company_name": "Company Name"
-        },
-        custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
-    )
+            filtered_df,
+            x='metric_value',
+            y='wue_value',
+            color='company_name' if filters_applied else None,
+            labels={
+                "metric_value": "Power Usage Effectiveness (PUE)",
+                "wue_value": "Water Usage Effectiveness (WUE)",
+                "company_name": "Company Name"
+            },
+            custom_data=custom_data
+        )
 
     if not filters_applied:
         pue_wue_fig.update_traces(
@@ -86,15 +95,13 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
             background_df = full_df[~full_df['company_name'].isin(filtered_companies)].copy()
             
             if not background_df.empty:  # Only create background if there are companies to show
-                background_df['region_text'] = background_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                background_df['climate_text'] = background_df['assigned_climate_zones'].apply(lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                background_df['measurement_text'] = background_df['measurement_category'].apply(lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                
+                create_hover_text(background_df)
+
                 background_fig = px.scatter(
                     background_df, 
                     x='metric_value', 
                     y='wue_value',
-                    custom_data=['company_name', 'region_text', 'climate_text', 'measurement_text']
+                    custom_data=custom_data
                 )
                 background_fig.update_traces(
                     marker=dict(color='lightgray', size=8, opacity=0.5),
@@ -131,11 +138,11 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
             legend=dict(
                 orientation='h',
                 yanchor='bottom',
-                y=1.02,
+                y=1.01,
                 xanchor='right',
                 x=1
             ),
-            margin=dict(t=100, b=100),  # set bottom margin for citation
+            #margin=dict(t=100, b=100),  # set bottom margin for citation
             showlegend=filters_applied,
             template='simple_white'
         )
@@ -143,12 +150,17 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
     # Update marker size and hover template
     pue_wue_fig.update_traces(
         hovertemplate=(
-            '<b>%{customdata[0]}</b><br>' +
-            'PUE: %{x:.2f}<br>' +
-            'WUE: %{y:.2f}<br>' +
-            '%{customdata[1]}' +  # Region (if exists)
-            '%{customdata[2]}' +  # Climate zone (if exists)
-            '%{customdata[3]}'    # Measurement level (if exists)
+            '<b>%{customdata[0]}</b><br>' + # company name
+            'PUE: %{x}<br>' + # PUE value
+            'WUE: %{y:.2f}<br>' + # WUE value
+            '%{customdata[1]}' + # metric type (Measured or Design)
+            '%{customdata[2]}' + # measurement level (if exists)
+            '%{customdata[3]}' + # time period category
+            '%{customdata[4]}' + # facility scope
+            '%{customdata[5]}' +  # Region (if exists)
+            '%{customdata[6]}' +  # country (if exists)
+            '%{customdata[7]}' +  # city (if exists)
+            '%{customdata[8]}' +  # Climate zone (if exists)
             '<extra></extra>'
         )
     )

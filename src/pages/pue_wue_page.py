@@ -41,28 +41,28 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
         "toImageButtonOptions": {
             "format": "png",
             "filename": filename,
-            "height": 500,
-            "width": 800,
+            "height": 600,
+            "width": 1000,
             "scale": 1
         }
     }
     
     # Page layout styles
-    card_header_style = {"border": 'none', "padding": "5px 15px", "backgroundColor": "#ffffff"}
-    card_body_style = {"border": 'none', "padding": "10px", "backgroundColor": "#ffffff", "minHeight": "60vh"}
+    card_header_style = {"border": 'none', "padding": "0px 15px", "marginBottom": "0px", "backgroundColor": "#ffffff"}
+    card_body_style = {"border": 'none', "paddingTop": "0px", "backgroundColor": "#ffffff", "minHeight": "65vh"}
     card_style = {"border": "none", "boxShadow": "none", "height": "auto"}
-    graph_style = {"height": "60vh", "width": "100%"}
-    graph_layout = {"autosize": True, "margin": {"l": 60, "r": 120, "t": 50, "b": 60}, "height": None}
+    graph_style = {"height": "65vh", "width": "100%", "marginTop": "0px","paddingTop": "0px", "border": "none" }
+    graph_layout = {"autosize": True, "margin": {"l": 60, "r": 120, "t": 20, "b": 60}, "height": None}
     description_style = {"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px", "font-size": "0.8rem"}
     
     return dbc.Row([
         dbc.Col([
             dbc.Card([
                 dbc.CardHeader([
-                    html.H5(title, className="mb-0 text-left"),
+                    html.H5(title, className="text-left"),
                     dbc.Button(html.I(className="fas fa-expand"), 
                         id=expand_id, 
-                        size="md", 
+                        size="sm", 
                         color="light", 
                         className="float-end"
                     )

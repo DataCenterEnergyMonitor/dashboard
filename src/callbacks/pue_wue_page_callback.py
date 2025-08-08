@@ -133,7 +133,7 @@ def register_pue_wue_callbacks(app, df):
     # Update chart and summary
     @app.callback(
         [Output('pue-scatter-chart', 'figure'), Output('wue-scatter-chart', 'figure'), 
-         Output('pue-wue-scatter-chart', 'figure'), 
+         #Output('pue-wue-scatter-chart', 'figure'), 
          Output('summary', 'children')],
         [Input("apply-filters-btn", "n_clicks"),
          Input("clear-filters-btn", "n_clicks")],
@@ -187,16 +187,16 @@ def register_pue_wue_callbacks(app, df):
         pue_filtered_df = pue_filtered_df[pue_filtered_df['metric_value'].notna()]
         wue_filtered_df = filtered_df[filtered_df['metric'] == 'wue'].copy()
         wue_filtered_df = wue_filtered_df[wue_filtered_df['metric_value'].notna()]
-        pue_wue_filtered_df = pue_filtered_df[pue_filtered_df['wue_value'].notna()].copy()
+        #pue_wue_filtered_df = pue_filtered_df[pue_filtered_df['wue_value'].notna()].copy()
         
         # Split unfiltered data for background
         pue_full_df = df[df['metric'] == 'pue'].copy()
         wue_full_df = df[df['metric'] == 'wue'].copy()
-        pue_wue_full_df = pue_full_df[pue_full_df['wue_value'].notna()].copy()
+        #pue_wue_full_df = pue_full_df[pue_full_df['wue_value'].notna()].copy()
 
         pue_fig = create_pue_scatter_plot(filtered_df = pue_filtered_df, full_df=pue_full_df, filters_applied=filters_applied)
         wue_fig = create_wue_scatter_plot(filtered_df =  wue_filtered_df, full_df=wue_full_df, filters_applied=filters_applied)
-        pue_wue_fig = create_pue_wue_scatter_plot(filtered_df =  pue_wue_filtered_df, full_df=pue_wue_full_df, filters_applied=filters_applied)
+        #pue_wue_fig = create_pue_wue_scatter_plot(filtered_df =  pue_wue_filtered_df, full_df=pue_wue_full_df, filters_applied=filters_applied)
 
         # Create summary
         active_filters = []
@@ -223,7 +223,59 @@ def register_pue_wue_callbacks(app, df):
             #html.P(f"📊 {status_text}")
         ]
 
-        return pue_fig, wue_fig, pue_wue_fig, summary
+        return pue_fig, wue_fig, summary #, pue_wue_fig,
+    
+    # PUE vs WUE chart callback (company filter only)
+    @app.callback(
+        Output('pue-wue-scatter-chart', 'figure'),
+        [Input("apply-filters-btn", "n_clicks"),
+         Input("clear-filters-btn", "n_clicks")],
+        [State('company_name', 'value')],
+        prevent_initial_call=False
+    )
+    def update_pue_wue_scatter_plot(apply_clicks, clear_clicks, company):
+        """Handle PUE vs WUE chart with company filter only"""
+        
+        ctx = dash.callback_context
+        
+        if ctx.triggered:
+            trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+            
+            if trigger_id == "clear-filters-btn":
+                # Show all data when cleared
+                pue_wue_filtered_df = df[df['metric'] == 'pue'].copy()
+                pue_wue_filtered_df = pue_wue_filtered_df[pue_wue_filtered_df['wue_value'].notna()]
+                filters_applied = False
+                
+            elif trigger_id == "apply-filters-btn":
+                # Apply only company filter
+                if company:
+                    pue_wue_filtered_df = df[(df['metric'] == 'pue') & (df['company_name'].isin(company))].copy()
+                    filters_applied = True
+                else:
+                    pue_wue_filtered_df = df[df['metric'] == 'pue'].copy()
+                    filters_applied = False
+                    
+                pue_wue_filtered_df = pue_wue_filtered_df[pue_wue_filtered_df['wue_value'].notna()]
+            else:
+                return dash.no_update
+        else:
+            # Initial load - show all data
+            pue_wue_filtered_df = df[df['metric'] == 'pue'].copy()
+            pue_wue_filtered_df = pue_wue_filtered_df[pue_wue_filtered_df['wue_value'].notna()]
+            filters_applied = False
+
+        # Background data for PUE-WUE chart
+        pue_wue_full_df = df[df['metric'] == 'pue'].copy()
+        pue_wue_full_df = pue_wue_full_df[pue_wue_full_df['wue_value'].notna()]
+
+        pue_wue_fig = create_pue_wue_scatter_plot(
+            filtered_df=pue_wue_filtered_df, 
+            full_df=pue_wue_full_df, 
+            filters_applied=filters_applied
+        )
+
+        return pue_wue_fig
     
     # Modal callback
     @app.callback(

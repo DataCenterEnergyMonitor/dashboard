@@ -96,9 +96,6 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             background_df = full_df[~full_df['company_name'].isin(filtered_companies)].copy()
             
             if not background_df.empty:  # Only create background if there are companies to show
-                # background_df['region_text'] = background_df['region'].apply(lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                # background_df['climate_text'] = background_df['assigned_climate_zones'].apply(lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-                # background_df['measurement_category'] = background_df['measurement_category'].apply(lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
                 create_hover_text(background_df)
 
                 background_fig = px.scatter(
@@ -141,11 +138,11 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         legend=dict(
             orientation='h',
             yanchor='bottom',
-            y=1.02,
+            y=1.01,
             xanchor='right',
             x=1
         ),
-        margin=dict(t=100, b=100),  # set bottom margin for citation
+        #margin=dict(t=100, b=100),  # set bottom margin for citation
         showlegend=filters_applied,
         template='simple_white'
     )
@@ -168,14 +165,3 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         )
     )
     return pue_fig
-
-#['company_name', 'metric_type','measurement_category','time_period_category','facility_scope','region_text','country','city','climate_text']
-# * -Company name
-# * -PUE value
-# * - Measured or design
-# * -Time period type: annual, quarterly, etc.
-# * -Time period value: 2021, 2022, Q12007, etc.
-# * -Single location or fleet-wide value
-# * -Region (this will always be populated)
-# * -Country (this will only be populated if a country is provided; otherwise show "N/A")
-# * -City (this will only be populated if a city is provided; otherwise show "N/A")
