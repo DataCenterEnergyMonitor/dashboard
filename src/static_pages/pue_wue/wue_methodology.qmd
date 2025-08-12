@@ -1,0 +1,36 @@
+---
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: " "
+other-links:
+  - text: "📊 Explore PUE/WUE Data"
+    href: "/pue_wue"
+    icon: "fas fa-chart-bar"
+author:
+  - name: "Eric Masanet"
+    affiliation: "Industrial Sustainability Laboratory, University of California, Santa Barbara"
+    email: "email@dcewm.org"
+    orcid: "0000-0000-0000-0000"
+  - name: "Co-author Name"
+date: "2025-08-12"
+google-scholar: true
+
+citation:
+  type: webpage
+  title: "WUE FAQs/Methodology"
+  author: 
+    - "Eric Masanet"
+    - "Co-author Name"
+  url: "https://dcewm.org/"
+---
+
+### WUE FAQs/Methodology
+
+#### What is WUE?
+
+WUE stands for water usage effectiveness.  WUE is calculated by dividing the total amount of water consumed at a data center by the amount of energy used by its IT equipment, resulting in a metric with units of liters per kilowatt-hour (kWh).  The amount in the numerator should include all onsite water uses related to data center operations, inclusive of water consumed for data center humidification and in evaporation associated with data center cooling and onsite power generation activities.  The WUE metric was first introduced [by the Green Grid in 2011](https://airatwork.com/wp-content/uploads/The-Green-Grid-White-Paper-35-WUE-Usage-Guidelines.pdf).  A WUE value of zero indicates that no water consumption is associated with the data center’s operations.  For a basic primer, see our Data Center Water Use 101.
+
+...
+

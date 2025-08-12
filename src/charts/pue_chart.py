@@ -1,5 +1,6 @@
 import plotly.express as px
 import pandas as pd
+import plotly.colors as pc
 
 def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     """

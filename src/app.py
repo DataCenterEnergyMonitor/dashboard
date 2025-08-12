@@ -21,7 +21,10 @@ from data_loader import (
 from pages.pue_page import create_pue_page
 from pages.wue_page import create_wue_page
 from pages.pue_wue_page import create_pue_wue_page
-from pages.pue_wue_methods_page import create_pue_wue_methodology_page
+from pages.pue_methods_page import create_pue_methodology_page
+from pages.wue_methods_page import create_wue_methodology_page
+from pages.pue_data_page import create_pue_data_page
+from pages.wue_data_page import create_wue_data_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -207,9 +210,14 @@ def create_app():
             return create_wue_page(app, wue_df)
         elif pathname == "/pue_wue":
             return create_pue_wue_page(app, pue_wue_df)
-        elif pathname == '/pue-wue-methodology':  
-            print("📍 Methodology route matched!") 
-            return create_pue_wue_methodology_page()
+        elif pathname == '/pue-methodology':  
+            return create_pue_methodology_page()
+        elif pathname == '/wue-methodology':  
+            return create_wue_methodology_page()
+        elif pathname == '/pue-data':  
+            return create_pue_data_page()
+        elif pathname == '/wue-data':  
+            return create_wue_data_page()
         elif pathname == "/forecast": 
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)

@@ -1,0 +1,33 @@
+---
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: " "
+other-links:
+  - text: "📊 Explore PUE/WUE Data"
+    href: "/pue_wue"
+    #icon: "fas fa-chart-bar"
+author:
+  - name: "Eric Masanet"
+    affiliation: "Industrial Sustainability Laboratory, University of California, Santa Barbara"
+    email: "email@dcewm.org"
+    orcid: "0000-0000-0000-0000"
+  - name: "Co-author Name"
+date: "2025-08-12"
+google-scholar: true
+
+citation:
+  type: webpage
+  title: "WUE Data"
+  author: 
+    - "Eric Masanet"
+    - "Co-author Name"
+  url: "https://dcewm.org/"
+---
+### WUE Dataset
+
+##### In progress ...
+
+
+

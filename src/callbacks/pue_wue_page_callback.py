@@ -7,29 +7,47 @@ from charts.wue_chart import create_wue_scatter_plot
 from charts.pue_wue_chart import create_pue_wue_scatter_plot
 
 
-def get_options(column, df):
-    """Generate dropdown options from dataframe column"""
-    return [{'label': val, 'value': val} for val in sorted(df[column].dropna().unique())]
+def apply_multi_value_filter(df, column, selected_values):
+    """Helper function to apply multi-value string matching filter"""
+    if not selected_values:
+        return df
+        
+    mask = pd.Series([False] * len(df), index=df.index)
+    for value in selected_values:
+        mask = mask | df[column].str.contains(value, case=False, na=False, regex=False)
+    return df[mask]
+
+def get_multi_value_options(df, column):
+    """Extract unique values from multi-value fields"""
+    all_values = set()
+    for value_str in df[column].dropna().unique():
+        values = [v.strip() for v in str(value_str).split(',')]
+        all_values.update(values)
+    return [{'label': val, 'value': val} for val in sorted(all_values) if val]
 
 def filter_data(df, company_name, time_period_category, measurement_category, metric_type, facility_scope, 
                 region, country, state, county, city, assigned_climate_zones, default_climate_zones, cooling_technologies):
     """Filter dataframe based on all selections"""
     filtered_df = df.copy()
     
-    # Apply each filter if values are selected
+    # Standard single-value filters
     if company_name: filtered_df = filtered_df[filtered_df['company_name'].isin(company_name)]
     if time_period_category: filtered_df = filtered_df[filtered_df['time_period_category'].isin(time_period_category)]
     if measurement_category: filtered_df = filtered_df[filtered_df['measurement_category'].isin(measurement_category)]
     if metric_type: filtered_df = filtered_df[filtered_df['metric_type'].isin(metric_type)]
     if facility_scope: filtered_df = filtered_df[filtered_df['facility_scope'].isin(facility_scope)]
-    if region: filtered_df = filtered_df[filtered_df['region'].isin(region)]
-    if country: filtered_df = filtered_df[filtered_df['country'].isin(country)]
-    if state: filtered_df = filtered_df[filtered_df['state_province'].isin(state)]
-    if county: filtered_df = filtered_df[filtered_df['county'].isin(county)]
-    if city: filtered_df = filtered_df[filtered_df['city'].isin(city)]
-    if assigned_climate_zones: filtered_df = filtered_df[filtered_df['assigned_climate_zones'].isin(assigned_climate_zones)]
-    if default_climate_zones: filtered_df = filtered_df[filtered_df['default_climate_zones'].isin(default_climate_zones)]
-    if cooling_technologies: filtered_df = filtered_df[filtered_df['assigned_cooling_technologies'].isin(cooling_technologies)]
+    
+    # Multi-value address fields
+    filtered_df = apply_multi_value_filter(filtered_df, 'region', region)
+    filtered_df = apply_multi_value_filter(filtered_df, 'country', country)
+    filtered_df = apply_multi_value_filter(filtered_df, 'state_province', state)
+    filtered_df = apply_multi_value_filter(filtered_df, 'county', county)
+    filtered_df = apply_multi_value_filter(filtered_df, 'city', city)
+    
+    # Multi-value climate and cooling fields
+    filtered_df = apply_multi_value_filter(filtered_df, 'assigned_climate_zones', assigned_climate_zones)
+    filtered_df = apply_multi_value_filter(filtered_df, 'default_climate_zones', default_climate_zones)
+    filtered_df = apply_multi_value_filter(filtered_df, 'assigned_cooling_technologies', cooling_technologies)
     
     return filtered_df
 
@@ -52,48 +70,55 @@ def register_pue_wue_callbacks(app, df):
         # Start with full data for each filter's options
         base_df = df.copy()
         
-        # Location filters - each depends on company + higher level locations
+        # Apply company filter first to all subsequent filters
+        if company_name: 
+            base_df = base_df[base_df['company_name'].isin(company_name)]
+        
+        # Location filters: depend on company + higher level locations
         region_df = base_df.copy()
-        if company_name: region_df = region_df[region_df['company_name'].isin(company_name)]
-        region_opts = get_options('region', region_df)
+        region_opts = get_multi_value_options(region_df, 'region')
         
-        country_df = region_df.copy()
-        if region: country_df = country_df[country_df['region'].isin(region)]
-        country_opts = get_options('country', country_df)
+        country_df = base_df.copy() 
+        country_df = apply_multi_value_filter(country_df, 'region', region)
+        country_opts = get_multi_value_options(country_df, 'country')
         
-        state_df = country_df.copy()
-        if country: state_df = state_df[state_df['country'].isin(country)]
-        state_opts = get_options('state_province', state_df)
+        state_df = base_df.copy()
+        state_df = apply_multi_value_filter(state_df, 'region', region)
+        state_df = apply_multi_value_filter(state_df, 'country', country)
+        state_opts = get_multi_value_options(state_df, 'state_province')
         
-        county_df = state_df.copy()
-        if state: county_df = county_df[county_df['state_province'].isin(state)]
-        county_opts = get_options('county', county_df)
+        county_df = base_df.copy()
+        county_df = apply_multi_value_filter(county_df, 'region', region)
+        county_df = apply_multi_value_filter(county_df, 'country', country)
+        county_df = apply_multi_value_filter(county_df, 'state_province', state)
+        county_opts = get_multi_value_options(county_df, 'county')
         
-        city_df = county_df.copy()
-        if county: city_df = city_df[city_df['county'].isin(county)]
-        elif state: city_df = state_df  # Fallback to state level
-        elif country: city_df = country_df  # Fallback to country level
-        city_opts = get_options('city', city_df)
+        city_df = base_df.copy()
+        city_df = apply_multi_value_filter(city_df, 'region', region)
+        city_df = apply_multi_value_filter(city_df, 'country', country)
+        city_df = apply_multi_value_filter(city_df, 'state_province', state)
+        city_df = apply_multi_value_filter(city_df, 'county', county)
+        city_opts = get_multi_value_options(city_df, 'city')
         
-        # Climate filters - depend on company and facility scope
+        # Climate filters: depend on company and facility scope + all location filters
         climate_df = base_df.copy()
-        if company_name: climate_df = climate_df[climate_df['company_name'].isin(company_name)]
         
-        if city: climate_df = climate_df[climate_df['city'].isin(city)]
-        elif county: climate_df = climate_df[climate_df['county'].isin(county)]
-        elif state: climate_df = climate_df[climate_df['state_province'].isin(state)]
-        elif country: climate_df = climate_df[climate_df['country'].isin(country)]
-        elif region: climate_df = climate_df[climate_df['region'].isin(region)]
-
+        # Apply all location filters to climate data
+        climate_df = apply_multi_value_filter(climate_df, 'region', region)
+        climate_df = apply_multi_value_filter(climate_df, 'country', country)
+        climate_df = apply_multi_value_filter(climate_df, 'state_province', state)
+        climate_df = apply_multi_value_filter(climate_df, 'county', county)
+        climate_df = apply_multi_value_filter(climate_df, 'city', city)
+    
         # Disable climate filters if Fleet-wide is selected
         climate_disabled = facility_scope and 'Fleet-wide' in facility_scope
         if climate_disabled or (facility_scope and 'Single location' not in facility_scope):
             climate_opts = default_opts = cooling_opts = []
         else:
             if facility_scope: climate_df = climate_df[climate_df['facility_scope'].isin(facility_scope)]
-            climate_opts = get_options('assigned_climate_zones', climate_df)
-            default_opts = get_options('default_climate_zones', climate_df)
-            cooling_opts = get_options('assigned_cooling_technologies', climate_df)
+            climate_opts = get_multi_value_options(climate_df, 'assigned_climate_zones')
+            default_opts = get_multi_value_options(climate_df, 'default_climate_zones')
+            cooling_opts = get_multi_value_options(climate_df, 'assigned_cooling_technologies')
         
         # Climate section styling
         climate_style = {
@@ -130,11 +155,11 @@ def register_pue_wue_callbacks(app, df):
             return (None, [], [], [], [], None, None, None, None, None, None, None, None)
         return dash.no_update
     
-    # Update chart and summary
+    # Update chart
     @app.callback(
         [Output('pue-scatter-chart', 'figure'), Output('wue-scatter-chart', 'figure'), 
-         #Output('pue-wue-scatter-chart', 'figure'), 
-         Output('summary', 'children')],
+         #Output('summary', 'children')
+         ],
         [Input("apply-filters-btn", "n_clicks"),
          Input("clear-filters-btn", "n_clicks")],
         [State('company_name', 'value'), State('time_period_category', 'value'), 
@@ -187,43 +212,40 @@ def register_pue_wue_callbacks(app, df):
         pue_filtered_df = pue_filtered_df[pue_filtered_df['metric_value'].notna()]
         wue_filtered_df = filtered_df[filtered_df['metric'] == 'wue'].copy()
         wue_filtered_df = wue_filtered_df[wue_filtered_df['metric_value'].notna()]
-        #pue_wue_filtered_df = pue_filtered_df[pue_filtered_df['wue_value'].notna()].copy()
         
         # Split unfiltered data for background
         pue_full_df = df[df['metric'] == 'pue'].copy()
         wue_full_df = df[df['metric'] == 'wue'].copy()
-        #pue_wue_full_df = pue_full_df[pue_full_df['wue_value'].notna()].copy()
 
         pue_fig = create_pue_scatter_plot(filtered_df = pue_filtered_df, full_df=pue_full_df, filters_applied=filters_applied)
         wue_fig = create_wue_scatter_plot(filtered_df =  wue_filtered_df, full_df=wue_full_df, filters_applied=filters_applied)
-        #pue_wue_fig = create_pue_wue_scatter_plot(filtered_df =  pue_wue_filtered_df, full_df=pue_wue_full_df, filters_applied=filters_applied)
 
-        # Create summary
-        active_filters = []
-        if filters_applied:
-            if company: active_filters.append(f"Companies: {', '.join(company)}")
-            if time_period_category: active_filters.append(f"Time Period: {', '.join(time_period_category)}")
-            if measurement_category: active_filters.append(f"Measurement: {', '.join(measurement_category)}")
-            if metric_type: active_filters.append(f"PUE/WUE Type: {', '.join(metric_type)}")
-            if facility_scope: active_filters.append(f"Facility Scope: {', '.join(facility_scope)}")
-            if region: active_filters.append(f"Region: {', '.join(region)}")
-            if country: active_filters.append(f"Country: {', '.join(country)}")
-            if state: active_filters.append(f"State: {', '.join(state)}")
-            if county: active_filters.append(f"County: {', '.join(county)}")
-            if city: active_filters.append(f"City: {', '.join(city)}")
-            if assigned_climate_zones: active_filters.append(f"Climate Zone: {', '.join(assigned_climate_zones)}")
-            if default_climate_zones: active_filters.append(f"Default Zone: {', '.join(default_climate_zones)}")
-            if cooling_technologies: active_filters.append(f"Cooling Tech: {', '.join(cooling_technologies)}")
+        # # Create summary
+        # active_filters = []
+        # if filters_applied:
+        #     if company: active_filters.append(f"Companies: {', '.join(company)}")
+        #     if time_period_category: active_filters.append(f"Time Period: {', '.join(time_period_category)}")
+        #     if measurement_category: active_filters.append(f"Measurement: {', '.join(measurement_category)}")
+        #     if metric_type: active_filters.append(f"PUE/WUE Type: {', '.join(metric_type)}")
+        #     if facility_scope: active_filters.append(f"Facility Scope: {', '.join(facility_scope)}")
+        #     if region: active_filters.append(f"Region: {', '.join(region)}")
+        #     if country: active_filters.append(f"Country: {', '.join(country)}")
+        #     if state: active_filters.append(f"State: {', '.join(state)}")
+        #     if county: active_filters.append(f"County: {', '.join(county)}")
+        #     if city: active_filters.append(f"City: {', '.join(city)}")
+        #     if assigned_climate_zones: active_filters.append(f"Climate Zone: {', '.join(assigned_climate_zones)}")
+        #     if default_climate_zones: active_filters.append(f"Default Zone: {', '.join(default_climate_zones)}")
+        #     if cooling_technologies: active_filters.append(f"Cooling Tech: {', '.join(cooling_technologies)}")
             
-        #status_text = f"Showing {len(filtered_df)} filtered records" if filters_applied else f"Showing all {len(filtered_df)} records"
+        # #status_text = f"Showing {len(filtered_df)} filtered records" if filters_applied else f"Showing all {len(filtered_df)} records"
         
-        summary = [
-            html.H6("Active Filters:"),
-            html.Ul([html.Li(f) for f in active_filters]) if active_filters else html.P("No filters applied"),
-            #html.P(f"📊 {status_text}")
-        ]
+        # summary = [
+        #     html.H6("Active Filters:"),
+        #     html.Ul([html.Li(f) for f in active_filters]) if active_filters else html.P("No filters applied"),
+        #     #html.P(f"📊 {status_text}")
+        # ]
 
-        return pue_fig, wue_fig, summary #, pue_wue_fig,
+        return pue_fig, wue_fig #summary
     
     # PUE vs WUE chart callback (company filter only)
     @app.callback(

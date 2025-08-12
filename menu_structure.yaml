@@ -22,9 +22,9 @@ navbar:
       Company Selection:
         route: /about
       PUE:
-        route: /pue-wue-methodology
+        route: /pue-methodology
       WUE:
-        route: /about
+        route: /wue-methodology
       Reporting Trends:
         route: /about
       Reported Data - Energy:
@@ -33,13 +33,9 @@ navbar:
         route: /about
       Policies:
         route: /about
-    Data:
+    Explore Data:
       PUE/WUE:
         route: /pue_wue
-      # WUE:
-      #   route: /wue
-      # Energy Forecast:
-      #   route: /forecast
       Company Reporting Trends:
         route: /reporting
       Company Reported Data:
@@ -59,21 +55,20 @@ navbar:
     Contact:
       route: /contact
   data_page:
-    Home:
-      route: /
     Methodology:
-      route: /pue_wue_methodology
+      PUE:
+        route: /pue-methodology
+      WUE:
+        route: /wue-methodology
     Data:
-      route: /pue_wue_data
-    Learn:
-      Data Centers Energy 101:
-        route: /data-centers-101
-      Data Centers Water 101:
-        route: /data-centers-101
+      PUE:
+        route: /pue-data
+      WUE:
+        route: /wue-data
 
 
 
-# FIXED: Proper indentation for landing_page_cards
+# Landing Page Cards Configuration
 landing_page_cards:
   PUE/WUE:
     route: /pue_wue

@@ -16,7 +16,8 @@ sections = [
     ]
 
 subnav_items = [
-        {"id": "pue-subnav", "title": "Methodology", "href": "/pue-wue-methodology"},
+        {"id": "pue-subnav", "title": "PUE", "href": "/pue-methodology"},
+        {"id": "wue-subnav", "title": "WUE", "href": "/wue-methodology"},
         {"id": "wue-subnav", "title": "Dataset"}
     ]
 
@@ -90,31 +91,6 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
 
 def create_pue_wue_page(app, pue_wue_df):
     content = html.Div([ 
-        # Bookmark Navigation Bar
-        #create_bookmark_bar(sections),
-
-        # #Filters section
-        # html.Div([
-        #     html.A(id="filters-section"),
-        #     dbc.Accordion([
-        #         dbc.AccordionItem([
-        #             create_pue_wue_filters(pue_wue_df),
-        #             html.Div(id='output-container'),
-        #         ],
-        #         title=html.Span([
-        #             html.I(className="fas fa-filter me-2"),
-        #             "Show Filters"
-        #         ]),
-        #         className="filter-accordion .accordion-item"
-        #         ),
-        #     ],
-        #     flush=True,
-        #     start_collapsed=True,
-        #     className="filter-accordion"
-        #     ),
-        # ]),
-
-        
         # Sticky sidebar wrapper
         create_pue_wue_filters(pue_wue_df),
 
@@ -124,13 +100,6 @@ def create_pue_wue_page(app, pue_wue_df):
                 create_bookmark_bar(sections,subnav_items)
             ], 
             style={
-                # "position": "sticky",
-                # "top": "0",
-                # "zIndex": "1000",
-                # "backgroundColor": "white",
-                # "padding": "10px 0",
-                # "marginBottom": "20px",
-                # "marginTop": "0"
                 "position": "fixed",      
                 "top": "80px",            
                 "left": "320px",         
@@ -150,7 +119,8 @@ def create_pue_wue_page(app, pue_wue_df):
                     chart_id="pue-scatter-chart",
                     title="Data Center Power Usage Effectiveness (PUE)",
                     expand_id="expand-pue",
-                    description_md='''
+                    description_md=
+                    '''
                         ###### PUE (Power Utilization Effectiveness)
 
                         PUE measures the overall energy efficiency of a data center and was developed by The Green Grid organization. Since 2016, it has been standardized under ISO/IEC 30134-2. The metric provides insight into how efficiently a data center uses energy, with values closer to 1.0 indicating higher energy efficiency.
@@ -160,7 +130,7 @@ def create_pue_wue_page(app, pue_wue_df):
                         **PUE = Total Facility Energy / IT Equipment Energy**
 
                         A PUE of 1.0 represents perfect efficiency, meaning all power consumed goes directly to IT equipment with no overhead for cooling, lighting, or other facility operations.
-                        ''',
+                    ''',
                     filename="pue_chart"
                 )
             ], style={"margin": "35px 0"}),
@@ -201,17 +171,17 @@ def create_pue_wue_page(app, pue_wue_df):
             )
         ]),
         
-        # Summary section
-        html.Div(
-            id='summary',
-            style={
-                #"backgroundColor": "#f8f9fa",
-                "font-size": "14px",
-                "padding": "10px",
-                "borderRadius": "5px",
-                "marginTop": "20px",
-            }
-        ),
+        # # Summary section
+        # html.Div(
+        #     id='summary',
+        #     style={
+        #         #"backgroundColor": "#f8f9fa",
+        #         "font-size": "14px",
+        #         "padding": "10px",
+        #         "borderRadius": "5px",
+        #         "marginTop": "20px",
+        #     }
+        # ),
     ], fluid=True)
     ], style={
             "marginLeft": "320px",  # Sidebar width (300px) + padding (20px)
