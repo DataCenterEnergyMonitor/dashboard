@@ -115,6 +115,11 @@ body {
   padding: 0 !important;
 }
 
+h3:first-of-type {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
 // Content container
 .quarto-container {
   max-width: none !important;

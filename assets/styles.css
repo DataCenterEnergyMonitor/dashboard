@@ -563,23 +563,7 @@ html {
     position: relative;
     transition: color 0.3s ease;
 }
-/*
-.navbar-nav .nav-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: -2px;
-    left: 50%;
-    /*background-color: #00bf63;
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
-}
 
-.navbar-nav .nav-link:hover::after {
-    width: 100%;
-}
-*/
 .navbar-nav .dropdown-toggle::after {
     display: inline-block !important;
     margin-left: 0.5em !important;
@@ -772,5 +756,41 @@ a[id$="-section"] {
     /* Adjust anchor offset for mobile */
     a[id$="-section"] {
         top: -100px;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 767.98px) {
+    .responsive-content {
+        margin-left: 0 !important;
+        padding: 10px !important;
+    }
+    
+    /* Hide sidebar on mobile */
+    .filters-sidebar {
+        display: none !important;
+    }
+    
+    /* Stack chart title and buttons vertically on small screens */
+    .chart-header-mobile {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    
+    .chart-buttons-mobile {
+        margin-top: 10px !important;
+        align-self: flex-end !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .responsive-content {
+        margin-left: 0 !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .responsive-content {
+        margin-left: 320px !important;
     }
 }

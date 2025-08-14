@@ -7,7 +7,7 @@ format:
 other-links:
   - text: "📊 Explore PUE/WUE Data"
     href: "/pue_wue"
-    icon: "fas fa-chart-bar"
+    # icon: "fas fa-chart-bar"
 author:
   - name: "Eric Masanet"
     affiliation: "Industrial Sustainability Laboratory, University of California, Santa Barbara"
@@ -34,3 +34,7 @@ WUE stands for water usage effectiveness.  WUE is calculated by dividing the tot
 
 ...
 
+#### References
+
+::: {#refs}
+:::

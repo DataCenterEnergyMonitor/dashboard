@@ -1,10 +1,13 @@
 
 import dash
+from pathlib import Path
 from dash import Dash, Input, Output, State, callback, dcc, html, callback_context
 import pandas as pd
 from charts.pue_chart import create_pue_scatter_plot
 from charts.wue_chart import create_wue_scatter_plot
 from charts.pue_wue_chart import create_pue_wue_scatter_plot
+from components.excel_export import create_filtered_excel_download
+
 
 
 def apply_multi_value_filter(df, column, selected_values):
@@ -330,3 +333,96 @@ def register_pue_wue_callbacks(app, df):
             return not is_open, "PUE vs WUE Relationship - Expanded View", pue_wue_figure or {}
         
         return is_open, "", {}
+    
+    # Add these callbacks to your page or callbacks file
+    @app.callback(
+        Output("download-pue-scatter-chart", "data"),
+        Input("download-btn-pue-scatter-chart", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def download_pue_data(n_clicks):
+        # Get the project root directory (2 levels up from callbacks directory)
+        root_dir = Path(__file__).parent.parent.parent
+        input_path = root_dir / "data" / "DCEWM-PUEDataset.xlsx"
+
+        # Debug print
+        print(f"Looking for file at: {input_path}")
+        print(f"File exists: {input_path.exists()}")
+
+        return create_filtered_excel_download(
+            input_path=input_path,
+            output_filename="pue_data.xlsx",
+            sheets_to_export=[
+                "PUE",
+                "Read Me",
+            ],
+            internal_prefix="_internal_",
+            #skip_rows=1,
+            n_clicks=n_clicks,
+        )
+
+    # @app.callback(
+    #     Output("download-wue-scatter-chart", "data"),
+    #     Input("download-btn-wue-scatter-chart", "n_clicks"),
+    #     prevent_initial_call=True
+    # )
+    # def download_wue_data(n_clicks):
+    #     return create_filtered_excel_download(
+    #         input_path="data/wue_data.xlsx",
+    #         output_filename="wue_data_export.xlsx",
+    #         sheets_to_export=["WUE_Data"],
+    #         n_clicks=n_clicks
+    #     )
+
+    @app.callback(
+        Output("download-wue-scatter-chart", "data"),
+        Input("download-btn-wue-scatter-chart", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def download_wue_data(n_clicks):
+        # Get the project root directory (2 levels up from callbacks directory)
+        root_dir = Path(__file__).parent.parent.parent
+        input_path = root_dir / "data" / "DCEWM-WUEDataset.xlsx"
+
+        # Debug print
+        print(f"Looking for file at: {input_path}")
+        print(f"File exists: {input_path.exists()}")
+
+        return create_filtered_excel_download(
+            input_path=input_path,
+            output_filename="wue_data.xlsx",
+            sheets_to_export=[
+                "WUE",
+                "Read Me",
+            ],
+            internal_prefix="_internal_",
+            #skip_rows=1,
+            n_clicks=n_clicks,
+        )
+    
+    @app.callback(
+        Output("download-pue-wue-scatter-chart", "data"),
+        Input("download-btn-pue-wue-scatter-chart", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def download_pue_data(n_clicks):
+        # Get the project root directory (2 levels up from callbacks directory)
+        root_dir = Path(__file__).parent.parent.parent
+        input_path = root_dir / "data" / "DCEWM-PUEDataset.xlsx"
+
+        # Debug print
+        print(f"Looking for file at: {input_path}")
+        print(f"File exists: {input_path.exists()}")
+
+        return create_filtered_excel_download(
+            input_path=input_path,
+            output_filename="pue_data.xlsx",
+            sheets_to_export=[
+                "PUE",
+                "Read Me",
+            ],
+            internal_prefix="_internal_",
+            #skip_rows=1,
+            n_clicks=n_clicks,
+        )
+    

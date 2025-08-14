@@ -36,8 +36,8 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
     # Chart config
     chart_config = {
         "responsive": True, 
-        "displayModeBar": True,
-        "modeBarButtons": [['toImage'], ['resetScale2d']],
+        "displayModeBar": False,
+        #"modeBarButtons": [['toImage'], ['resetScale2d']],
         "displaylogo": False,
         "toImageButtonOptions": {
             "format": "png",
@@ -61,12 +61,43 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
             dbc.Card([
                 dbc.CardHeader([
                     html.H5(title, className="text-left"),
-                    dbc.Button(html.I(className="fas fa-expand"), 
+                html.Div([
+                    dbc.Button([
+                        html.I(className="fas fa-download",
+                            style={"marginRight": "6px"}),
+                            html.Span("Data .xlsx", 
+                                        style={"fontSize": "0.8rem"})
+                    ],
+                        id=f"download-btn-{chart_id}",
+                        size="sm", 
+                        color="light", 
+                        className="me-2",
+                        title="Download chart data"
+                    ),
+                    dbc.Tooltip(
+                            "Download chart data as Excel file",
+                            target=f"download-btn-{chart_id}",
+                            placement="bottom"
+                        ),
+                    dbc.Button([
+                        html.I(className="fas fa-expand",
+                            style={"marginRight": "6px"}),
+                            html.Span("Expand", 
+                                        style={"fontSize": "0.8rem"})
+                    ],
                         id=expand_id, 
                         size="sm", 
                         color="light", 
-                        className="float-end"
-                    )
+                        title="Expand chart"
+                    ),
+                    dbc.Tooltip(
+                            "View chart in expanded window",
+                            target=expand_id,
+                            placement="bottom"
+                        ),
+                ], className="float-end", style={"marginRight": "50px"}),
+                
+                dcc.Download(id=f"download-{chart_id}")
                 ], style=card_header_style),
                 dbc.CardBody([
                     dcc.Graph(
@@ -95,10 +126,12 @@ def create_pue_wue_page(app, pue_wue_df):
         create_pue_wue_filters(pue_wue_df),
 
         html.Div([
-            #Sticky bookmark bar
+            # Sticky bookmark bar
+            # Desktop bookmark bar (hidden on mobile/tablet)
             html.Div([
-                create_bookmark_bar(sections,subnav_items)
+                create_bookmark_bar(sections, subnav_items)
             ], 
+            className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
             style={
                 "position": "fixed",      
                 "top": "80px",            
@@ -108,8 +141,30 @@ def create_pue_wue_page(app, pue_wue_df):
                 "backgroundColor": "white",
                 "padding": "8px 20px",
                 "height": "80px"
-            }
-            ),  
+            }),
+            
+            # Mobile bookmark bar (hidden on desktop)
+            html.Div([
+                # Simplified mobile navigation
+                dbc.Nav([
+                    dbc.NavLink("PUE", href="#pue-section", className="px-2"),
+                    dbc.NavLink("WUE", href="#wue-section", className="px-2"),
+                    dbc.NavLink("Compare", href="#comparison-section", className="px-2"),
+                ], horizontal=True, pills=True, className="justify-content-center")
+            ], 
+            className="d-block d-lg-none",  # Show on <992px, hide on ≥992px
+            style={
+                "position": "fixed",      
+                "top": "80px",            
+                "left": "0",              
+                "right": "0",             
+                "zIndex": "1000",
+                "backgroundColor": "white",
+                "padding": "8px 10px",
+                "height": "60px",
+                "borderBottom": "1px solid #dee2e6",
+                "overflow": "hidden"
+            }),
 
         dbc.Container([
             # PUE Chart

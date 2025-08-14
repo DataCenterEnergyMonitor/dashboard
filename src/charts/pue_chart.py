@@ -26,7 +26,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                     'x': 0.5,
                     'y': 0.5,
                     'showarrow': False,
-                    'font': {'size': 16, 'color': 'gray'}
+                    'font': {'size': 14, 'color': 'gray'}
                 }],
                 'plot_bgcolor': 'white'
             }
@@ -82,11 +82,11 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     if not filters_applied:
         pue_fig.update_traces(
-            marker=dict(color='lightgray', size=10, opacity=0.7),
+            marker=dict(color='lightgray', size=8, opacity=0.7),
             showlegend=False
         )
     else:
-        pue_fig.update_traces(marker=dict(size=10))
+        pue_fig.update_traces(marker=dict(size=8))
         
         # Add background traces to foreground figure
         if full_df is not None and len(full_df) > len(filtered_df):
@@ -106,7 +106,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                     custom_data=custom_data
                 )
                 background_fig.update_traces(
-                    marker=dict(color='lightgray', size=8, opacity=0.5),
+                    marker=dict(color='lightgray', size=7, opacity=0.5),
                     showlegend=False
                 )
                 

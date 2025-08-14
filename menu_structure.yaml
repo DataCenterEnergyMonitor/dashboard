@@ -60,7 +60,7 @@ navbar:
         route: /pue-methodology
       WUE:
         route: /wue-methodology
-    Data:
+    Datasets:
       PUE:
         route: /pue-data
       WUE:

@@ -28,7 +28,7 @@ def create_pue_wue_filters(df):
                                "marginTop": "20px"
                            }),
                     
-                    html.Label("Company Name:", className="filter-label"),
+                    html.Label("Company/Organization Name:", className="filter-label"),
                     dcc.Dropdown(
                         id='company_name', 
                         options=sorted(df['company_name'].unique()), 
