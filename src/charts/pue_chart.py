@@ -306,7 +306,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             + "%{customdata[1]}"  # metric type (Measured or Design)
             + "%{customdata[2]}"  # measurement level (if exists)
             + "%{customdata[3]}"  # time period category
-            + "%{customdata[10]}"  # Time period value
+            + "Time Period: %{customdata[10]}<br>"  # Time period value
             + "%{customdata[4]}"  # facility scope
             + "%{customdata[5]}"  # Region (if exists)
             + "%{customdata[6]}"  # country (if exists)
