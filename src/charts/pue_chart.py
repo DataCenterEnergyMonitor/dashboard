@@ -14,6 +14,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         full_df: unfiltered DataFrame
     """
     # Define years and set progressive gaps along the timeline
+    # Use full dataset to ensure all years are included for consistent x-axis
     years = sorted(full_df["time_period_value"].unique())
     gap_small = 1.0
     gap_medium = 1.7
@@ -41,13 +42,17 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     # Create deterministic jitter based on company name and year
     def add_deterministic_x_jitter(row):
-        """Create deterministic x-jitter based on company name and year"""
+        """Create deterministic x-jitter with more variation for same company/year"""
         jitter_amt = year_jitter_map[row["time_period_value"]]
-        # Create a hash from company name and year to get consistent jitter
-        hash_input = f"{row['company_name']}_{row['time_period_value']}"
+        
+        # Create hash from company name, year, facility scope, region and city
+
+        hash_input = f"{row['company_name']}_{row['time_period_value']}_{row.get('facility_scope', '')}_{row.get('region', '')}_{row.get('city', '')}"
         hash_value = int(hashlib.md5(hash_input.encode()).hexdigest()[:8], 16)
+    
         # Normalize hash to [-1, 1] range
         normalized_hash = (hash_value / (16**8 - 1)) * 2 - 1
+    
         # Apply jitter
         return year_x_map[row["time_period_value"]] + normalized_hash * jitter_amt
 
@@ -62,8 +67,12 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     filtered_df = filtered_df.sort_values("company_name").copy()
 
     # Calculate y-axis range to avoid extra empty space
-    ymin = max(1, full_df["metric_value"].min() - 0.05)
-    ymax = full_df["metric_value"].max() + 0.05
+    ymin = max(1, filtered_df["metric_value"].min() - 0.05)
+    ymax = filtered_df["metric_value"].max() + 0.05
+
+    # Calculate x-axis range to avoid extra empty space
+    xmin = filtered_df["custom_x_jitter"].min()
+    xmax = filtered_df["custom_x_jitter"].max()
 
     company_list = full_df["company_name"].unique()
     # Define brand colors for specific companies
@@ -106,7 +115,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         "VISA": "#1A1F71",  # VISA Blue
     }
 
-    palette = px.colors.qualitative.Light24
+    palette = px.colors.qualitative.Bold
 
     # Assign colors: brand color if available, else from palette
     color_map = {}
@@ -255,9 +264,9 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                     + pue_fig.data[: -len(background_fig.data)]
                 )
 
-    xvals = [year_x_map[year] for year in years]
+    #xvals = [year_x_map[year] for year in years]
     pue_fig.update_xaxes(
-        range=[min(xvals) - 1, max(xvals) + 1],
+        range=[xmin - 1, xmax + 1],
         tickvals=[year_x_map[year] for year in years],
         ticktext=[str(year) for year in years],
         showgrid=False,
