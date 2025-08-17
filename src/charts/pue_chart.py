@@ -1,6 +1,5 @@
 import plotly.express as px
 import pandas as pd
-import numpy as np
 import hashlib
 
 
@@ -186,17 +185,17 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         )
 
     custom_data = [
-        "company_name",
-        "metric_type",
-        "measurement_category",
-        "time_period_category",
-        "facility_scope",
-        "region_text",
-        "country",
-        "city",
-        "climate_text",
+        'company_name', 
         "metric_value",
+        'metric_type',
+        'measurement_category',
+        'time_period_category',
         "time_period_value",
+        'facility_scope',
+        'region_text',
+        'country',
+        'city',
+        'climate_text'
     ]
 
     filtered_df = filtered_df.copy()
@@ -311,16 +310,17 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     pue_fig.update_traces(
         hovertemplate=(
             "<b>%{customdata[0]}</b><br>"  # company name
-            + "PUE: %{customdata[9]}<br>"  # PUE value
-            + "%{customdata[1]}"  # metric type (Measured or Design)
-            + "%{customdata[2]}"  # measurement level (if exists)
-            + "%{customdata[3]}"  # time period category
-            + "Time Period: %{customdata[10]}<br>"  # Time period value
-            + "%{customdata[4]}"  # facility scope
-            + "%{customdata[5]}"  # Region (if exists)
-            + "%{customdata[6]}"  # country (if exists)
-            + "%{customdata[7]}"  # city (if exists)
-            + "%{customdata[8]}"  # Climate zone (if exists)
+            + "PUE: %{customdata[1]}<br>"  # PUE value
+            + "%{customdata[2]}"  # metric type (Measured or Design)
+            + "%{customdata[3]}"  # measurement level (if exists)
+            + "%{customdata[4]}"  # time period category
+            + "Time Period: %{customdata[5]}<br>"  # Time period value
+            + "%{customdata[6]}"  # facility scope
+            + "%{customdata[7]}"  # Region (if exists)
+            + "%{customdata[8]}"  # country (if exists)
+            + "%{customdata[9]}"  # city (if exists)
+            + "%{customdata[10]}"  # Climate zone (if exists)
+            + '<extra></extra>'
         )
     )
     return pue_fig

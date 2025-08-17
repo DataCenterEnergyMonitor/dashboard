@@ -1,5 +1,6 @@
 import plotly.express as px
 import pandas as pd
+import hashlib
 
 def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     """
@@ -10,6 +11,119 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         filters_applied: Boolean indicating if filters are actively applied
         full_df: unfiltered DataFrame
     """
+    # Define years and set progressive gaps along the timeline
+    # Use full dataset to ensure all years are included for consistent x-axis
+    years = sorted(full_df["time_period_value"].unique())
+    gap_small = 1.0
+    gap_medium = 1.7
+    gap_large = 2.5
+    year_x_map = {}
+    current_x = years[0]
+    for year in years:
+        year_x_map[year] = current_x
+        if year < 2017:
+            current_x += gap_small
+        elif year < 2020:
+            current_x += gap_medium
+        else:
+            current_x += gap_large
+
+    # Calculate progressive jitter amount for each year (e.g., more jitter for later years)
+    min_jitter = 0.15
+    max_jitter = 0.8
+    year_jitter_map = {}
+    for i, year in enumerate(years):
+        # Linear interpolation between min_jitter and max_jitter
+        year_jitter_map[year] = min_jitter + (max_jitter - min_jitter) * (
+            i / (len(years) - 1)
+        )
+
+    # Create deterministic jitter based on company name and year
+    def add_deterministic_x_jitter(row):
+        """Create deterministic x-jitter with more variation for same company/year"""
+        jitter_amt = year_jitter_map[row["time_period_value"]]
+        
+        # Create hash from company name, year, facility scope, region and city
+
+        hash_input = f"{row['company_name']}_{row['time_period_value']}_{row.get('facility_scope', '')}_{row.get('region', '')}_{row.get('city', '')}"
+        hash_value = int(hashlib.md5(hash_input.encode()).hexdigest()[:8], 16)
+    
+        # Normalize hash to [-1, 1] range
+        normalized_hash = (hash_value / (16**8 - 1)) * 2 - 1
+    
+        # Apply jitter
+        return year_x_map[row["time_period_value"]] + normalized_hash * jitter_amt
+
+    # Apply deterministic jitter
+    full_df["custom_x_jitter"] = full_df.apply(add_deterministic_x_jitter, axis=1)
+    filtered_df["custom_x_jitter"] = filtered_df.apply(
+        add_deterministic_x_jitter, axis=1
+    )
+
+    # Sort by company name for consistent ordering
+    full_df = full_df.sort_values("company_name").copy()
+    filtered_df = filtered_df.sort_values("company_name").copy()
+
+    # Calculate y-axis range to avoid extra empty space
+    ymin = max(1, filtered_df["metric_value"].min() - 0.05)
+    ymax = filtered_df["metric_value"].max() + 0.05
+
+    # Calculate x-axis range to avoid extra empty space
+    xmin = filtered_df["custom_x_jitter"].min()
+    xmax = filtered_df["custom_x_jitter"].max()
+
+    company_list = full_df["company_name"].unique()
+    # Define brand colors for specific companies
+    brand_colors = {
+        "Google": "#F4B400",  # Google Yellow
+        "Microsoft": "#008AD7",  # Microsoft Gray
+        "Meta (Facebook)": "#1877F2",  # Meta Blue
+        "Amazon/AWS": "#FF9900",  # Amazon Orange
+        "Oracle": "#C74634",  # Oracle Red
+        "Dropbox": "#0061FE",  # Dropbox Blue
+        "Apple": "#0088cc",  # Apple Gray
+        "IBM": "#054ADA",  # IBM Blue
+        "Equinix": "#FF0000",  # Equinix Red
+        "Digital Realty": "#0073E6",  # Digital Realty Blue
+        "OVHcloud": "#0050D7",  # OVHcloud Red
+        "NVIDIA": "#76B900",  # NVIDIA Green
+        "CyrusOne": "#1BD1E4",  # CyrusOne Orange
+        "Alibaba": "#FF6701",  # Alibaba Orange
+        "Tencent": "#0052D9",  # Tencent Blue
+        "Huawei": "#FF0000",  # Huawei Red
+        "NTT": "#FF0000",  # NTT Red
+        "KDDI": "#FF6600",  # KDDI Orange
+        "Fujitsu": "#E60012",  # Fujitsu Red
+        "Hitachi": "#0066CC",  # Hitachi Blue
+        "Scaleway": "#4F0599",  # Scaleway Orange
+        "Yandex": "#FFCC00",  # Yandex Yellow
+        "Mastercard": "#EB001B",  # Mastercard Red
+        "CoreSite": "#002639",  # CoreSite Red
+        "SAP": "#00B9F2",  # SAP Blue
+        "Deutsche Telekom": "#E20074",  # Deutsche Telekom Magenta
+        "Akamai": "#00b050",  # Akamai Green
+        "Salesforce": "#1798C1",  # Salesforce Blue
+        "Verizon": "#FF0000",  # Verizon Red
+        "AT&T": "#067AB4",  # AT&T Blue
+        "T-Systems": "#E20074",  # T-Systems Magenta
+        "Taiwan Mobile": "#ff6101",
+        "Baidu": "#DE0F17",  # Baidu Red
+        "China Telecom": "#E60012",  # China Telecom Red
+        "China Unicom": "#E60012",  # China Unicom Red
+        "VISA": "#1A1F71",  # VISA Blue
+    }
+
+    palette = px.colors.qualitative.Bold
+
+    # Assign colors: brand color if available, else from palette
+    color_map = {}
+    palette_idx = 0
+    for company in company_list:
+        if company in brand_colors:
+            color_map[company] = brand_colors[company]
+        else:
+            color_map[company] = palette[palette_idx % len(palette)]
+            palette_idx += 1
 
     if filtered_df.empty:
         return {
@@ -53,9 +167,11 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     custom_data = [
         'company_name', 
+        "metric_value",
         'metric_type',
         'measurement_category',
         'time_period_category',
+        "time_period_value",
         'facility_scope',
         'region_text',
         'country',
@@ -65,14 +181,16 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     
     filtered_df = filtered_df.copy()
     create_hover_text(filtered_df)
+
     # Create the scatter plot
     wue_fig = px.scatter(
             filtered_df,
-            x='time_period_value',
+            x='custom_x_jitter',
             y='metric_value',
             color='company_name' if filters_applied else None,
+            color_discrete_map=color_map,
             labels={
-                "time_period_value": "Time Period",
+                "custom_x_jitter": "Time Period",
                 "metric_value": "Water Usage Effectiveness (WUE)",
                 "company_name": "Company Name"
             },
@@ -81,11 +199,11 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     if not filters_applied:
         wue_fig.update_traces(
-            marker=dict(color='lightgray', size=10, opacity=0.7),
+            marker=dict(color='lightgray', size=8, opacity=0.7),
             showlegend=False
         )
     else:
-        wue_fig.update_traces(marker=dict(size=10))
+        wue_fig.update_traces(marker=dict(size=9, opacity=0.7, line=dict(width=0.5, color="grey")))
         
         # Add background traces to foreground figure
         if full_df is not None and len(full_df) > len(filtered_df):
@@ -100,7 +218,7 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
                 background_fig = px.scatter(
                     background_df, 
-                    x='time_period_value', 
+                    x='custom_x_jitter', 
                     y='metric_value',
                     custom_data=custom_data
                 )
@@ -115,6 +233,16 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 
                 # Reorder so background appears behind colored data
                 wue_fig.data = wue_fig.data[-len(background_fig.data):] + wue_fig.data[:-len(background_fig.data)]
+    wue_fig.update_xaxes(
+        range=[xmin - 1, xmax + 1],
+        tickvals=[year_x_map[year] for year in years],
+        ticktext=[str(year) for year in years],
+        showgrid=False,
+        showline=True,
+        linecolor="black",
+        linewidth=1,
+        title_font=dict(size=14),
+    )
 
     wue_fig.update_layout(
         font_family="Inter",
@@ -128,6 +256,7 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             title_font=dict(size=14)
         ),
     yaxis=dict(
+        range=[-0.02, filtered_df['metric_value'].max()+0.2],
         showgrid=False,  # Disable gridlines
         showline=True,
         linecolor='black',
@@ -135,11 +264,12 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         title_font=dict(size=14)
     ),
         legend=dict(
-            orientation='h',
-            yanchor='bottom',
-            y=1.01,
-            xanchor='right',
-            x=1
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.02,
+            traceorder="normal",
         ),
         #margin=dict(t=100, b=100),  # set bottom margin for citation
         showlegend=filters_applied,
@@ -149,18 +279,18 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     # Update marker size and hover template
     wue_fig.update_traces(
         hovertemplate=(
-            '<b>%{customdata[0]}</b><br>' + # company name
-            'WUE: %{y:.2f}<br>' + # WUE value
-            '%{customdata[1]}' + # metric type (Measured or Design)
-            '%{customdata[2]}' + # measurement level (if exists)
-            '%{customdata[3]}' + # time period category
-            'Time Period: %{x}<br>' + # Time period value
-            '%{customdata[4]}' + # facility scope
-            '%{customdata[5]}' +  # Region (if exists)
-            '%{customdata[6]}' +  # country (if exists)
-            '%{customdata[7]}' +  # city (if exists)
-            '%{customdata[8]}' +  # Climate zone (if exists)
-            '<extra></extra>'
+            "<b>%{customdata[0]}</b><br>"  # company name
+            + "WUE: %{customdata[1]}<br>"  # PUE value
+            + "%{customdata[2]}"  # metric type (Measured or Design)
+            + "%{customdata[3]}"  # measurement level (if exists)
+            + "%{customdata[4]}"  # time period category
+            + "Time Period: %{customdata[5]}<br>"  # Time period value
+            + "%{customdata[6]}"  # facility scope
+            + "%{customdata[7]}"  # Region (if exists)
+            + "%{customdata[8]}"  # country (if exists)
+            + "%{customdata[9]}"  # city (if exists)
+            + "%{customdata[10]}"  # Climate zone (if exists)
+            + '<extra></extra>'
         )
     )
     return wue_fig
