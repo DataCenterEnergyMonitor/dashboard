@@ -21,7 +21,7 @@ subnav_items = [
         {"id": "wue-subnav", "title": "Dataset"}
     ]
 
-def create_chart_row(chart_id, title, expand_id, description_md, filename="chart"):
+def create_chart_row(chart_id, title, expand_id, description_md=None, filename="chart"):
     """
     Create a standardized chart row with consistent styling
     
@@ -36,14 +36,14 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
     # Chart config
     chart_config = {
         "responsive": True, 
-        "displayModeBar": False,
-        #"modeBarButtons": [['toImage'], ['resetScale2d']],
+        "displayModeBar": True,
+        "modeBarButtons": [['toImage'], ['zoomIn2d'], ['zoomOut2d'], ['pan2d'],['autoScale2d']],
         "displaylogo": False,
         "toImageButtonOptions": {
             "format": "png",
             "filename": filename,
-            "height": 600,
-            "width": 1000,
+            "height": 700,
+            "width": 1200,
             "scale": 1
         }
     }
@@ -54,7 +54,7 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
     card_style = {"border": "none", "boxShadow": "none", "height": "auto"}
     graph_style = {"height": "65vh", "width": "100%", "marginTop": "0px","paddingTop": "0px", "border": "none" }
     graph_layout = {"autosize": True, "margin": {"l": 60, "r": 120, "t": 20, "b": 60}, "height": None}
-    description_style = {"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px", "font-size": "0.8rem"}
+    #description_style = {"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px", "font-size": "0.8rem"}
     
     return dbc.Row([
         dbc.Col([
@@ -95,7 +95,9 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
                             target=expand_id,
                             placement="bottom"
                         ),
-                ], className="float-end", style={"marginRight": "50px"}),
+                ], className="float-end", 
+                #style={"marginRight": "50px"}
+                ),
                 
                 dcc.Download(id=f"download-{chart_id}")
                 ], style=card_header_style),
@@ -108,15 +110,15 @@ def create_chart_row(chart_id, title, expand_id, description_md, filename="chart
                     )
                 ], style=card_body_style)
             ], style=card_style)
-        ], xs=12, sm=12, md=9, lg=9, className="ps-0 pe-3"),
+        ], xs=12, sm=12, md=12, lg=12, className="ps-0 pe-3"),
         
-        dbc.Col([
-            html.Div([
-                dcc.Markdown(description_md, 
-                             style=description_style,
-                             mathjax=True)  # Enable LaTeX rendering
-            ], className="d-flex align-items-center justify-content-center h-100")
-        ], xs=12, sm=12, md=3, lg=3, className="ps-2 pe-0"),
+        # dbc.Col([
+        #     html.Div([
+        #         dcc.Markdown(description_md, 
+        #                      style=description_style,
+        #                      mathjax=True)  # Enable LaTeX rendering
+        #     ], className="d-flex align-items-center justify-content-center h-100")
+        # ], xs=12, sm=12, md=3, lg=3, className="ps-2 pe-0"),
     ], className="mb-3 gx-2")
 
 
@@ -174,18 +176,18 @@ def create_pue_wue_page(app, pue_wue_df):
                     chart_id="pue-scatter-chart",
                     title="Data Center Power Usage Effectiveness (PUE)",
                     expand_id="expand-pue",
-                    description_md=
-                    '''
-                        ###### PUE (Power Utilization Effectiveness)
+                    # description_md=
+                    # '''
+                    #     ###### PUE (Power Utilization Effectiveness)
 
-                        PUE measures the overall energy efficiency of a data center and was developed by The Green Grid organization. Since 2016, it has been standardized under ISO/IEC 30134-2. The metric provides insight into how efficiently a data center uses energy, with values closer to 1.0 indicating higher energy efficiency.
+                    #     PUE measures the overall energy efficiency of a data center and was developed by The Green Grid organization. Since 2016, it has been standardized under ISO/IEC 30134-2. The metric provides insight into how efficiently a data center uses energy, with values closer to 1.0 indicating higher energy efficiency.
 
-                        It is calculated using the following **formula:**
+                    #     It is calculated using the following **formula:**
 
-                        **PUE = Total Facility Energy / IT Equipment Energy**
+                    #     **PUE = Total Facility Energy / IT Equipment Energy**
 
-                        A PUE of 1.0 represents perfect efficiency, meaning all power consumed goes directly to IT equipment with no overhead for cooling, lighting, or other facility operations.
-                    ''',
+                    #     A PUE of 1.0 represents perfect efficiency, meaning all power consumed goes directly to IT equipment with no overhead for cooling, lighting, or other facility operations.
+                    # ''',
                     filename="pue_chart"
                 )
             ], style={"margin": "35px 0"}),
@@ -199,11 +201,11 @@ def create_pue_wue_page(app, pue_wue_df):
                 chart_id="wue-scatter-chart",
                 title="Data Center Water Usage Effectiveness (WUE)",
                 expand_id="expand-wue",
-                description_md='''
-                ##### Water Utilization Effectiveness
+                # description_md='''
+                # ##### Water Utilization Effectiveness
                 
-                To be updated...
-                ''',
+                # To be updated...
+                # ''',
                 filename="wue_chart"
             )
         ]),
@@ -217,11 +219,11 @@ def create_pue_wue_page(app, pue_wue_df):
                 chart_id="pue-wue-scatter-chart", 
                 title="WUE vs PUE Relationship",
                 expand_id="expand-pue-wue",
-                description_md='''
-                ##### PUE vs WUE Relationship
+                # description_md='''
+                # ##### PUE vs WUE Relationship
                 
-                To be updated...
-                ''',
+                # To be updated...
+                # ''',
                 filename="pue_wue_comparison"
             )
         ]),

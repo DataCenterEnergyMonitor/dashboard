@@ -277,6 +277,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     pue_fig.update_layout(
         font_family="Inter",
         plot_bgcolor="white",
+        margin=dict(r=250),
         xaxis=dict(
             showgrid=False,  # disable gridlines
             dtick=1,  # force yearly intervals
