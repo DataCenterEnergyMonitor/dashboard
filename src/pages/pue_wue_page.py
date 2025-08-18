@@ -21,7 +21,7 @@ subnav_items = [
         {"id": "wue-subnav", "title": "Dataset"}
     ]
 
-def create_chart_row(chart_id, title, expand_id, description_md=None, filename="chart"):
+def create_chart_row(chart_id, title, expand_id, accordion_children=None, accordion_title=None, filename="chart"):
     """
     Create a standardized chart row with consistent styling
     
@@ -56,11 +56,30 @@ def create_chart_row(chart_id, title, expand_id, description_md=None, filename="
     graph_layout = {"autosize": True, "margin": {"l": 60, "r": 120, "t": 20, "b": 60}, "height": None}
     #description_style = {"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px", "font-size": "0.8rem"}
     
+    if accordion_children:
+        accordion_element = html.Div(
+            dbc.Accordion(
+                [
+                    dbc.AccordionItem(
+                        children=accordion_children,
+                        title=accordion_title,
+                    ),
+                ],
+                flush=True,
+                start_collapsed=True,
+                className="filter-accordion",
+                style={"width": "80%"},
+            ),
+        )
+    else:
+        accordion_element = None
+
     return dbc.Row([
         dbc.Col([
             dbc.Card([
                 dbc.CardHeader([
                     html.H5(title, className="text-left"),
+                accordion_element,
                 html.Div([
                     dbc.Button([
                         html.I(className="fas fa-download",
@@ -112,13 +131,6 @@ def create_chart_row(chart_id, title, expand_id, description_md=None, filename="
             ], style=card_style)
         ], xs=12, sm=12, md=12, lg=12, className="ps-0 pe-3"),
         
-        # dbc.Col([
-        #     html.Div([
-        #         dcc.Markdown(description_md, 
-        #                      style=description_style,
-        #                      mathjax=True)  # Enable LaTeX rendering
-        #     ], className="d-flex align-items-center justify-content-center h-100")
-        # ], xs=12, sm=12, md=3, lg=3, className="ps-2 pe-0"),
     ], className="mb-3 gx-2")
 
 
@@ -176,18 +188,28 @@ def create_pue_wue_page(app, pue_wue_df):
                     chart_id="pue-scatter-chart",
                     title="Data Center Power Usage Effectiveness (PUE)",
                     expand_id="expand-pue",
-                    # description_md=
-                    # '''
-                    #     ###### PUE (Power Utilization Effectiveness)
-
-                    #     PUE measures the overall energy efficiency of a data center and was developed by The Green Grid organization. Since 2016, it has been standardized under ISO/IEC 30134-2. The metric provides insight into how efficiently a data center uses energy, with values closer to 1.0 indicating higher energy efficiency.
-
-                    #     It is calculated using the following **formula:**
-
-                    #     **PUE = Total Facility Energy / IT Equipment Energy**
-
-                    #     A PUE of 1.0 represents perfect efficiency, meaning all power consumed goes directly to IT equipment with no overhead for cooling, lighting, or other facility operations.
-                    # ''',
+                    accordion_children = [
+                                    dcc.Markdown(
+                                        """
+                                        PUE measures the overall energy efficiency of a data center and was developed by The Green Grid organization.
+                                        Since 2016, it has been standardized under ISO/IEC 30134-2. The metric provides insight into how efficiently a data center uses energy, with values closer to 1.0 indicating higher energy efficiency. It is calculated using the following formula:
+                                        """
+                                    ),
+                                    dcc.Markdown(
+                                        "$\\mathrm{PUE} = \\frac{\\text{Total Facility Energy}}{\\text{IT Equipment Energy}}$",
+                                        mathjax=True,
+                                        style={"font-size": "14pt"},
+                                    ),
+                                     dcc.Markdown(
+                                        """
+                                        A PUE of 1.0 represents perfect efficiency, meaning all power consumed goes directly to IT equipment with no overhead for cooling, lighting, or other facility operations.
+                                        """
+                                     )
+                    ],
+                    accordion_title=html.Span([
+                        "What Does PUE Tell Us?",
+                        html.Span(" Read more...", className="text-link")
+                    ]),
                     filename="pue_chart"
                 )
             ], style={"margin": "35px 0"}),
@@ -201,11 +223,28 @@ def create_pue_wue_page(app, pue_wue_df):
                 chart_id="wue-scatter-chart",
                 title="Data Center Water Usage Effectiveness (WUE)",
                 expand_id="expand-wue",
-                # description_md='''
-                # ##### Water Utilization Effectiveness
-                
-                # To be updated...
-                # ''',
+                accordion_children = [
+                                dcc.Markdown(
+                                    """
+                                    WUE (Water Usage Effectiveness) measures the overall water utilization efficiency of a data center and was developed by The Green Grid organization.
+                                    Since 2016, it has been standardized under ISO/IEC 30134-4. The metric provides insight into how efficiently a data center uses water, with lower values indicating higher water efficiency. It is calculated using the following formula:
+                                    """
+                                ),
+                                dcc.Markdown(
+                                    "$\\mathrm{WUE} = \\frac{\\text{Total Facility Water Usage (liters)}}{\\text{IT Equipment Energy Usage (kWh)}}$",
+                                    mathjax=True,
+                                    style={"font-size": "14pt"},
+                                ),
+                                dcc.Markdown(
+                                    """
+                                    A lower WUE value indicates that less water is used per unit of IT energy consumed, reflecting more efficient water usage. WUE accounts for all water used onsite, including cooling, humidification, and other facility operations.
+                                    """)
+
+                    ],
+                    accordion_title=html.Span([
+                        "What Does WUE Tell Us?",
+                        html.Span(" Read more...", className="text-link"),
+                    ]),
                 filename="wue_chart"
             )
         ]),
