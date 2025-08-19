@@ -71,7 +71,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     # Calculate x-axis range to avoid extra empty space
     xmin = filtered_df["custom_x_jitter"].min()
-    xmax = filtered_df["custom_x_jitter"].max()
+    xmax = full_df["custom_x_jitter"].max()
 
     company_list = full_df["company_name"].unique()
     # Define brand colors for specific companies

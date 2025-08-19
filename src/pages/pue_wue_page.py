@@ -56,8 +56,8 @@ def create_chart_row(chart_id, title, expand_id, accordion_children=None, accord
     graph_layout = {"autosize": True, "margin": {"l": 60, "r": 120, "t": 20, "b": 60}, "height": None}
     #description_style = {"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px", "font-size": "0.8rem"}
     
-    if accordion_children:
-        accordion_element = html.Div(
+    # if accordion_children:
+    accordion_element = html.Div(
             dbc.Accordion(
                 [
                     dbc.AccordionItem(
@@ -71,15 +71,15 @@ def create_chart_row(chart_id, title, expand_id, accordion_children=None, accord
                 style={"width": "80%"},
             ),
         )
-    else:
-        accordion_element = None
+    # else:
+    #     accordion_element = None
 
     return dbc.Row([
         dbc.Col([
             dbc.Card([
                 dbc.CardHeader([
                     html.H5(title, className="text-left"),
-                accordion_element,
+                accordion_element if accordion_children else None,
                 html.Div([
                     dbc.Button([
                         html.I(className="fas fa-download",
@@ -120,6 +120,7 @@ def create_chart_row(chart_id, title, expand_id, accordion_children=None, accord
                 
                 dcc.Download(id=f"download-{chart_id}")
                 ], style=card_header_style),
+                #accordion_element if accordion_children else None,
                 dbc.CardBody([
                     dcc.Graph(
                         id=chart_id,
@@ -289,21 +290,31 @@ def create_pue_wue_page(app, pue_wue_df):
     
         # Modal for expanded view
         dbc.Modal([
-            dbc.ModalHeader(dbc.ModalTitle(id="modal-title")),
-            dbc.ModalBody([
-                dcc.Graph(id="expanded-graph", style={
-                    "height": "80vh", 
-                    "width": "100%"
+        dbc.ModalHeader(dbc.ModalTitle(id="modal-title")),
+        dbc.ModalBody([
+        dcc.Graph(
+            id="expanded-graph", 
+            style={
+                "height": "calc(100vh - 56px)",  # 56px = header height
+                "width": "100vw",
+                "margin": "0",  
+                "padding": "0"
                 })
-            ], style={"padding": "0"}),
-        ], id="graph-modal", 
-        size="xl", 
+        ], style={"padding": "0", "margin": "0"}),
+        ], 
+        id="graph-modal",
+        #size="xl",
+        fullscreen=True,
         is_open=False,
         style={
-            "maxWidth": "95vw",
-            "width": "95vw", 
-            "margin": "2.5vh auto"
-        }),
-    ])
+            "maxWidth": "100vw",
+            "width": "100vw",
+            "height": "100vh",
+            "margin": "0",
+            "padding": "0",
+            "top": "0",
+            "left": "0"
+                }),
+        ])
 
     return create_base_layout(content)

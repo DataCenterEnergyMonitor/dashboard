@@ -56,21 +56,26 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     # Apply deterministic jitter
     full_df["custom_x_jitter"] = full_df.apply(add_deterministic_x_jitter, axis=1)
-    filtered_df["custom_x_jitter"] = filtered_df.apply(
-        add_deterministic_x_jitter, axis=1
-    )
+    # Check if filtered_df is empty before applying jitter
+    if not filtered_df.empty:
+        filtered_df["custom_x_jitter"] = filtered_df.apply(
+            add_deterministic_x_jitter, axis=1
+        )
+    else:
+        # Create empty custom_x_jitter column for empty DataFrame
+        filtered_df["custom_x_jitter"] = pd.Series([], dtype=float)
 
     # Sort by company name for consistent ordering
     full_df = full_df.sort_values("company_name").copy()
     filtered_df = filtered_df.sort_values("company_name").copy()
 
     # Calculate y-axis range to avoid extra empty space
-    ymin = max(1, filtered_df["metric_value"].min() - 0.05)
+    ymin = max(1, filtered_df["metric_value"].min() - 0.05) 
     ymax = filtered_df["metric_value"].max() + 0.05
 
     # Calculate x-axis range to avoid extra empty space
     xmin = filtered_df["custom_x_jitter"].min()
-    xmax = filtered_df["custom_x_jitter"].max()
+    xmax = full_df["custom_x_jitter"].max()
 
     company_list = full_df["company_name"].unique()
     # Define brand colors for specific companies

@@ -627,6 +627,10 @@ button.accordion-button {
     box-shadow: none !important;
 }
 
+.filter-accordion .accordion-item {
+    background-color: #f8f9fa;
+}
+
 .filter-accordion .accordion-button:not(.collapsed) {
     background-color: #ffffff;/*#f8fff9; /* Very light green background */
     color: #333;
