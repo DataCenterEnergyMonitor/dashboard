@@ -1,4 +1,5 @@
-pue.ipynb
+*.ipynb
+src/*.ipynb
 data/
 .DS_Store
 ._.DS_Store

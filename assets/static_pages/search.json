@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "pue_wue/wue_methodology.html",
+    "href": "pue_wue/wue_methodology.html",
+    "title": "",
+    "section": "",
+    "text": "WUE FAQs/Methodology\n\nWhat is WUE?\nWUE stands for water usage effectiveness. WUE is calculated by dividing the total amount of water consumed at a data center by the amount of energy used by its IT equipment, resulting in a metric with units of liters per kilowatt-hour (kWh). The amount in the numerator should include all onsite water uses related to data center operations, inclusive of water consumed for data center humidification and in evaporation associated with data center cooling and onsite power generation activities. The WUE metric was first introduced by the Green Grid in 2011. A WUE value of zero indicates that no water consumption is associated with the data center’s operations. For a basic primer, see our Data Center Water Use 101.\n…\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {WUE {FAQs/Methodology}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). WUE\nFAQs/Methodology. https://dcewm.org/"
+  },
+  {
+    "objectID": "pue_wue/wue_data.html",
+    "href": "pue_wue/wue_data.html",
+    "title": "",
+    "section": "",
+    "text": "WUE Dataset\n\nIn progress …\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {WUE {Data}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). WUE Data. https://dcewm.org/"
+  },
+  {
+    "objectID": "pue_wue/pue_methodology.html",
+    "href": "pue_wue/pue_methodology.html",
+    "title": "",
+    "section": "",
+    "text": "PUE FAQs/Methodology\n\nWhat is PUE?\nPUE stands for power usage effectiveness. First introduced by The Green Grid (2007) in 2007, it is a common energy performance metric utilized by the data center industry. PUE is calculated by dividing the total amount of energy consumed by a data center by the amount of energy consumed by its IT equipment alone. Lower values of PUE indicate that smaller shares of a data center’s energy use go to its non-IT infrastructure systems (such as cooling and power supply systems). The theoretical minimum value of PUE for any data center is 1.0.\n\n\nIs PUE still relevant?\nPUE only captures the shares of IT and non-IT energy used by a data center. Therefore, PUE shouldn’t be interpreted as a stand-alone measure of a data center’s energy efficiency or sustainability (Masanet et al., 2013). That said, PUE is still relevant to multiple stakeholders for several reasons: - It is easy to measure for most data centers. - When applied to a single data center, trends in PUE can be useful for understanding and tracking infrastructure energy efficiency. - It is widely used by energy modelers to quantify the infrastructure system energy use of the data center sector. - Even low PUE values translate into substantial grid loads at large data centers, giving value to its visibility. - It is a simple metric that policy makers can use (Vertiv, 2021) to incentivize or require energy-efficient infrastructure systems.\n…\n\n\nReferences\n\n\nMasanet, E., Shehabi, A., & Koomey, J. (2013). Characteristics of low-carbon data centres. Nature Climate Change, 3, 627–630. https://doi.org/10.1038/nclimate1786\n\n\nThe Green Grid. (2007). PUE: A comprehensive examination of the metric. The Green Grid. https://datacenters.lbl.gov/sites/default/files/WP49-PUE%20A%20Comprehensive%20Examination%20of%20the%20Metric_v6.pdf\n\n\nVertiv. (2021). Beijing power and renewables regulations. 451 Research. https://www.vertiv.com/49e7be/globalassets/documents/analyst-reports/451_reprint_beijingpowerrenewablesregs_13may2021_333454_0.pdf\n\n\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {PUE {FAQs/Methodology}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). PUE\nFAQs/Methodology. https://dcewm.org/"
+  },
+  {
+    "objectID": "pue_wue/pue_data.html",
+    "href": "pue_wue/pue_data.html",
+    "title": "",
+    "section": "",
+    "text": "PUE Dataset\n\nIn progress …\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {PUE {Dataset}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). PUE Dataset. https://dcewm.org/"
+  }
+]

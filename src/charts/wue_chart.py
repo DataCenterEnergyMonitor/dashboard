@@ -1,70 +1,302 @@
 import plotly.express as px
-from .styles import get_common_chart_layout
+import pandas as pd
+import hashlib
 
-def create_wue_scatter_plot(filtered_df, selected_scope="Fleet-wide", industry_avg=None):
-    if filtered_df.empty or selected_scope is None:
-        # Return an empty figure with a message
+def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
+    """
+    Create WUE scatter plot
+    
+    Args:
+        filtered_df: DataFrame to display
+        filters_applied: Boolean indicating if filters are actively applied
+        full_df: unfiltered DataFrame
+    """
+    # Define years and set progressive gaps along the timeline
+    # Use full dataset to ensure all years are included for consistent x-axis
+    years = sorted(full_df["time_period_value"].unique())
+    gap_small = 1.0
+    gap_medium = 1.7
+    gap_large = 2.5
+    year_x_map = {}
+    current_x = years[0]
+    for year in years:
+        year_x_map[year] = current_x
+        if year < 2017:
+            current_x += gap_small
+        elif year < 2020:
+            current_x += gap_medium
+        else:
+            current_x += gap_large
+
+    # Calculate progressive jitter amount for each year (e.g., more jitter for later years)
+    min_jitter = 0.15
+    max_jitter = 0.8
+    year_jitter_map = {}
+    for i, year in enumerate(years):
+        # Linear interpolation between min_jitter and max_jitter
+        year_jitter_map[year] = min_jitter + (max_jitter - min_jitter) * (
+            i / (len(years) - 1)
+        )
+
+    # Create deterministic jitter based on company name and year
+    def add_deterministic_x_jitter(row):
+        """Create deterministic x-jitter with more variation for same company/year"""
+        jitter_amt = year_jitter_map[row["time_period_value"]]
+        
+        # Create hash from company name, year, facility scope, region and city
+
+        hash_input = f"{row['company_name']}_{row['time_period_value']}_{row.get('facility_scope', '')}_{row.get('region', '')}_{row.get('city', '')}"
+        hash_value = int(hashlib.md5(hash_input.encode()).hexdigest()[:8], 16)
+    
+        # Normalize hash to [-1, 1] range
+        normalized_hash = (hash_value / (16**8 - 1)) * 2 - 1
+    
+        # Apply jitter
+        return year_x_map[row["time_period_value"]] + normalized_hash * jitter_amt
+
+    # Apply deterministic jitter
+    full_df["custom_x_jitter"] = full_df.apply(add_deterministic_x_jitter, axis=1)
+    # Check if filtered_df is empty before applying jitter
+    if not filtered_df.empty:
+        filtered_df["custom_x_jitter"] = filtered_df.apply(
+            add_deterministic_x_jitter, axis=1
+        )
+    else:
+        # Create empty custom_x_jitter column for empty DataFrame
+        filtered_df["custom_x_jitter"] = pd.Series([], dtype=float)
+
+    # Sort by company name for consistent ordering
+    full_df = full_df.sort_values("company_name").copy()
+    filtered_df = filtered_df.sort_values("company_name").copy()
+
+    # Calculate y-axis range to avoid extra empty space
+    ymin = max(1, filtered_df["metric_value"].min() - 0.05) 
+    ymax = filtered_df["metric_value"].max() + 0.05
+
+    # Calculate x-axis range to avoid extra empty space
+    xmin = filtered_df["custom_x_jitter"].min()
+    xmax = full_df["custom_x_jitter"].max()
+
+    company_list = full_df["company_name"].unique()
+    # Define brand colors for specific companies
+    brand_colors = {
+        "Google": "#F4B400",  # Google Yellow
+        "Microsoft": "#008AD7",  # Microsoft Gray
+        "Meta (Facebook)": "#1877F2",  # Meta Blue
+        "Amazon/AWS": "#FF9900",  # Amazon Orange
+        "Oracle": "#C74634",  # Oracle Red
+        "Dropbox": "#0061FE",  # Dropbox Blue
+        "Apple": "#0088cc",  # Apple Gray
+        "IBM": "#054ADA",  # IBM Blue
+        "Equinix": "#FF0000",  # Equinix Red
+        "Digital Realty": "#0073E6",  # Digital Realty Blue
+        "OVHcloud": "#0050D7",  # OVHcloud Red
+        "NVIDIA": "#76B900",  # NVIDIA Green
+        "CyrusOne": "#1BD1E4",  # CyrusOne Orange
+        "Alibaba": "#FF6701",  # Alibaba Orange
+        "Tencent": "#0052D9",  # Tencent Blue
+        "Huawei": "#FF0000",  # Huawei Red
+        "NTT": "#FF0000",  # NTT Red
+        "KDDI": "#FF6600",  # KDDI Orange
+        "Fujitsu": "#E60012",  # Fujitsu Red
+        "Hitachi": "#0066CC",  # Hitachi Blue
+        "Scaleway": "#4F0599",  # Scaleway Orange
+        "Yandex": "#FFCC00",  # Yandex Yellow
+        "Mastercard": "#EB001B",  # Mastercard Red
+        "CoreSite": "#002639",  # CoreSite Red
+        "SAP": "#00B9F2",  # SAP Blue
+        "Deutsche Telekom": "#E20074",  # Deutsche Telekom Magenta
+        "Akamai": "#00b050",  # Akamai Green
+        "Salesforce": "#1798C1",  # Salesforce Blue
+        "Verizon": "#FF0000",  # Verizon Red
+        "AT&T": "#067AB4",  # AT&T Blue
+        "T-Systems": "#E20074",  # T-Systems Magenta
+        "Taiwan Mobile": "#ff6101",
+        "Baidu": "#DE0F17",  # Baidu Red
+        "China Telecom": "#E60012",  # China Telecom Red
+        "China Unicom": "#E60012",  # China Unicom Red
+        "VISA": "#1A1F71",  # VISA Blue
+    }
+
+    palette = px.colors.qualitative.Bold
+
+    # Assign colors: brand color if available, else from palette
+    color_map = {}
+    palette_idx = 0
+    for company in company_list:
+        if company in brand_colors:
+            color_map[company] = brand_colors[company]
+        else:
+            color_map[company] = palette[palette_idx % len(palette)]
+            palette_idx += 1
+
+    if filtered_df.empty:
         return {
             'data': [],
             'layout': {
-                'xaxis': {'visible': False},
-                'yaxis': {'visible': False},
+                'xaxis': {'title': 'Time Period', 'visible': True},
+                'yaxis': {'title': 'Water Usage Effectiveness (WUE)', 'visible': True},
+                'showlegend': False,
                 'annotations': [{
-                    'text': 'No data available for the selected filters',
+                    'text': 'No data available for selected filters',
                     'xref': 'paper',
                     'yref': 'paper',
+                    'x': 0.5,
+                    'y': 0.5,
                     'showarrow': False,
-                    'font': {'size': 20}
-                }]
+                    'font': {'size': 16, 'color': 'gray'}
+                }],
+                'plot_bgcolor': 'white'
             }
         }
+          
+    # Create fields for hover text
+    def create_hover_text(df):
+        """Process DataFrame fields for hover text display"""
+        df['metric_type'] = df['metric_type'].apply(
+            lambda x: f'WUE Type: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['measurement_category'] = df['measurement_category'].apply(
+            lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['time_period_category'] = df['time_period_category'].apply(
+            lambda x: f'Time Period Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['facility_scope'] = df['facility_scope'].apply(
+            lambda x: f'Facility Scope: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['region_text'] = df['region'].apply(
+            lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['country'] = df['country'].apply(
+            lambda x: f'Country: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['city'] = df['city'].apply(
+            lambda x: f'City: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df['climate_text'] = df['assigned_climate_zones'].apply(
+            lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+
+    custom_data = [
+        'company_name', 
+        "metric_value",
+        'metric_type',
+        'measurement_category',
+        'time_period_category',
+        "time_period_value",
+        'facility_scope',
+        'region_text',
+        'country',
+        'city',
+        'climate_text'
+    ]
     
+    filtered_df = filtered_df.copy()
+    create_hover_text(filtered_df)
+
+    # Create the scatter plot
     wue_fig = px.scatter(
-        filtered_df,
-        x='applicable_year',
-        y='wue',
-        color='company',
-        labels={
-            "applicable_year": "Year",
-            "wue": "Water Usage Effectiveness (WUE)",
-            "company": "Company Name"
-        },
-        custom_data=['company']
-    )
-    
-    # Add industry average line
-    if industry_avg is not None:
-        wue_fig.add_scatter(
-            x=industry_avg['applicable_year'],
-            y=industry_avg['wue'],
-            mode='lines',
-            name='Industry Average',
-            line=dict(color='#bbbbbb', dash='dash', width=2),
+            filtered_df,
+            x='custom_x_jitter',
+            y='metric_value',
+            color='company_name' if filters_applied else None,
+            color_discrete_map=color_map,
+            labels={
+                "custom_x_jitter": "Time Period",
+                "metric_value": "Water Usage Effectiveness (WUE)",
+                "company_name": "Company Name"
+            },
+            custom_data=custom_data
+        )
+
+    if not filters_applied:
+        wue_fig.update_traces(
+            marker=dict(color='lightgray', size=8, opacity=0.7),
+            showlegend=False
+        )
+    else:
+        wue_fig.update_traces(marker=dict(size=9, opacity=0.7, line=dict(width=0.5, color="grey")))
+        
+        # Add background traces to foreground figure
+        if full_df is not None and len(full_df) > len(filtered_df):
+            # Get companies that are in the fildered data
+            filtered_companies = set(filtered_df['company_name'].unique())
+            
+            # Filter background data to exclude companies already displayed
+            background_df = full_df[~full_df['company_name'].isin(filtered_companies)].copy()
+            
+            if not background_df.empty:  # Only create background if there are companies to show
+                create_hover_text(background_df)
+
+                background_fig = px.scatter(
+                    background_df, 
+                    x='custom_x_jitter', 
+                    y='metric_value',
+                    custom_data=custom_data
+                )
+                background_fig.update_traces(
+                    marker=dict(color='lightgray', size=8, opacity=0.5),
+                    showlegend=False
+                )
+                
+                # Add to main figure
+                for trace in background_fig.data:
+                    wue_fig.add_trace(trace)
+                
+                # Reorder so background appears behind colored data
+                wue_fig.data = wue_fig.data[-len(background_fig.data):] + wue_fig.data[:-len(background_fig.data)]
+    wue_fig.update_xaxes(
+        range=[xmin - 1, xmax + 1],
+        tickvals=[year_x_map[year] for year in years],
+        ticktext=[str(year) for year in years],
+        showgrid=False,
+        showline=True,
+        linecolor="black",
+        linewidth=1,
+        title_font=dict(size=14),
     )
 
-    # Apply layout settings
-    wue_fig.update_layout(get_common_chart_layout())
+    wue_fig.update_layout(
+        font_family="Inter",
+        plot_bgcolor='white',
+        margin=dict(r=250),
+        xaxis=dict(
+            showgrid=False,  # disable gridlines
+            dtick=1,  # force yearly intervals
+            showline=True,
+            linecolor='black',
+            linewidth=1,
+            title_font=dict(size=14)
+        ),
+    yaxis=dict(
+        range=[-0.02, filtered_df['metric_value'].max()+0.2],
+        showgrid=False,  # Disable gridlines
+        showline=True,
+        linecolor='black',
+        linewidth=1,
+        title_font=dict(size=14)
+    ),
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.02,
+            traceorder="normal",
+        ),
+        #margin=dict(t=100, b=100),  # set bottom margin for citation
+        showlegend=filters_applied,
+        template='simple_white'
+    )
 
-    # Update marker size
+    # Update marker size and hover template
     wue_fig.update_traces(
-        marker=dict(size=10), 
-        selector=dict(mode='markers'),
         hovertemplate=(
-            '<b>Company: %{customdata[0]}</b><br>'
-            'Year: %{x}<br>'
-            'WUE: %{y:.2f}<br>'
-        ))
-    
-    # Add source citation
-    wue_fig.add_annotation(
-        text="Source: [TBD]",
-        xref="paper",
-        yref="paper",
-        x=0,
-        y=-0.25,
-        showarrow=False,
-        font=dict(size=10),
-        align="left"
+            "<b>%{customdata[0]}</b><br>"  # company name
+            + "WUE: %{customdata[1]}<br>"  # PUE value
+            + "%{customdata[2]}"  # metric type (Measured or Design)
+            + "%{customdata[3]}"  # measurement level (if exists)
+            + "%{customdata[4]}"  # time period category
+            + "Time Period: %{customdata[5]}<br>"  # Time period value
+            + "%{customdata[6]}"  # facility scope
+            + "%{customdata[7]}"  # Region (if exists)
+            + "%{customdata[8]}"  # country (if exists)
+            + "%{customdata[9]}"  # city (if exists)
+            + "%{customdata[10]}"  # Climate zone (if exists)
+            + '<extra></extra>'
+        )
     )
-
     return wue_fig

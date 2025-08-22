@@ -1,0 +1,30 @@
+project:
+  type: website
+  output-dir: ../../assets/static_pages
+
+website:
+  search: true 
+
+format:
+  html:
+    # Defaults for ALL pages
+    theme:
+      - bootstrap
+      - custom.scss
+    embed-resources: true
+    standalone: true
+    smooth-scroll: true
+    anchor-sections: true
+    scroll-offset: 100px 
+    lightbox: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: false
+    code-tools: false
+    toc: true
+    toc-location: left
+    toc-title: ""
+bibliography: references.bib
+csl: apa.csl
+cite-method: citeproc
+    

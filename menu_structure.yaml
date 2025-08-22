@@ -5,45 +5,70 @@ site_config:
   header_logo: assets/icon.png
 
 navbar:
-  About Us:
-    route: /about
-  Learn:
-    Data Centers Energy 101:
-      route: /data-centers-101
-      #preview: assets/previews/data_center_101_preview.svg
-    Data Centers Water 101:
-      route: /data-centers-101
-  Companies:
-    route: /companies
-  Methods/FAQs:
-    route: /methods
-  Datasets:
-    PUE/WUE:
-      route: /pue_wue
-    # WUE:
-    #   route: /wue
-    # Energy Forecast:
-    #   route: /forecast
-    Company Reporting Trends:
-      route: /reporting
-    Company Reported Data:
-      route: /company-profile
-    Energy Demand Estimates and Projections:
-      route: /forecast
-    Water Demand Estimates and Projections:
-      route: /forecast
-    Global policies:
-      route: /global-policies
-    # Data Center Energy Use:
-    #   route: /energy-use
-  Research:
-    route: /research
-  Newsletter:
-    route: /newsletter
-  Contact:
-    route: /contact
+  main:
+    About:
+      route: /about
+    Learn:
+      Data Centers Energy 101:
+        route: /data-centers-101
+        #preview: assets/previews/data_center_101_preview.svg
+      Data Centers Water 101:
+        route: /data-centers-101
+    Companies:
+      route: /companies
+    Methodology:
+      Methodology:
+        route: /about
+      Company Selection:
+        route: /about
+      PUE:
+        route: /pue-methodology
+      WUE:
+        route: /wue-methodology
+      Reporting Trends:
+        route: /about
+      Reported Data - Energy:
+        route: /about
+      Reported Data - Water:
+        route: /about
+      Policies:
+        route: /about
+    Explore Data:
+      PUE/WUE:
+        route: /pue_wue
+      Company Reporting Trends:
+        route: /reporting
+      Company Reported Data:
+        route: /company-profile
+      Energy Demand Estimates and Projections:
+        route: /forecast
+      Water Demand Estimates and Projections:
+        route: /forecast
+      Global policies:
+        route: /global-policies
+      # Data Center Energy Use:
+      #   route: /energy-use
+    Research:
+      route: /research
+    Newsletter:
+      route: /newsletter
+    Contact:
+      route: /contact
+  data_page:
+    Methodology:
+      PUE:
+        route: /pue-methodology
+      WUE:
+        route: /wue-methodology
+    Datasets:
+      PUE:
+        route: /pue-data
+      WUE:
+        route: /wue-data
 
-# FIXED: Proper indentation for landing_page_cards
+
+
+# Landing Page Cards Configuration
 landing_page_cards:
   PUE/WUE:
     route: /pue_wue

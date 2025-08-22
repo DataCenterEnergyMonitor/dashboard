@@ -4,73 +4,219 @@ import janitor
 from janitor import clean_names
 import datetime
 
-
 def load_pue_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
     # Go up one level and into data directory
-    data_path = current_dir.parent / "data" / "dc_energy_use_pue.xlsx"
+    data_path = current_dir.parent / "data" / "DCEWM-PUEDataset.xlsx"
 
-    pue_df = pd.read_excel(data_path, sheet_name="Input - PUE", skiprows=1)
+    pue_df = pd.read_excel(data_path, sheet_name="PUE", index_col=None)
     pue_df = pue_df.clean_names()
 
     # Clean string columns
     string_columns = [
         "facility_scope",
-        "company",
-        "geographical_scope",
-        "pue_measurement_level",
+        "company_name",
+        "city",
+        "county",
+        "country",
+        "region",
+        "measurement_category"
     ]
     for col in string_columns:
         if col in pue_df.columns:
             pue_df[col] = pue_df[col].str.strip()
+    
+    pue_df['metric'] = 'pue'
+    pue_df.rename(columns={'pue_type': 'metric_type'}, inplace=True)
+    pue_df.rename(columns={'pue_value': 'metric_value'}, inplace=True)
 
-    # Get companies with the most single locations
-    company_counts = (
-        pue_df[pue_df["facility_scope"] == "Single location"]
-        .groupby("company")
-        .size()
-        .sort_values(ascending=False)
-        .head(5)
-        .index.tolist()
-    )
-
-    # Industry average PUE values annually
-    pue_industry_avg = (
-        pue_df.groupby("applicable_year")["real_pue"].mean().reset_index()
-    )
-
-    return pue_df, company_counts, pue_industry_avg
-
+    return pue_df
 
 def load_wue_data():
+    # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
-    data_path = current_dir.parent / "data" / "dc_energy_use_pue.xlsx"
+    # Go up one level and into data directory
+    data_path = current_dir.parent / "data" / "DCEWM-WUEDataset.xlsx"
 
-    wue_df = pd.read_excel(data_path, sheet_name="Input - WUE", skiprows=1)
+    wue_df = pd.read_excel(data_path, sheet_name="WUE", index_col=None)
     wue_df = wue_df.clean_names()
 
-    # set WUE industry average to 1.8 value
-    wue_industry_avg = pd.DataFrame(
-        {
-            "applicable_year": wue_df[
-                "applicable_year"
-            ],  # The list of years from the DataFrame
-            "wue": [1.8]
-            * len(wue_df["applicable_year"]),  # The same WUE value for all years
-        }
-    )
-
     # Clean string columns
-    string_columns = ["facility_scope", "company", "geographical_scope"]
+    string_columns = [
+        "facility_scope",
+        "company_name",
+        "city",
+        "county",
+        "country",
+        "region",
+        "measurement_category"
+    ]
     for col in string_columns:
         if col in wue_df.columns:
             wue_df[col] = wue_df[col].str.strip()
 
-    # Get all unique companies
-    wue_company_counts = wue_df["company"].unique().tolist()
+    # clean column names
+    wue_df.rename(columns={
+    'category_1_water_input_s_': 'category_1_water_inputs',
+    'facility_scope_evident_': 'facility_scope_evident',
+    'geographical_scope_stated_' : 'geographical_scope_stated',
+    'assigned_climate_zone_s_':'assigned_climate_zones',
+    'default_climate_zone_s_': 'default_climate_zones',
+    'is_wue_self_reported_':'self_reported'}, inplace=True)
 
-    return wue_df, wue_company_counts, wue_industry_avg
+    wue_df['metric'] = 'wue'
+    wue_df.rename(columns={'wue_type': 'metric_type'}, inplace=True)
+    wue_df.rename(columns={'wue_value': 'metric_value'}, inplace=True)
+
+    return wue_df
+
+def create_pue_wue_data(pue_df, wue_df):
+    """
+    Combine PUE and WUE data into a single DataFrame.
+    
+    Args:
+        pue_df: PUE dataframe
+        wue_df: WUE dataframe
+    """
+    pue_df = pue_df.copy()
+    wue_df = wue_df.copy()
+
+    wue_selected = wue_df[['company_name', 
+                       'facility_scope',
+                       'verbatim_geographical_scope', 
+                       'time_period_category',
+                       'time_period_value',
+                       'metric_value',
+                       'category_1_water_inputs']]
+    
+    pue_wue_df = pd.merge(
+        pue_df,
+        wue_selected,
+        on=[
+            'company_name',
+            'facility_scope',
+            'verbatim_geographical_scope',
+            'time_period_category',
+            'time_period_value'
+        ],
+        how='left',
+        suffixes=('_pue', '_wue') 
+        )
+    # select only the relevant columns
+    pue_wue_df = pue_wue_df[['company_name',
+                            'facility_scope',
+                            'verbatim_geographical_scope',
+                            'metric',
+                            'metric_value_pue', 
+                            'metric_value_wue',
+                            'time_period_value',
+                            'time_period_category',
+                            'measurement_category', 
+                            'region', 
+                            'country',
+                            'state_province',
+                            'city',
+                            'county',
+                            'metric_type',
+                            'assigned_climate_zones',
+                            'default_climate_zones',
+                            'assigned_cooling_technologies',
+                            'category_1_water_inputs']]  
+
+    pue_wue_df.rename(columns = {
+        'metric_value_pue': 'metric_value',
+        'metric_value_wue': 'wue_value'
+    }, inplace=True)
+
+    pue_wue_df = pue_wue_df.drop_duplicates()
+
+    #append wue_df to pue_wue_df dataframe
+    pue_wue_df = pd.concat([pue_wue_df, wue_df], ignore_index=True)
+    
+    return pue_wue_df
+
+
+
+
+# def load_pue_data():
+#     # Get the current file's directory (src folder)
+#     current_dir = Path(__file__).parent
+#     # Go up one level and into data directory
+#     data_path = current_dir.parent / "data" / "DCEWM-PUEDataset.xlsx"
+
+#     pue_df = pd.read_excel(data_path, sheet_name="PUE")
+#     pue_df = pue_df.clean_names()
+
+#     # Clean string columns
+#     string_columns = [
+#         "facility_scope",
+#         "company_name",
+#         "city",
+#         "county",
+#         "country",
+#         "region",
+#         "measurement_category",
+#         "geographical_scope",
+#     ]
+#     for col in string_columns:
+#         if col in pue_df.columns:
+#             pue_df[col] = pue_df[col].str.strip()
+
+#     return pue_df
+
+# def load_wue_data():
+#     # Get the current file's directory (src folder)
+#     current_dir = Path(__file__).parent
+#     # Go up one level and into data directory
+#     data_path = current_dir.parent / "data" / "DCEWM-WUEDataset.xlsx"
+
+#     wue_df = pd.read_excel(data_path, sheet_name="PUE")
+#     wue_df = wue_df.clean_names()
+
+#     # Clean string columns
+#     string_columns = [
+#         "facility_scope",
+#         "company_name",
+#         "city",
+#         "county",
+#         "country",
+#         "region",
+#         "measurement_category",
+#         "geographical_scope",
+#     ]
+#     for col in string_columns:
+#         if col in wue_df.columns:
+#             wue_df[col] = wue_df[col].str.strip()
+
+#     return wue_df
+    # current_dir = Path(__file__).parent
+    # data_path = current_dir.parent / "data" / "dc_energy_use_pue.xlsx"
+
+    # wue_df = pd.read_excel(data_path, sheet_name="Input - WUE", skiprows=1)
+    # wue_df = wue_df.clean_names()
+
+    # # set WUE industry average to 1.8 value
+    # wue_industry_avg = pd.DataFrame(
+    #     {
+    #         "applicable_year": wue_df[
+    #             "applicable_year"
+    #         ],  # The list of years from the DataFrame
+    #         "wue": [1.8]
+    #         * len(wue_df["applicable_year"]),  # The same WUE value for all years
+    #     }
+    # )
+
+    # # Clean string columns
+    # string_columns = ["facility_scope", "company", "geographical_scope"]
+    # for col in string_columns:
+    #     if col in wue_df.columns:
+    #         wue_df[col] = wue_df[col].str.strip()
+
+    # # Get all unique companies
+    # wue_company_counts = wue_df["company"].unique().tolist()
+
+    # return wue_df, wue_company_counts, wue_industry_avg
 
 
 def load_energyforecast_data():

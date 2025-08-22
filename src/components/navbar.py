@@ -12,7 +12,7 @@ def load_menu_config():
 def create_navbar():
     menu_structure = load_menu_config()
     site_config = menu_structure.get('site_config', {})
-    navbar_items = menu_structure.get('navbar', {})
+    navbar_items = menu_structure.get('navbar', {}).get('main', {})
 
     nav_links = generate_nav_links(navbar_items)
 
@@ -25,6 +25,7 @@ def create_navbar():
                     # Left group: hamburger + logo
                     html.Div(
                         className="d-flex align-items-center",
+                        style={"marginLeft": "30px"},
                         children=[
                             dbc.NavbarToggler(id="navbar-toggler", className="me-2"),
                             html.A(
@@ -44,7 +45,9 @@ def create_navbar():
                         id="navbar-collapse",
                         is_open=False,
                         navbar=True,
-                        className= "position-absolute start-50 translate-middle-x", #"justify-content-center",
+                        style={"marginRight": "45px"},
+                        # className= "position-absolute translate-middle-x", #"justify-content-center",
+                        #className="justify-content-center w-100",
                         children=[
                             dbc.Nav(nav_links, navbar=True), #className="ms-auto"
                         ]

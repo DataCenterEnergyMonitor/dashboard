@@ -8,12 +8,12 @@
 }
 
 .nav-link {
-    color: rgba(255, 255, 255, 0.85) !important;
+    color: rgba(255, 255, 255, 0.85) !important; 
 }
 
 .nav-link:hover {
     color: white !important;
-}
+} 
 
 .dropdown-menu {
     background-color: #343a40;
@@ -26,6 +26,50 @@
 .dropdown-item:hover {
     background-color: #2c3136;
     color: white !important;
+}
+
+.bookmark-navigation .nav-link {    
+    color: #495057 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    border-radius: 12px !important;
+    border: 1px solid #e9ecef !important;
+    margin: 0 3px !important;
+    background-color: rgb(248, 249, 250) !important;
+    transition: all 0.2s ease;
+}
+
+.bookmark-navigation .nav-link:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-1px);
+}
+
+.bookmark-nav-link {
+    color: #495057 !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    border-radius: 12px !important;
+    border: 1px solid #e9ecef !important;
+    margin: 0 3px !important;
+    background-color: transparent !important;
+    transition: all 0.2s ease;
+}
+
+.bookmark-nav-link:hover {
+    background-color: #f8f9fa !important;
+    border-color: #495057 !important;
+    transform: translateY(-1px);
+}
+/* Alternative: More specific override for data page navbar */
+.navbar_data_page .bookmark-navigation .nav-link {
+    color: #6c757d !important;
+}
+
+.navbar_data_page .bookmark-navigation .nav-link:hover {
+    color: #495057 !important;
 }
 
 /* Card hover effect - only for content tiles */
@@ -66,6 +110,63 @@ a:hover {
 
 .navbar-brand:hover {
     color: #ffffff !important; 
+}
+
+.navbar_data_page {
+    background-color: #ffffff !important; /* #343a40; */
+    font-family: 'Inter', sans-serif;
+    color: RGB(26,27,37) !important;
+    font-size: clamp(14px, 2vw, 16px);
+    padding: 0.5rem 1rem;
+}
+
+.navbar_data_page .nav-link {
+    color: RGB(26,27,37) !important; /* Dark text for white background */
+    transition: all 0.3s ease;
+    padding: 0.5rem 2rem 0.5rem 1rem !important;
+    border-radius: 20px;
+}
+
+.navbar_data_page .nav-link:hover {
+    color: RGB(26,27,37) !important; /* Keep same color */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    background-color: #f5f6f8;
+}
+
+.navbar_data_page .dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #e9ecef; /* Light border for contrast f5f6f8 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+}
+
+.navbar_data_page .dropdown-item {
+    color: RGB(26,27,37) !important;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+}
+
+.navbar_data_page .dropdown-item:hover {
+    background-color: #f5f6f8; 
+    color: RGB(26,27,37) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    background-color: #fafbfc;
+}
+
+.navbar_data_page .navbar-brand {
+    color: RGB(26,27,37) !important;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem 0.5rem 2rem;
+    border-radius: 4px;
+}
+
+.navbar_data_page .navbar-brand:hover {
+    color: RGB(26,27,37) !important; /* Keep same color */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    background-color: #fafbfc;
 }
 
 body {
@@ -130,7 +231,7 @@ body {
     text-align: center;
     max-width: 70%; /* Reduced from 80% for better readability */
     margin-top: 0.5rem;
-    margin-bottom: 1.5rem; /* Reduced from 2rem */
+    margin-bottom: 0.5rem; /* Reduced from 2rem */
     margin-left: auto;
     margin-right: auto;
     line-height: 1.6; /* Increased from 120% */
@@ -199,7 +300,7 @@ body {
 }
 
 .content-tile .card-title {
-    font-weight: 600;
+    font-weight: 500;
     color: #2c3e50;
     margin-bottom: 0.75rem;
 }
@@ -448,7 +549,6 @@ html {
     transform: translateY(-1px);
 }
 
-/* Back to top button improvements */
 .back-to-top-btn {
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
@@ -459,26 +559,43 @@ html {
     box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
 }
 
-/* Navigation improvements */
 .navbar-nav .nav-link {
     position: relative;
     transition: color 0.3s ease;
 }
 
-.navbar-nav .nav-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: -2px;
-    left: 50%;
-    background-color: #00bf63;
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
+.navbar-nav .dropdown-toggle::after {
+    display: inline-block !important;
+    margin-left: 0.5em !important;
+    vertical-align: 0.125em !important;
+    content: "" !important;
+    border-top: 0.3em solid !important;
+    border-right: 0.3em solid transparent !important;
+    border-bottom: 0 !important;
+    border-left: 0.3em solid transparent !important;
+    position: static !important;
 }
 
-.navbar-nav .nav-link:hover::after {
-    width: 100%;
+.navbar-nav .nav-item:not(:last-child) {
+    margin-right: 1rem !important; /* ✅ 2rem space between items */
+}
+
+/* Fix dropdown toggle layout */
+.navbar-nav .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    position: relative !important;
+}
+.navbar-data-page-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500; /* Increased from 500 for better hierarchy */
+    font-size: calc(0.3rem + 1.5vw);
+    font-style: normal;
+    color: #2C3E50;
+    /*margin: 0.67em 0; */
+    margin-bottom: 0px; /* Reduced from 32px */
+    line-height: 120%;
+    letter-spacing: -0.96px;
 }
 
 /* Card image improvements */
@@ -486,6 +603,217 @@ html {
     transition: transform 0.3s ease;
 }
 
-/* .content-tile:hover .card-img {
-    transform: scale(1.02);
-} */
+/* Links and references styles */
+
+.text-link {
+    color: #00588D;           /* Brand blue or your preferred color */
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.text-link:hover, .text-link:focus {
+    color: #005fa3;           /* Darker shade on hover/focus */
+    text-decoration: none;
+}
+
+/* Accordion elements */
+
+button.accordion-button::after {
+    margin-left: 0.5rem !important; /* Reduce or increase as needed */
+}
+button.accordion-button {
+    padding-left: 0.5rem !important;
+    gap: 0.3rem !important;
+    box-shadow: none !important;
+}
+
+.filter-accordion .accordion-item {
+    background-color: #f8f9fa;
+}
+
+.filter-accordion .accordion-button:not(.collapsed) {
+    background-color: #ffffff;/*#f8fff9; /* Very light green background */
+    color: #333;
+    font-weight: 500;
+}
+
+.filter-accordion.accordion .accordion-button:focus {
+    border-color: #ffffff;
+    box-shadow: none;
+}
+
+.filter-accordion.accordion .accordion-flush {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: none;
+}
+
+/* Filters */
+
+.filter-group-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+.filter-label {
+    font-size: 0.9rem;
+    /*font-weight: bold;*/
+    display: block;
+    margin-bottom: 0.09rem;
+    color: #333;
+}
+
+.filter-box {
+    font-size: 0.85rem;
+    padding-bottom: 5px;
+    /*border: 1px solid #babdc0;*/
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.filter-box .dash-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Space between checkbox rows */
+}
+
+.filter-box .dash-checklist input[type="checkbox"] {
+    margin-right: 8px; /* Space between checkbox and text */
+}
+
+/* Style individual checkbox items */
+.filter-box .dash-checklist label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between checkbox and text */
+    font-size: 0.85rem;
+    color: #333;
+    cursor: pointer;
+}
+
+/* Bookmark styles */
+/* Base bookmark button styling */
+.bookmark-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    color: #007bff;
+    transition: all 0.3s ease;
+    border-radius: 20px;
+    padding: 8px 15px;          /* ✅ Balanced padding for better centering */
+    font-size: 0.85rem;
+    margin: 0 5px;              /* ✅ Space between buttons */
+    height: 32px;               /* ✅ Set explicit height for consistent centering */
+}
+
+/* Bookmark button hover state */
+.bookmark-btn {
+    transition: all 0.3s ease;
+    color: #333; /* Bootstrap muted color */ 
+}
+
+.bookmark-btn:hover {
+    color: #6c757d !important;
+    text-decoration: none !important;
+    opacity: 0.8;
+}
+
+.bookmark-btn:hover,
+.bookmark-btn:focus,
+.bookmark-btn:active {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.bookmark-bar {
+    left: 320px;            /* ✅ Start after sidebar */
+    right: 0;               /* ✅ Extend to right edge */
+    background-color: white;
+    padding: 30px 10px 10px 10px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Anchor offset for fixed navbar */
+a[id$="-section"] {
+    display: block;
+    position: relative;
+    top: -160px; /* Adjust based on your navbar height */
+    visibility: hidden;
+}
+
+/* Section highlight animation */
+.section-highlight {
+    animation: highlight 2s ease-in-out;
+}
+
+@keyframes highlight {
+    0% { background-color: rgba(0,123,255,0.1); }
+    50% { background-color: rgba(0,123,255,0.2); }
+    100% { background-color: transparent; }
+}
+
+/* Responsive bookmark bar */
+@media (max-width: 768px) {
+    .bookmark-navigation .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .bookmark-btn {
+        width: 100%;
+        margin-right: 0 !important;
+        margin-bottom: 8px;
+        justify-content: flex-start;
+    }
+    
+    /* Adjust anchor offset for mobile */
+    a[id$="-section"] {
+        top: -100px;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 767.98px) {
+    .responsive-content {
+        margin-left: 0 !important;
+        padding: 10px !important;
+    }
+    
+    /* Hide sidebar on mobile */
+    .filters-sidebar {
+        display: none !important;
+    }
+    
+    /* Stack chart title and buttons vertically on small screens */
+    .chart-header-mobile {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    
+    .chart-buttons-mobile {
+        margin-top: 10px !important;
+        align-self: flex-end !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .responsive-content {
+        margin-left: 0 !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .responsive-content {
+        margin-left: 320px !important;
+    }
+}
