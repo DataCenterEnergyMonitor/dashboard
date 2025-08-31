@@ -12,6 +12,7 @@ from data_loader import (
     load_pue_data,
     load_wue_data,
     create_pue_wue_data,
+    load_energyprojections_data,
     load_energyforecast_data,
     load_reporting_data,
     load_energy_use_data,
@@ -25,6 +26,7 @@ from pages.pue_methods_page import create_pue_methodology_page
 from pages.wue_methods_page import create_wue_methodology_page
 from pages.pue_data_page import create_pue_data_page
 from pages.wue_data_page import create_wue_data_page
+from pages.energy_projections_page import create_energy_projections_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -86,22 +88,17 @@ def create_app():
 
     # Load data
     pue_df = load_pue_data()
-    print("PUE DataFrame loaded successfully", pue_df.shape)
-    print(pue_df.info())  # Display first 5 rows for debugging
-    print(pue_df.head())  # Display first 5 rows for debugging
     wue_df = load_wue_data()
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
-    print("PUE-WUE DataFrame loaded successfully", pue_df.shape)
-    print(pue_wue_df.info())  # Display first 5 rows for debugging
-    print(pue_wue_df.head())  # Display first 5 rows for debugging
+    energyprojections_df = load_energyprojections_data()
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
     # Create data dictionary for charts
     data_dict = {
-        "pue-scatter": {"df": pue_df, "industry_avg": None},
-        "wue-scatter": {"df": wue_df, "industry_avg": None},
+        #"pue-scatter": {"df": pue_df, "industry_avg": None},
+        #"wue-scatter": {"df": wue_df, "industry_avg": None},
         "forecast-scatter": {"df": forecast_df, "industry_avg": None},
         "reporting-bar": {"df": reporting_df},
         "timeline-bar": {"df": reporting_df},
@@ -112,28 +109,28 @@ def create_app():
 
     # Define chart configurations
     chart_configs = {
-        "pue-scatter": {
-            "base_id": "pue",
-            "chart_id": "pue-scatter-chart",
-            "chart_creator": create_pue_scatter_plot,
-            "filename": "pue-data.csv",
-            "filters": [
-                "facility_scope",
-                "company",
-                "iea_region",
-                "iecc_climate_zone_s_",
-                "pue_measurement_level",
-            ],
-            "download_id": "download-pue-data",  # Add download button ID
-        },
-        "wue-scatter": {
-            "base_id": "wue",
-            "chart_id": "wue-scatter-chart",
-            "chart_creator": create_wue_scatter_plot,
-            "filename": "wue-data.csv",
-            "filters": ["facility_scope", "company"],
-            "download_id": "download-wue-data",  # Add download button ID
-        },
+        # "pue-scatter": {
+        #     "base_id": "pue",
+        #     "chart_id": "pue-scatter-chart",
+        #     "chart_creator": create_pue_scatter_plot,
+        #     "filename": "pue-data.csv",
+        #     "filters": [
+        #         "facility_scope",
+        #         "company",
+        #         "iea_region",
+        #         "iecc_climate_zone_s_",
+        #         "pue_measurement_level",
+        #     ],
+        #     "download_id": "download-pue-data",  # Add download button ID
+        # },
+        # "wue-scatter": {
+        #     "base_id": "wue",
+        #     "chart_id": "wue-scatter-chart",
+        #     "chart_creator": create_wue_scatter_plot,
+        #     "filename": "wue-data.csv",
+        #     "filters": ["facility_scope", "company"],
+        #     "download_id": "download-wue-data",  # Add download button ID
+        # },
         "forecast-scatter": {
             "base_id": "forecast",
             "chart_id": "forecast-scatter-chart",
@@ -204,11 +201,11 @@ def create_app():
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
     def display_page(pathname):
         print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
-        if pathname == "/pue":
-            return create_pue_page(app, pue_df)
-        elif pathname == "/wue":
-            return create_wue_page(app, wue_df)
-        elif pathname == "/pue_wue":
+        # if pathname == "/pue":
+        #     return create_pue_page(app, pue_df)
+        # elif pathname == "/wue":
+        #     return create_wue_page(app, wue_df)
+        if pathname == "/pue_wue":
             return create_pue_wue_page(app, pue_wue_df)
         elif pathname == '/pue-methodology':  
             return create_pue_methodology_page()
@@ -218,6 +215,8 @@ def create_app():
             return create_pue_data_page()
         elif pathname == '/wue-data':  
             return create_wue_data_page()
+        elif pathname == '/energy-projections':  
+            return create_energy_projections_page(app, energyprojections_df)
         elif pathname == "/forecast": 
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)

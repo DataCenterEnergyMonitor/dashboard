@@ -41,7 +41,7 @@ navbar:
       Company Reported Data:
         route: /company-profile
       Energy Demand Estimates and Projections:
-        route: /forecast
+        route: /energy-projections
       Water Demand Estimates and Projections:
         route: /forecast
       Global policies:

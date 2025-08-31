@@ -3,6 +3,7 @@ from pathlib import Path
 import janitor
 from janitor import clean_names
 import datetime
+import re
 
 def load_pue_data():
     # Get the current file's directory (src folder)
@@ -136,87 +137,50 @@ def create_pue_wue_data(pue_df, wue_df):
     
     return pue_wue_df
 
+# data load for Energy Demand and Projections page
+def load_energyprojections_data():
+    # Get the current file's directory (src folder)
+    current_dir = Path(__file__).parent 
+    # Go up one level and into data directory
+    data_path = current_dir.parent / "data" / "DCEWM-EnergyStudiesData.xlsx" 
 
+    df = pd.read_excel(data_path, sheet_name="Data Viz", index_col=None, skiprows=4)
+    
+    # pivot longer all year columns
+    year_columns = [col for col in df.columns if re.match(r'^\d{4}$', str(col))]
+    df = df.melt(id_vars=[col for col in df.columns if col not in year_columns],
+                 value_vars=year_columns,
+                 var_name='year',
+                 value_name='energy_demand')
 
+    df = df.clean_names()
+    df = df[df["energy_demand"] != 0]
 
-# def load_pue_data():
-#     # Get the current file's directory (src folder)
-#     current_dir = Path(__file__).parent
-#     # Go up one level and into data directory
-#     data_path = current_dir.parent / "data" / "DCEWM-PUEDataset.xlsx"
+    # Clean string columns
+    string_columns = [
+        "region",
+        "data_center_types",
+        "associated_granularity",
+        "modeling_approaches",
+        "input_data_types",
+        "time_horizon",
+        "projection_narrative",
+        "label",
+        "source",
+        "units",
+        "data_series_values",
+        "citation",
+        "year_of_publication",
+        "apa_reference",
+        "publishing_institution_types",
+        "author_institution_types"
+    ]
+    for col in string_columns:
+        if col in df.columns:
+            df[col] = df[col].where(df[col].isna(), df[col].astype(str).str.strip())
+    
+    return df
 
-#     pue_df = pd.read_excel(data_path, sheet_name="PUE")
-#     pue_df = pue_df.clean_names()
-
-#     # Clean string columns
-#     string_columns = [
-#         "facility_scope",
-#         "company_name",
-#         "city",
-#         "county",
-#         "country",
-#         "region",
-#         "measurement_category",
-#         "geographical_scope",
-#     ]
-#     for col in string_columns:
-#         if col in pue_df.columns:
-#             pue_df[col] = pue_df[col].str.strip()
-
-#     return pue_df
-
-# def load_wue_data():
-#     # Get the current file's directory (src folder)
-#     current_dir = Path(__file__).parent
-#     # Go up one level and into data directory
-#     data_path = current_dir.parent / "data" / "DCEWM-WUEDataset.xlsx"
-
-#     wue_df = pd.read_excel(data_path, sheet_name="PUE")
-#     wue_df = wue_df.clean_names()
-
-#     # Clean string columns
-#     string_columns = [
-#         "facility_scope",
-#         "company_name",
-#         "city",
-#         "county",
-#         "country",
-#         "region",
-#         "measurement_category",
-#         "geographical_scope",
-#     ]
-#     for col in string_columns:
-#         if col in wue_df.columns:
-#             wue_df[col] = wue_df[col].str.strip()
-
-#     return wue_df
-    # current_dir = Path(__file__).parent
-    # data_path = current_dir.parent / "data" / "dc_energy_use_pue.xlsx"
-
-    # wue_df = pd.read_excel(data_path, sheet_name="Input - WUE", skiprows=1)
-    # wue_df = wue_df.clean_names()
-
-    # # set WUE industry average to 1.8 value
-    # wue_industry_avg = pd.DataFrame(
-    #     {
-    #         "applicable_year": wue_df[
-    #             "applicable_year"
-    #         ],  # The list of years from the DataFrame
-    #         "wue": [1.8]
-    #         * len(wue_df["applicable_year"]),  # The same WUE value for all years
-    #     }
-    # )
-
-    # # Clean string columns
-    # string_columns = ["facility_scope", "company", "geographical_scope"]
-    # for col in string_columns:
-    #     if col in wue_df.columns:
-    #         wue_df[col] = wue_df[col].str.strip()
-
-    # # Get all unique companies
-    # wue_company_counts = wue_df["company"].unique().tolist()
-
-    # return wue_df, wue_company_counts, wue_industry_avg
 
 
 def load_energyforecast_data():

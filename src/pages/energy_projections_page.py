@@ -1,18 +1,15 @@
 import dash
 from dash import Input, Output, dcc, html
 import dash_bootstrap_components as dbc
-#from layouts.data_page_layout import create_data_page_layout
 from layouts.base_layout import create_base_layout
 from components.bookmark_bar import create_bookmark_bar
-from components.filters.pue_wue_filters_vertical import create_pue_wue_filters
+from components.filters.energy_projections_filters import create_energy_projections_filters
 
 
 # define bookmark sections
 sections = [
-        #{"id": "filters", "title": "Filters"},
-        {"id": "pue", "title": "PUE Data"},
-        {"id": "wue", "title": "WUE Data"},
-        {"id": "comparison", "title": "PUE vs WUE"}
+        {"id": "energy-projections", "title": "Energy Projections"},
+        {"id": "power-projections", "title": "Power Projections"},
     ]
 
 subnav_items = [
@@ -115,12 +112,10 @@ def create_chart_row(chart_id, title, expand_id, accordion_children=None, accord
                             placement="bottom"
                         ),
                 ], className="float-end", 
-                #style={"marginRight": "50px"}
                 ),
                 
                 dcc.Download(id=f"download-{chart_id}")
                 ], style=card_header_style),
-                #accordion_element if accordion_children else None,
                 dbc.CardBody([
                     dcc.Graph(
                         id=chart_id,
@@ -135,10 +130,10 @@ def create_chart_row(chart_id, title, expand_id, accordion_children=None, accord
     ], className="mb-3 gx-2")
 
 
-def create_pue_wue_page(app, pue_wue_df):
+def create_energy_projections_page(app, energy_projections_df):
     content = html.Div([ 
         # Sticky sidebar wrapper
-        create_pue_wue_filters(pue_wue_df),
+        create_energy_projections_filters(energy_projections_df),
 
         html.Div([
             # Sticky bookmark bar
@@ -162,9 +157,8 @@ def create_pue_wue_page(app, pue_wue_df):
             html.Div([
                 # Simplified mobile navigation
                 dbc.Nav([
-                    dbc.NavLink("PUE", href="#pue-section", className="px-2"),
-                    dbc.NavLink("WUE", href="#wue-section", className="px-2"),
-                    dbc.NavLink("Compare", href="#comparison-section", className="px-2"),
+                    dbc.NavLink("Energy Projections", href="#energy-projections-section", className="px-2"),
+                    dbc.NavLink("Power Projections", href="#power-projections-section", className="px-2"),
                 ], horizontal=True, pills=True, className="justify-content-center")
             ], 
             className="d-block d-lg-none",  # Show on <992px, hide on ≥992px
@@ -182,92 +176,51 @@ def create_pue_wue_page(app, pue_wue_df):
             }),
 
         dbc.Container([
-            # PUE Chart
+            # Energy Projections (TWh) Chart
             html.Div([
-                html.A(id="pue-section"),
+                html.A(id="energy-projections-section"),
                 create_chart_row(
-                    chart_id="pue-scatter-chart",
-                    title="Data Center Power Usage Effectiveness (PUE)",
-                    expand_id="expand-pue",
+                    chart_id="energy-projections-line-chart",
+                    title="Energy Demand Estimates & Projections (TWh)",
+                    expand_id="expand-energy-projections",
                     accordion_children = [
                                     dcc.Markdown(
                                         """
-                                        PUE measures the overall energy efficiency of a data center and was developed by The Green Grid organization.
-                                        Since 2016, it has been standardized under ISO/IEC 30134-2. The metric provides insight into how efficiently a data center uses energy, with values closer to 1.0 indicating higher energy efficiency. It is calculated using the following formula:
+                                        Descriptions to be added...:
                                         """
                                     ),
-                                    dcc.Markdown(
-                                        "$\\mathrm{PUE} = \\frac{\\text{Total Facility Energy}}{\\text{IT Equipment Energy}}$",
-                                        mathjax=True,
-                                        style={"font-size": "14pt"},
-                                    ),
-                                     dcc.Markdown(
-                                        """
-                                        A PUE of 1.0 represents perfect efficiency, meaning all power consumed goes directly to IT equipment with no overhead for cooling, lighting, or other facility operations.
-                                        """
-                                     )
                     ],
                     accordion_title=html.Span([
-                        "What Does PUE Tell Us?",
+                        "What Do Energy Projections Tell Us?",
                         html.Span(" Read more...", className="text-link")
                     ]),
-                    filename="pue_chart"
+                    filename="energy_projections_chart"
                 )
             ], style={"margin": "35px 0"}),
 
         html.Br(),
         
-        # WUE Chart
+        # Power Projections (GW) Chart
         html.Div([
-            html.A(id="wue-section"),
+            html.A(id="power-projections-section"),
             create_chart_row(
-                chart_id="wue-scatter-chart",
-                title="Data Center Water Usage Effectiveness (WUE)",
-                expand_id="expand-wue",
+                chart_id="power-projections-line-chart",
+                title="Power Demand Estimates & Projections (GW)",
+                expand_id="expand-power-projections",
                 accordion_children = [
                                 dcc.Markdown(
                                     """
-                                    WUE (Water Usage Effectiveness) measures the overall water utilization efficiency of a data center and was developed by The Green Grid organization.
-                                    Since 2016, it has been standardized under ISO/IEC 30134-4. The metric provides insight into how efficiently a data center uses water, with lower values indicating higher water efficiency. It is calculated using the following formula:
+                                    Descriptions to be added...:
                                     """
-                                ),
-                                dcc.Markdown(
-                                    "$\\mathrm{WUE} = \\frac{\\text{Total Facility Water Usage (liters)}}{\\text{IT Equipment Energy Usage (kWh)}}$",
-                                    mathjax=True,
-                                    style={"font-size": "14pt"},
-                                ),
-                                dcc.Markdown(
-                                    """
-                                    A lower WUE value indicates that less water is used per unit of IT energy consumed, reflecting more efficient water usage. WUE accounts for all water used onsite, including cooling, humidification, and other facility operations.
-                                    """)
-
+                                )
                     ],
                     accordion_title=html.Span([
-                        "What Does WUE Tell Us?",
+                        "What Do Power Projections Tell Us?",
                         html.Span(" Read more...", className="text-link"),
                     ]),
-                filename="wue_chart"
+                filename="power_projections_chart"
             )
         ]),
-
-        html.Br(),
-        
-        # WUE vs PUE Chart
-        html.Div([
-            html.A(id="comparison-section"),
-            create_chart_row(
-                chart_id="pue-wue-scatter-chart", 
-                title="WUE vs PUE Relationship",
-                expand_id="expand-pue-wue",
-                # description_md='''
-                # ##### PUE vs WUE Relationship
-                
-                # To be updated...
-                # ''',
-                filename="pue_wue_comparison"
-            )
-        ]),
-        
     ], fluid=True)
     ], style={
             "marginLeft": "320px",  # Sidebar width (300px) + padding (20px)
