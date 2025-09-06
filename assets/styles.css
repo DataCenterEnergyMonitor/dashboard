@@ -697,6 +697,10 @@ button.accordion-button {
     margin-left: 4px !important;
 }
 
+.slider-wrapper {
+    padding-left: 5px !important;
+}
+
 /* Bookmark styles */
 /* Base bookmark button styling */
 .bookmark-btn {

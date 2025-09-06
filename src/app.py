@@ -59,6 +59,9 @@ from callbacks.company_profile_callbacks import (
 from callbacks.pue_wue_page_callback import (
     register_pue_wue_callbacks
 )
+from callbacks.energy_projections_page_callback import (
+    register_energy_projections_callbacks
+)
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -174,6 +177,7 @@ def create_app():
 
     # Initialize callbacks
     register_pue_wue_callbacks(app, pue_wue_df)
+    register_energy_projections_callbacks(app, energyprojections_df)
 
     #pue_callback = create_chart_callback(app, data_dict, chart_configs["pue-scatter"])
     #wue_callback = create_chart_callback(app, data_dict, chart_configs["wue-scatter"])

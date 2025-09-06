@@ -13,8 +13,8 @@ sections = [
     ]
 
 subnav_items = [
-        {"id": "pue-subnav", "title": "PUE", "href": "/pue-methodology"},
-        {"id": "wue-subnav", "title": "WUE", "href": "/wue-methodology"},
+        {"id": "pue-subnav", "title": "Methodology", "href": "/pue-methodology"},
+        #{"id": "wue-subnav", "title": "WUE", "href": "/wue-methodology"},
         {"id": "wue-subnav", "title": "Dataset"}
     ]
 
@@ -232,10 +232,10 @@ def create_energy_projections_page(app, energy_projections_df):
     
         # Modal for expanded view
         dbc.Modal([
-        dbc.ModalHeader(dbc.ModalTitle(id="modal-title")),
+        dbc.ModalHeader(dbc.ModalTitle(id="energy-modal-title")),
         dbc.ModalBody([
         dcc.Graph(
-            id="expanded-graph", 
+            id="energy-expanded-graph", 
             style={
                 "height": "calc(100vh - 56px)",  # 56px = header height
                 "width": "100vw",
@@ -244,7 +244,7 @@ def create_energy_projections_page(app, energy_projections_df):
                 })
         ], style={"padding": "0", "margin": "0"}),
         ], 
-        id="graph-modal",
+        id="energy-graph-modal",
         #size="xl",
         fullscreen=True,
         is_open=False,
