@@ -27,6 +27,8 @@ from pages.wue_methods_page import create_wue_methodology_page
 from pages.pue_data_page import create_pue_data_page
 from pages.wue_data_page import create_wue_data_page
 from pages.energy_projections_page import create_energy_projections_page
+from pages.energy_projections_methods_page import create_energy_projections_methodology_page
+from pages.energy_projections_data_page import create_energy_projections_data_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -221,6 +223,10 @@ def create_app():
             return create_wue_data_page()
         elif pathname == '/energy-projections':  
             return create_energy_projections_page(app, energyprojections_df)
+        elif pathname == '/energy-projections-methodology':  
+            return create_energy_projections_methodology_page()
+        elif pathname == '/energy-projections-data':  
+            return create_energy_projections_data_page()
         elif pathname == "/forecast": 
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)

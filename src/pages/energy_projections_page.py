@@ -139,7 +139,7 @@ def create_energy_projections_page(app, energy_projections_df):
             # Sticky bookmark bar
             # Desktop bookmark bar (hidden on mobile/tablet)
             html.Div([
-                create_bookmark_bar(sections, subnav_items)
+                create_bookmark_bar(sections, data_page_parent="energy_projections", subnav_items=None)
             ], 
             className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
             style={

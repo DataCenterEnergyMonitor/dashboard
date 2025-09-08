@@ -4,7 +4,7 @@
     "href": "pue_wue/wue_methodology.html",
     "title": "",
     "section": "",
-    "text": "WUE FAQs/Methodology\n\nWhat is WUE?\nWUE stands for water usage effectiveness. WUE is calculated by dividing the total amount of water consumed at a data center by the amount of energy used by its IT equipment, resulting in a metric with units of liters per kilowatt-hour (kWh). The amount in the numerator should include all onsite water uses related to data center operations, inclusive of water consumed for data center humidification and in evaporation associated with data center cooling and onsite power generation activities. The WUE metric was first introduced by the Green Grid in 2011. A WUE value of zero indicates that no water consumption is associated with the data center’s operations. For a basic primer, see our Data Center Water Use 101.\n…\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {WUE {FAQs/Methodology}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). WUE\nFAQs/Methodology. https://dcewm.org/"
+    "text": "WUE FAQs/Methodology\n\nWhat is WUE?\nWUE stands for water usage effectiveness. WUE is calculated by dividing the total amount of water consumed at a data center by the amount of energy used by its IT equipment, resulting in a metric with units of liters per kilowatt-hour (kWh). The amount in the numerator should include all onsite water uses related to data center operations, inclusive of water consumed for data center humidification and in evaporation associated with data center cooling and onsite power generation activities. The WUE metric was first introduced by the Green Grid in 2011. A WUE value of zero indicates that no water consumption is associated with the data center’s operations. For a basic primer, see our Data Center Water Use 101.\n…\n\n\nReferences\n\n\n\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {WUE {FAQs/Methodology}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). WUE\nFAQs/Methodology. https://dcewm.org/"
   },
   {
     "objectID": "pue_wue/wue_data.html",
@@ -26,5 +26,19 @@
     "title": "",
     "section": "",
     "text": "PUE Dataset\n\nIn progress …\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {PUE {Dataset}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). PUE Dataset. https://dcewm.org/"
+  },
+  {
+    "objectID": "energy_projections/energy_projections_data.html",
+    "href": "energy_projections/energy_projections_data.html",
+    "title": "",
+    "section": "",
+    "text": "Energy Estimates And Projections Dataset\n\nIn progress …\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {Energy {Estimates} and {Projections} {Dataset}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). Energy Estimates and\nProjections Dataset. https://dcewm.org/"
+  },
+  {
+    "objectID": "energy_projections/energy_projections_methodology.html",
+    "href": "energy_projections/energy_projections_methodology.html",
+    "title": "",
+    "section": "",
+    "text": "Energy Estimates And Projections FAQs/Methodology\nIn progress…\n\nReferences\n\n\n\n\n\n\n\n\nCitationBibTeX citation:@online{masanet2025,\n  author = {Masanet, Eric and Name, Co-author},\n  title = {Energy {Estimates} {And} {Projections} {FAQs/Methodology}},\n  date = {2025-08-12},\n  url = {https://dcewm.org/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nMasanet, E., & Name, C. (2025, August 12). Energy Estimates And\nProjections FAQs/Methodology. https://dcewm.org/"
   }
 ]

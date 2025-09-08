@@ -25,10 +25,12 @@ navbar:
         route: /pue-methodology
       WUE:
         route: /wue-methodology
+      Energy Projections:
+        route: /energy-projections-methodology
       Reporting Trends:
         route: /about
       Reported Data - Energy:
-        route: /about
+        route: /energy-projections-data
       Reported Data - Water:
         route: /about
       Policies:
@@ -55,16 +57,22 @@ navbar:
     Contact:
       route: /contact
   data_page:
-    Methodology:
-      PUE:
-        route: /pue-methodology
-      WUE:
-        route: /wue-methodology
-    Datasets:
-      PUE:
-        route: /pue-data
-      WUE:
-        route: /wue-data
+    pue_wue:
+      Methodology:
+        PUE:
+          route: /pue-methodology
+        WUE:
+          route: /wue-methodology
+      Datasets:
+        PUE:
+          route: /pue-data
+        WUE:
+          route: /wue-data
+    energy_projections:
+      Methodology:
+        route: /energy-projections-methodology
+      Dataset:
+        route: /energy-projections-data
 
 
 

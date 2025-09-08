@@ -144,7 +144,7 @@ def create_pue_wue_page(app, pue_wue_df):
             # Sticky bookmark bar
             # Desktop bookmark bar (hidden on mobile/tablet)
             html.Div([
-                create_bookmark_bar(sections, subnav_items)
+                create_bookmark_bar(sections, data_page_parent="pue_wue", subnav_items=None)
             ], 
             className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
             style={
