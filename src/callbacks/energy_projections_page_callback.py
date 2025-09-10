@@ -1069,7 +1069,194 @@ def register_energy_projections_callbacks(app, df):
                 dependent_base["temporal_correlation"].isin(temporal_correlation)
             ]
 
-        # Generate dependent options
+        # Generate dependent options - each filter excludes itself from the base
+
+        # TIME HORIZON OPTIONS: Apply all filters EXCEPT time_horizon
+        time_horizon_base = df.copy()
+        if citation:
+            time_horizon_base = time_horizon_base[
+                time_horizon_base["citation"].isin(citation)
+            ]
+        if year_of_publication:
+            time_horizon_base = time_horizon_base[
+                time_horizon_base["year_of_publication"].isin(year_of_publication)
+            ]
+        if publisher_institution_type_s_:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base,
+                "publisher_institution_type_s_",
+                publisher_institution_type_s_,
+            )
+        if author_institution_type_s_:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base,
+                "author_institution_type_s_",
+                author_institution_type_s_,
+            )
+        if study_region:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base, "region", study_region
+            )
+        if data_center_type_s_:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base, "data_center_type_s_", data_center_type_s_
+            )
+        if associated_granularity:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base, "associated_granularity", associated_granularity
+            )
+        if modeling_approach_es_:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base, "modeling_approach_es_", modeling_approach_es_
+            )
+        if input_data_type_s_:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base, "input_data_type_s_", input_data_type_s_
+            )
+        # Skip time_horizon itself
+        if projection_narrative_s_:
+            time_horizon_base = apply_multi_value_filter(
+                time_horizon_base, "projection_narrative_s_", projection_narrative_s_
+            )
+        if label:
+            time_horizon_base = time_horizon_base[
+                time_horizon_base["label"].isin(label)
+            ]
+        # Apply checkbox filters
+        for checkbox_filter in ENERGY_PROJECTION_CHECKLIST_FILTERS:
+            checkbox_values = locals().get(checkbox_filter)
+            if checkbox_values:
+                time_horizon_base = apply_checkbox_filter(
+                    time_horizon_base, checkbox_filter, checkbox_values
+                )
+
+        time_horizon_opts = get_single_value_options(time_horizon_base, "time_horizon")
+
+        # PROJECTION NARRATIVE OPTIONS: Apply all filters EXCEPT projection_narrative_s_
+        projection_narrative_base = df.copy()
+        if citation:
+            projection_narrative_base = projection_narrative_base[
+                projection_narrative_base["citation"].isin(citation)
+            ]
+        if year_of_publication:
+            projection_narrative_base = projection_narrative_base[
+                projection_narrative_base["year_of_publication"].isin(
+                    year_of_publication
+                )
+            ]
+        if publisher_institution_type_s_:
+            projection_narrative_base = apply_multi_value_filter(
+                projection_narrative_base,
+                "publisher_institution_type_s_",
+                publisher_institution_type_s_,
+            )
+        if author_institution_type_s_:
+            projection_narrative_base = apply_multi_value_filter(
+                projection_narrative_base,
+                "author_institution_type_s_",
+                author_institution_type_s_,
+            )
+        if study_region:
+            projection_narrative_base = apply_multi_value_filter(
+                projection_narrative_base, "region", study_region
+            )
+        if data_center_type_s_:
+            projection_narrative_base = apply_multi_value_filter(
+                projection_narrative_base, "data_center_type_s_", data_center_type_s_
+            )
+        if associated_granularity:
+            projection_narrative_base = apply_multi_value_filter(
+                projection_narrative_base,
+                "associated_granularity",
+                associated_granularity,
+            )
+        if modeling_approach_es_:
+            projection_narrative_base = apply_multi_value_filter(
+                projection_narrative_base,
+                "modeling_approach_es_",
+                modeling_approach_es_,
+            )
+        if input_data_type_s_:
+            projection_narrative_base = apply_multi_value_filter(
+                projection_narrative_base, "input_data_type_s_", input_data_type_s_
+            )
+        if time_horizon:
+            projection_narrative_base = projection_narrative_base[
+                projection_narrative_base["time_horizon"].isin(time_horizon)
+            ]
+        # Skip projection_narrative_s_ itself
+        if label:
+            projection_narrative_base = projection_narrative_base[
+                projection_narrative_base["label"].isin(label)
+            ]
+        # Apply checkbox filters
+        for checkbox_filter in ENERGY_PROJECTION_CHECKLIST_FILTERS:
+            checkbox_values = locals().get(checkbox_filter)
+            if checkbox_values:
+                projection_narrative_base = apply_checkbox_filter(
+                    projection_narrative_base, checkbox_filter, checkbox_values
+                )
+
+        projection_narrative_opts = get_multi_value_options(
+            projection_narrative_base, "projection_narrative_s_"
+        )
+
+        # LABEL OPTIONS: Apply all filters EXCEPT label
+        label_base = df.copy()
+        if citation:
+            label_base = label_base[label_base["citation"].isin(citation)]
+        if year_of_publication:
+            label_base = label_base[
+                label_base["year_of_publication"].isin(year_of_publication)
+            ]
+        if publisher_institution_type_s_:
+            label_base = apply_multi_value_filter(
+                label_base,
+                "publisher_institution_type_s_",
+                publisher_institution_type_s_,
+            )
+        if author_institution_type_s_:
+            label_base = apply_multi_value_filter(
+                label_base,
+                "author_institution_type_s_",
+                author_institution_type_s_,
+            )
+        if study_region:
+            label_base = apply_multi_value_filter(label_base, "region", study_region)
+        if data_center_type_s_:
+            label_base = apply_multi_value_filter(
+                label_base, "data_center_type_s_", data_center_type_s_
+            )
+        if associated_granularity:
+            label_base = apply_multi_value_filter(
+                label_base, "associated_granularity", associated_granularity
+            )
+        if modeling_approach_es_:
+            label_base = apply_multi_value_filter(
+                label_base, "modeling_approach_es_", modeling_approach_es_
+            )
+        if input_data_type_s_:
+            label_base = apply_multi_value_filter(
+                label_base, "input_data_type_s_", input_data_type_s_
+            )
+        if time_horizon:
+            label_base = label_base[label_base["time_horizon"].isin(time_horizon)]
+        if projection_narrative_s_:
+            label_base = apply_multi_value_filter(
+                label_base, "projection_narrative_s_", projection_narrative_s_
+            )
+        # Skip label itself
+        # Apply checkbox filters
+        for checkbox_filter in ENERGY_PROJECTION_CHECKLIST_FILTERS:
+            checkbox_values = locals().get(checkbox_filter)
+            if checkbox_values:
+                label_base = apply_checkbox_filter(
+                    label_base, checkbox_filter, checkbox_values
+                )
+
+        label_opts = get_single_value_options(label_base, "label")
+
+        # OTHER DEPENDENT OPTIONS (using original dependent_base logic)
         study_region_opts = get_multi_value_options(dependent_base, "region")
         data_center_type_opts = get_multi_value_options(
             dependent_base, "data_center_type_s_"
@@ -1083,11 +1270,6 @@ def register_energy_projections_callbacks(app, df):
         input_data_type_opts = get_multi_value_options(
             dependent_base, "input_data_type_s_"
         )
-        time_horizon_opts = get_single_value_options(dependent_base, "time_horizon")
-        projection_narrative_opts = get_multi_value_options(
-            dependent_base, "projection_narrative_s_"
-        )
-        label_opts = get_single_value_options(dependent_base, "label")
 
         # CHECKBOX OPTIONS: Each checkbox excludes itself from filtering (like dropdowns)
         def get_checkbox_base_excluding(exclude_filter):

@@ -7,7 +7,7 @@ def create_power_projections_line_plot(
     filtered_df, full_df=None, filters_applied=False
 ):
     """
-    Create Power projections line plot
+    Create Energy projections line plot
 
     Args:
         filtered_df: DataFrame to display
@@ -15,19 +15,35 @@ def create_power_projections_line_plot(
         full_df: unfiltered DataFrame
     """
 
-    # Sort by citation and year for consistent chronological ordering
+    # Sort by company name for consistent ordering
     full_df = full_df.sort_values(["citation", "year"]).copy()
     filtered_df = filtered_df.sort_values(["citation", "year"]).copy()
 
+    # DEBUG: Check data continuity
+    print(f"\n=== POWER CHART DEBUG ===")
+    print(f"Filtered data shape: {filtered_df.shape}")
+    if not filtered_df.empty and "label" in filtered_df.columns:
+        for citation in filtered_df["citation"].unique()[:2]:  # Check first 2 citations
+            citation_data = filtered_df[filtered_df["citation"] == citation]
+            print(f"\nCitation {citation}:")
+            for label in citation_data["label"].unique():
+                label_data = citation_data[citation_data["label"] == label].sort_values(
+                    "year"
+                )
+                years = label_data["year"].tolist()
+                values = label_data["energy_demand"].tolist()
+                print(f"  {label}: Years {years} -> Values {values}")
+    print("=== END POWER DEBUG ===\n")
+
     # Calculate y-axis range to avoid extra empty space
-    ymin = max(1, filtered_df["energy_demand"].min() - 0.05)
-    ymax = filtered_df["energy_demand"].max() + 0.05
+    ymin = filtered_df["energy_demand"].min() - 100
+    ymax = filtered_df["energy_demand"].max() + 100
 
     # Calculate x-axis range to avoid extra empty space
-    xmin = filtered_df["year"].min()
-    xmax = full_df["year"].max()
+    xmin = filtered_df["year"].min() - 1
+    xmax = full_df["year"].max() + 1
 
-    citation_list = full_df["citation"].unique()
+    # citation_list = full_df["citation"].unique()
 
     palette = px.colors.qualitative.Bold
 
@@ -41,7 +57,7 @@ def create_power_projections_line_plot(
             "data": [],
             "layout": {
                 "xaxis": {"title": "Year (Historical & Projection)", "visible": True},
-                "yaxis": {"title": "Power Demand (GW)", "visible": True},
+                "yaxis": {"title": "Energy Demand (TWh)", "visible": True},
                 "showlegend": False,
                 "annotations": [
                     {
@@ -100,11 +116,9 @@ def create_power_projections_line_plot(
         filtered_df["citation_label"] = (
             filtered_df["citation"] + " - " + filtered_df["label"].astype(str)
         )
-        # Re-sort to ensure proper chronological order after creating citation_label
-        filtered_df = filtered_df.sort_values(["citation", "label", "year"]).copy()
     else:
-        filtered_df["citation_label"] = filtered_df["citation"]
-
+        # filtered_df["citation_label"] = filtered_df["citation"]
+        filtered_df = filtered_df.sort_values(["citation", "label", "year"]).copy()
     # Define line styles for different labels
     line_style_map = {
         "Historical": "solid",
@@ -118,13 +132,13 @@ def create_power_projections_line_plot(
             filtered_df,
             x="year",
             y="energy_demand",
-            color="citation",  # color by citation
-            line_dash="label",  # line style by label
+            color="citation",  # Keep color by citation
             markers=True,
+            line_dash="label",  # Add line style by label
             color_discrete_map=color_map,
             labels={
                 "year": "Year (Historical & Projection)",
-                "energy_demand": "Power Demand (GW)",
+                "energy_demand": "Energy Demand (TWh)",
                 "citation": "Study",
                 "label": "Scenario",
             },
@@ -136,53 +150,25 @@ def create_power_projections_line_plot(
             filtered_df,
             x="year",
             y="energy_demand",
-            markers=True,
+            # markers=True,
             color=None,
             labels={
                 "year": "Year (Historical & Projection)",
-                "energy_demand": "Power Demand (GW)",
+                "energy_demand": "Energy Demand (TWh)",
             },
             custom_data=custom_data,
         )
-    # energy_projections_fig = px.line(
-    #     filtered_df,
-    #     x="year",
-    #     y="energy_demand",
-    #     color="citation" if filters_applied else None,
-    #     color_discrete_map=color_map,
-    #     labels={
-    #         "year": "Year (Historical & Projection)",
-    #         "energy_demand": "Energy Demand (TWh)",
-    #         "citation": "Study",
-    #     },
-    #     custom_data=custom_data,
-    # )
-    # if filters_applied and "label" in filtered_df.columns:
-    #     # Create a mapping of trace names to labels
-    #     trace_label_map = {}
-    #     for _, row in filtered_df.iterrows():
-    #         trace_name = row["citation"]
-    #         label = row["label"]
-    #         trace_label_map[trace_name] = label
-
-    #     for trace in energy_projections_fig.data:
-    #         if trace.name in trace_label_map:
-    #             label = trace_label_map[trace.name]
-    #             dash_style = line_style_map.get(label, "solid")
-    #             trace.update(line_dash=dash_style)
 
     if not filters_applied:
         energy_projections_fig.update_traces(
-            mode="lines+markers",
             line=dict(color="lightgray", width=2),
-            marker=dict(color="lightgray", size=8, opacity=0.7),
-            opacity=0.7,
+            opacity=0.5,
+            # marker=dict(color="darkgray", size=5, opacity=0.5),
             showlegend=False,
         )
     else:
         energy_projections_fig.update_traces(
-            mode="lines+markers",
-            marker=dict(size=9, opacity=0.7, line=dict(width=0.5, color="white")),
+            marker=dict(size=6, opacity=0.7, line=dict(width=0.5, color="grey"))
         )
 
         # Add background traces to foreground figure
@@ -204,14 +190,14 @@ def create_power_projections_line_plot(
                     background_df,
                     x="year",
                     y="energy_demand",
-                    markers=True,
+                    color="citation",  # Group by citation for proper line continuity
+                    line_dash="label",  # Different line styles for scenarios
                     custom_data=custom_data,
                 )
                 background_fig.update_traces(
-                    mode="lines+markers",
                     line=dict(color="lightgray", width=2),
-                    marker=dict(color="lightgray", size=8, opacity=0.5),
                     opacity=0.5,
+                    # marker=dict(color="darkgray", size=5, opacity=0.5),
                     showlegend=False,
                 )
 
@@ -225,7 +211,7 @@ def create_power_projections_line_plot(
                     + energy_projections_fig.data[: -len(background_fig.data)]
                 )
     energy_projections_fig.update_xaxes(
-        range=[xmin-1, xmax+1],
+        range=[xmin - 1, xmax + 1],
         # tickvals=[year_x_map[year] for year in years],
         # ticktext=[str(year) for year in years],
         showgrid=False,
@@ -249,8 +235,8 @@ def create_power_projections_line_plot(
         ),
         yaxis=dict(
             range=[
-                filtered_df["energy_demand"].min()-50,
-                filtered_df["energy_demand"].max()+50,
+                filtered_df["energy_demand"].min() - 50,
+                filtered_df["energy_demand"].max() + 50,
             ],
             showgrid=False,  # Disable gridlines
             showline=True,
@@ -271,12 +257,18 @@ def create_power_projections_line_plot(
         template="simple_white",
     )
 
+    for trace in energy_projections_fig.data:
+        # If the trace represents a scenario, set its line_dash style
+        label = getattr(trace, "name", None)
+        if label and label in line_style_map:
+            trace.line["dash"] = line_style_map[label]
+
     # Update marker size and hover template
     energy_projections_fig.update_traces(
         hovertemplate=(
             "<b>Publication: %{customdata[0]}</b><br>"
             + "Year: %{x}<br>"
-            + "Power Demand (GW): %{y:.2f}<br>"
+            + "Energy Demand (TWh): %{y:.2f}<br>"
             # + "%{customdata[1]}<br>"
             # + "%{customdata[2]}<br>"
             + "%{customdata[3]}"

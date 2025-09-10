@@ -5,6 +5,7 @@ from janitor import clean_names
 import datetime
 import re
 
+
 def load_pue_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
@@ -22,17 +23,18 @@ def load_pue_data():
         "county",
         "country",
         "region",
-        "measurement_category"
+        "measurement_category",
     ]
     for col in string_columns:
         if col in pue_df.columns:
             pue_df[col] = pue_df[col].str.strip()
-    
-    pue_df['metric'] = 'pue'
-    pue_df.rename(columns={'pue_type': 'metric_type'}, inplace=True)
-    pue_df.rename(columns={'pue_value': 'metric_value'}, inplace=True)
+
+    pue_df["metric"] = "pue"
+    pue_df.rename(columns={"pue_type": "metric_type"}, inplace=True)
+    pue_df.rename(columns={"pue_value": "metric_value"}, inplace=True)
 
     return pue_df
+
 
 def load_wue_data():
     # Get the current file's directory (src folder)
@@ -51,31 +53,36 @@ def load_wue_data():
         "county",
         "country",
         "region",
-        "measurement_category"
+        "measurement_category",
     ]
     for col in string_columns:
         if col in wue_df.columns:
             wue_df[col] = wue_df[col].str.strip()
 
     # clean column names
-    wue_df.rename(columns={
-    'category_1_water_input_s_': 'category_1_water_inputs',
-    'facility_scope_evident_': 'facility_scope_evident',
-    'geographical_scope_stated_' : 'geographical_scope_stated',
-    'assigned_climate_zone_s_':'assigned_climate_zones',
-    'default_climate_zone_s_': 'default_climate_zones',
-    'is_wue_self_reported_':'self_reported'}, inplace=True)
+    wue_df.rename(
+        columns={
+            "category_1_water_input_s_": "category_1_water_inputs",
+            "facility_scope_evident_": "facility_scope_evident",
+            "geographical_scope_stated_": "geographical_scope_stated",
+            "assigned_climate_zone_s_": "assigned_climate_zones",
+            "default_climate_zone_s_": "default_climate_zones",
+            "is_wue_self_reported_": "self_reported",
+        },
+        inplace=True,
+    )
 
-    wue_df['metric'] = 'wue'
-    wue_df.rename(columns={'wue_type': 'metric_type'}, inplace=True)
-    wue_df.rename(columns={'wue_value': 'metric_value'}, inplace=True)
+    wue_df["metric"] = "wue"
+    wue_df.rename(columns={"wue_type": "metric_type"}, inplace=True)
+    wue_df.rename(columns={"wue_value": "metric_value"}, inplace=True)
 
     return wue_df
+
 
 def create_pue_wue_data(pue_df, wue_df):
     """
     Combine PUE and WUE data into a single DataFrame.
-    
+
     Args:
         pue_df: PUE dataframe
         wue_df: WUE dataframe
@@ -83,78 +90,165 @@ def create_pue_wue_data(pue_df, wue_df):
     pue_df = pue_df.copy()
     wue_df = wue_df.copy()
 
-    wue_selected = wue_df[['company_name', 
-                       'facility_scope',
-                       'verbatim_geographical_scope', 
-                       'time_period_category',
-                       'time_period_value',
-                       'metric_value',
-                       'category_1_water_inputs']]
-    
+    wue_selected = wue_df[
+        [
+            "company_name",
+            "facility_scope",
+            "verbatim_geographical_scope",
+            "time_period_category",
+            "time_period_value",
+            "metric_value",
+            "category_1_water_inputs",
+        ]
+    ]
+
     pue_wue_df = pd.merge(
         pue_df,
         wue_selected,
         on=[
-            'company_name',
-            'facility_scope',
-            'verbatim_geographical_scope',
-            'time_period_category',
-            'time_period_value'
+            "company_name",
+            "facility_scope",
+            "verbatim_geographical_scope",
+            "time_period_category",
+            "time_period_value",
         ],
-        how='left',
-        suffixes=('_pue', '_wue') 
-        )
+        how="left",
+        suffixes=("_pue", "_wue"),
+    )
     # select only the relevant columns
-    pue_wue_df = pue_wue_df[['company_name',
-                            'facility_scope',
-                            'verbatim_geographical_scope',
-                            'metric',
-                            'metric_value_pue', 
-                            'metric_value_wue',
-                            'time_period_value',
-                            'time_period_category',
-                            'measurement_category', 
-                            'region', 
-                            'country',
-                            'state_province',
-                            'city',
-                            'county',
-                            'metric_type',
-                            'assigned_climate_zones',
-                            'default_climate_zones',
-                            'assigned_cooling_technologies',
-                            'category_1_water_inputs']]  
+    pue_wue_df = pue_wue_df[
+        [
+            "company_name",
+            "facility_scope",
+            "verbatim_geographical_scope",
+            "metric",
+            "metric_value_pue",
+            "metric_value_wue",
+            "time_period_value",
+            "time_period_category",
+            "measurement_category",
+            "region",
+            "country",
+            "state_province",
+            "city",
+            "county",
+            "metric_type",
+            "assigned_climate_zones",
+            "default_climate_zones",
+            "assigned_cooling_technologies",
+            "category_1_water_inputs",
+        ]
+    ]
 
-    pue_wue_df.rename(columns = {
-        'metric_value_pue': 'metric_value',
-        'metric_value_wue': 'wue_value'
-    }, inplace=True)
+    pue_wue_df.rename(
+        columns={"metric_value_pue": "metric_value", "metric_value_wue": "wue_value"},
+        inplace=True,
+    )
 
     pue_wue_df = pue_wue_df.drop_duplicates()
 
-    #append wue_df to pue_wue_df dataframe
+    # append wue_df to pue_wue_df dataframe
     pue_wue_df = pd.concat([pue_wue_df, wue_df], ignore_index=True)
-    
+
     return pue_wue_df
+
 
 # data load for Energy Demand and Projections page
 def load_energyprojections_data():
     # Get the current file's directory (src folder)
-    current_dir = Path(__file__).parent 
+    current_dir = Path(__file__).parent
     # Go up one level and into data directory
-    data_path = current_dir.parent / "data" / "DCEWM-EnergyStudiesData.xlsx" 
+    data_path = current_dir.parent / "data" / "DCEWM-EnergyStudiesData.xlsx"
 
     df = pd.read_excel(data_path, sheet_name="Data Viz", index_col=None, skiprows=4)
-    
+
     # pivot longer all year columns
-    year_columns = [col for col in df.columns if re.match(r'^\d{4}$', str(col))]
-    df = df.melt(id_vars=[col for col in df.columns if col not in year_columns],
-                 value_vars=year_columns,
-                 var_name='year',
-                 value_name='energy_demand')
+    year_columns = [col for col in df.columns if re.match(r"^\d{4}$", str(col))]
+    df = df.melt(
+        id_vars=[col for col in df.columns if col not in year_columns],
+        value_vars=year_columns,
+        var_name="year",
+        value_name="energy_demand",
+    )
 
     df = df.clean_names()
     df = df[df["energy_demand"] != 0]
+
+    # Remove NaN values as well
+    df = df.dropna(subset=["energy_demand"])
+
+    # Convert year to numeric to ensure proper x-axis positioning
+    df["year"] = pd.to_numeric(df["year"], errors="coerce")
+
+    # Ensure continuity between Historical and scenario data
+    # Add the last historical point as the first point of each scenario
+    df_continuous = []
+
+    for citation in df["citation"].unique():
+        citation_data = df[df["citation"] == citation].copy()
+
+        # Get historical data
+        historical_data = citation_data[citation_data["label"] == "Historical"].copy()
+
+        if not historical_data.empty:
+            # Find the last historical point (excluding NaN values)
+            valid_historical = historical_data[historical_data["energy_demand"].notna()]
+            if not valid_historical.empty:
+                last_historical = valid_historical.loc[
+                    valid_historical["year"].idxmax()
+                ].copy()
+            else:
+                continue  # Skip if no valid historical data
+
+            # Get all scenario labels (non-Historical)
+            scenario_labels = citation_data[citation_data["label"] != "Historical"][
+                "label"
+            ].unique()
+
+            # Add the last historical point to each scenario
+            for scenario in scenario_labels:
+                scenario_data = citation_data[citation_data["label"] == scenario].copy()
+
+                if not scenario_data.empty:
+                    # Check if this year already exists in the scenario
+                    if last_historical["year"] not in scenario_data["year"].values:
+                        # Create a new row for continuity
+                        continuity_point = last_historical.copy()
+                        continuity_point["label"] = scenario
+
+                        # Add to the scenario data
+                        scenario_data = pd.concat(
+                            [pd.DataFrame([continuity_point]), scenario_data],
+                            ignore_index=True,
+                        )
+                        scenario_data = scenario_data.sort_values("year")
+
+                df_continuous.append(scenario_data)
+
+        # Add historical data (unchanged)
+        df_continuous.append(historical_data)
+
+        # Add any data that doesn't have Historical counterpart
+        non_historical_citations = citation_data[citation_data["label"] != "Historical"]
+        if historical_data.empty and not non_historical_citations.empty:
+            df_continuous.append(non_historical_citations)
+
+    # Combine all data
+    if df_continuous:
+        df = pd.concat(df_continuous, ignore_index=True)
+        df = df.sort_values(["citation", "label", "year"])
+
+        # DEBUG: Check PBH records specifically
+        print(f"\n=== PBH DEBUG ===")
+        pbh_data = df[df["citation"] == "PBH(2018)"]
+        print(f"PBH total records: {len(pbh_data)}")
+        if not pbh_data.empty:
+            for label in pbh_data["label"].unique():
+                label_data = pbh_data[pbh_data["label"] == label]
+                print(f"PBH {label}: {len(label_data)} records")
+                print(f"  Years: {sorted(label_data['year'].tolist())}")
+                print(f"  Values: {label_data['energy_demand'].tolist()}")
+        print("=== END PBH DEBUG ===\n")
 
     # Clean string columns
     string_columns = [
@@ -173,14 +267,13 @@ def load_energyprojections_data():
         "year_of_publication",
         "apa_reference",
         "publishing_institution_types",
-        "author_institution_types"
+        "author_institution_types",
     ]
     for col in string_columns:
         if col in df.columns:
             df[col] = df[col].where(df[col].isna(), df[col].astype(str).str.strip())
-    
-    return df
 
+    return df
 
 
 def load_energyforecast_data():
