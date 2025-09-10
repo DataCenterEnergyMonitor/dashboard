@@ -3,7 +3,11 @@ import pandas as pd
 
 
 def create_energy_projections_line_plot(
-    filtered_df, full_df=None, filters_applied=False
+    filtered_df,
+    full_df=None,
+    filters_applied=False,
+    yaxis_title="Energy Demand (TWh)",
+    y_label="Energy Demand (TWh)"
 ):
     """
     Create Energy projections line plot
@@ -18,12 +22,12 @@ def create_energy_projections_line_plot(
     full_df = full_df.sort_values(["citation", "year"]).copy()
     filtered_df = filtered_df.sort_values(["citation", "year"]).copy()
 
-    # DEBUG: Filtered data summary
-    print(f"\n=== FILTERED DATA ===")
-    print(
-        f"Shape: {filtered_df.shape}, Citations: {list(filtered_df['citation'].unique())}"
-    )
-    print("=== END FILTERED DATA ===\n")
+    # # DEBUG: Filtered data summary
+    # print(f"\n=== FILTERED DATA ===")
+    # print(
+    #     f"Shape: {filtered_df.shape}, Citations: {list(filtered_df['citation'].unique())}"
+    # )
+    # print("=== END FILTERED DATA ===\n")
 
     # Calculate y-axis range to avoid extra empty space
     ymin = full_df["energy_demand"].min() - 10
@@ -37,8 +41,8 @@ def create_energy_projections_line_plot(
         return {
             "data": [],
             "layout": {
-                "xaxis": {"title": "Year (Historical & Projection)", "visible": True},
-                "yaxis": {"title": "Energy Demand (TWh)", "visible": True},
+                "xaxis": {"title": "Year", "visible": True},
+                "yaxis": {"title": yaxis_title, "visible": True},
                 "showlegend": False,
                 "annotations": [
                     {
@@ -55,18 +59,18 @@ def create_energy_projections_line_plot(
             },
         }
 
-    print(f"\n=== FILTERED DATA DEBUG ===")
-    print(f"Filtered data shape: {filtered_df.shape}")
-    print(f"Filtered citations: {filtered_df['citation'].unique()}")
-    if "label" in filtered_df.columns:
-        print(f"Filtered labels: {filtered_df['label'].unique()}")
-        for citation in filtered_df["citation"].unique():
-            citation_data = filtered_df[filtered_df["citation"] == citation]
-            print(f"\n{citation} data:")
-            for label in citation_data["label"].unique():
-                label_data = citation_data[citation_data["label"] == label]
-                print(f"  {label}: {len(label_data)} points")
-    print("=== END FILTERED DATA DEBUG ===\n")
+    # print(f"\n=== FILTERED DATA DEBUG ===")
+    # print(f"Filtered data shape: {filtered_df.shape}")
+    # print(f"Filtered citations: {filtered_df['citation'].unique()}")
+    # if "label" in filtered_df.columns:
+    #     print(f"Filtered labels: {filtered_df['label'].unique()}")
+    #     for citation in filtered_df["citation"].unique():
+    #         citation_data = filtered_df[filtered_df["citation"] == citation]
+    #         print(f"\n{citation} data:")
+    #         for label in citation_data["label"].unique():
+    #             label_data = citation_data[citation_data["label"] == label]
+    #             print(f"  {label}: {len(label_data)} points")
+    # print("=== END FILTERED DATA DEBUG ===\n")
 
     # Create fields for hover text
     def create_hover_text(df):
@@ -134,8 +138,8 @@ def create_energy_projections_line_plot(
         line_dash="label",
         markers=True,
         labels={
-            "year": "Year (Historical & Projection)",
-            "energy_demand": "Energy Demand (TWh)",
+            "year": "Year",
+            "energy_demand": y_label,
             "citation": "Study",
             "label": "Scenario",
         },
@@ -143,18 +147,18 @@ def create_energy_projections_line_plot(
         custom_data=custom_data,
     )
 
-    # DEBUG: Filtered traces only
-    print(f"\n=== FILTERED TRACES ===")
-    filtered_traces = [
-        trace
-        for trace in energy_projections_fig.data
-        if any(citation in trace.name for citation in filtered_df["citation"].unique())
-    ]
-    print(f"Filtered traces: {len(filtered_traces)}")
-    for i, trace in enumerate(filtered_traces):
-        point_count = len(trace.x) if hasattr(trace, "x") and trace.x is not None else 0
-        print(f"  {i}: {trace.name} ({point_count} points)")
-    print("=== END FILTERED TRACES ===\n")
+    # # DEBUG: Filtered traces only
+    # print(f"\n=== FILTERED TRACES ===")
+    # filtered_traces = [
+    #     trace
+    #     for trace in energy_projections_fig.data
+    #     if any(citation in trace.name for citation in filtered_df["citation"].unique())
+    # ]
+    # print(f"Filtered traces: {len(filtered_traces)}")
+    # for i, trace in enumerate(filtered_traces):
+    #     point_count = len(trace.x) if hasattr(trace, "x") and trace.x is not None else 0
+    #     print(f"  {i}: {trace.name} ({point_count} points)")
+    # print("=== END FILTERED TRACES ===\n")
 
     # If filters are applied, determine which traces should be highlighted
     if filters_applied and not filtered_df.empty:
@@ -197,20 +201,20 @@ def create_energy_projections_line_plot(
                                 "Scenario: ", ""
                             ).replace("<br>", "")
 
-            # Debug print to see what we're getting
-            if i < 3:
-                print(
-                    f"Trace {i}: name='{trace.name}', extracted citation='{trace_citation}', label='{trace_label}'"
-                )
+            # # Debug print to see what we're getting
+            # if i < 3:
+            #     print(
+            #         f"Trace {i}: name='{trace.name}', extracted citation='{trace_citation}', label='{trace_label}'"
+            #     )
 
             # Check if this trace matches the filter
             trace_key = (trace_citation, trace_label)
             is_filtered = trace_key in filtered_trace_keys
 
-            if is_filtered and i < 3:
-                print(
-                    f"Trace {i}: name='{trace.name}', extracted citation='{trace_citation}', label='{trace_label}'"
-                )
+            # if is_filtered and i < 3:
+            #     print(
+            #         f"Trace {i}: name='{trace.name}', extracted citation='{trace_citation}', label='{trace_label}'"
+            #     )
 
     # If filters are applied, determine which traces should be highlighted
     if filters_applied and not filtered_df.empty:
@@ -228,11 +232,11 @@ def create_energy_projections_line_plot(
                 for label in citation_labels:
                     filtered_trace_keys.add((citation, label))
 
-        # Debug print to see what we're looking for
-        print(f"Filtered trace keys to match: {filtered_trace_keys}")
-        print(
-            f"Sample filtered data labels: {filtered_df['label'].unique() if 'label' in filtered_df.columns else 'No label column'}"
-        )
+        # # Debug print to see what we're looking for
+        # print(f"Filtered trace keys to match: {filtered_trace_keys}")
+        # print(
+        #     f"Sample filtered data labels: {filtered_df['label'].unique() if 'label' in filtered_df.columns else 'No label column'}"
+        # )
 
         # Update trace styling based on whether they match the filter
         for i, trace in enumerate(energy_projections_fig.data):
@@ -250,18 +254,18 @@ def create_energy_projections_line_plot(
                         "Scenario: ", ""
                     ).replace("<br>", "")
 
-            # Debug print for first few traces only to avoid spam
-            if i < 6:
-                print(
-                    f"Trace {i}: name='{trace.name}', citation='{trace_citation}', cleaned_label='{trace_label}'"
-                )
+            # # Debug print for first few traces only to avoid spam
+            # if i < 6:
+            #     print(
+            #         f"Trace {i}: name='{trace.name}', citation='{trace_citation}', cleaned_label='{trace_label}'"
+            #     )
 
             # Check if this trace matches the filter
             trace_key = (trace_citation, trace_label)
             is_filtered = trace_key in filtered_trace_keys
 
-            if i < 6:
-                print(f"  -> trace_key={trace_key}, is_filtered={is_filtered}")
+            # if i < 6:
+            #     print(f"  -> trace_key={trace_key}, is_filtered={is_filtered}")
 
             if is_filtered:
                 # This trace matches the filter - show in color with full hover
@@ -275,7 +279,7 @@ def create_energy_projections_line_plot(
                     hovertemplate=(
                         "<b>Publication: %{customdata[0]}</b><br>"
                         + "Year: %{x}<br>"
-                        + "Energy Demand (TWh): %{y:.2f}<br>"
+                        + f"{y_label}: "+"%{y:.2f}<br>"
                         + "%{customdata[3]}"
                         + "%{customdata[4]}"
                         + "%{customdata[5]}"
@@ -287,12 +291,12 @@ def create_energy_projections_line_plot(
                 energy_projections_fig.data[i].update(
                     line=dict(color="lightgray", width=2),
                     opacity=0.4,
-                    marker=dict(size=5, opacity=0.5),
+                    marker=dict(size=5, opacity=0.6),
                     showlegend=False,
                     hovertemplate=(
                         "<b>%{customdata[0]}</b><br>"
                         + "Year: %{x}<br>"
-                        + "Energy Demand (TWh): %{y:.2f}<br>"
+                        + f"{y_label}: "+"%{y:.2f}<br>"
                         + "<extra></extra>"
                     ),
                 )
@@ -300,13 +304,13 @@ def create_energy_projections_line_plot(
         # No filters applied - show all traces in gray
         energy_projections_fig.update_traces(
             line=dict(color="lightgray", width=2),
-            opacity=0.4,
-            marker=dict(size=5, opacity=0.5),
+            opacity=0.6,
+            marker=dict(size=5, opacity=0.7),
             showlegend=False,
             hovertemplate=(
                 "<b>%{customdata[0]}</b><br>"
                 + "Year: %{x}<br>"
-                + "Energy Demand (TWh): %{y:.2f}<br>"
+                + f"{y_label}: "+"%{y:.2f}<br>"
                 + "<extra></extra>"
             ),
         )
@@ -369,16 +373,16 @@ def create_energy_projections_line_plot(
                 if clean_label in line_style_map:
                     trace.line["dash"] = line_style_map[clean_label]
 
-    # DEBUG: Final filtered traces
-    print(f"\n=== FINAL FILTERED TRACES ===")
-    final_filtered_traces = [
-        trace
-        for trace in energy_projections_fig.data
-        if any(citation in trace.name for citation in filtered_df["citation"].unique())
-    ]
-    print(f"Final filtered traces: {len(final_filtered_traces)}")
-    for i, trace in enumerate(final_filtered_traces):
-        print(f"  {i}: {trace.name}")
-    print("=== END FINAL FILTERED TRACES ===\n")
+    # # DEBUG: Final filtered traces
+    # print(f"\n=== FINAL FILTERED TRACES ===")
+    # final_filtered_traces = [
+    #     trace
+    #     for trace in energy_projections_fig.data
+    #     if any(citation in trace.name for citation in filtered_df["citation"].unique())
+    # ]
+    # print(f"Final filtered traces: {len(final_filtered_traces)}")
+    # for i, trace in enumerate(final_filtered_traces):
+    #     print(f"  {i}: {trace.name}")
+    # print("=== END FINAL FILTERED TRACES ===\n")
 
     return energy_projections_fig

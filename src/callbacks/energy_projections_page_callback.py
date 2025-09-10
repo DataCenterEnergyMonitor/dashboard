@@ -1514,11 +1514,16 @@ def register_energy_projections_callbacks(app, df):
             filtered_df=energy_filtered_df,
             full_df=energy_full_df,
             filters_applied=filters_applied,
+            yaxis_title="Energy Demand (TWh)",
+            y_label="Energy Demand (TWh)"
         )
-        power_projections_fig = create_power_projections_line_plot(
+
+        power_projections_fig = create_energy_projections_line_plot(
             filtered_df=power_filtered_df,
             full_df=power_full_df,
             filters_applied=filters_applied,
+            yaxis_title="Power Demand (GW)",
+            y_label="Power Demand (GW)"
         )
 
         return energy_projections_fig, power_projections_fig
