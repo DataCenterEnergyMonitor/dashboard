@@ -21,17 +21,34 @@ def create_energy_projections_filters(df):
                             # Study
                             html.Div(
                                 [
-                                    html.H5(
-                                        "Study",
-                                        className="filter-section-title",
-                                        style={
-                                            "color": "#34495e",
-                                            "fontSize": "1.1rem",
-                                            "fontWeight": "600",
-                                            "marginBottom": "15px",
-                                            "marginTop": "20px",
-                                        },
-                                    ),
+                                    # html.H5(
+                                    #     "Study",
+                                    #     className="filter-section-title",
+                                    #     style={
+                                    #         "color": "#34495e",
+                                    #         "fontSize": "1.1rem",
+                                    #         "fontWeight": "600",
+                                    #         "marginBottom": "15px",
+                                    #         "marginTop": "20px",
+                                    #     },
+                                    # ),
+                                    html.Label("Units:", className="filter-label",
+                                               style={'margin-top': '15px'}),
+                                    dcc.RadioItems(
+                                        id="units",
+                                        # options=[
+                                        #     {"label": val, "value": val}
+                                        #     for val in sorted(df["citation"].unique())
+                                        # ],
+                                        options=['TWh', 'GW'],
+                                        value='TWh',
+                                        inline=True,
+                                        persistence=True,
+                                        persistence_type="session",
+                                        className="filter-box horizontal-checklist mb-3",
+                                        labelStyle={"display": "inline-block", "margin-right": "10px"},
+                                    ), 
+
                                     html.Label("Citation:", className="filter-label"),
                                     dcc.Dropdown(
                                         id="citation",

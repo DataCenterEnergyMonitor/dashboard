@@ -5,24 +5,25 @@ import pandas as pd
 from charts.energy_projections_chart import create_energy_projections_line_plot
 from charts.power_projections_chart import create_power_projections_line_plot
 from components.excel_export import create_filtered_excel_download
+from pages.energy_projections_page import create_chart_row
 
 ENERGY_PROJECTION_OUTPUT_FILTERS = [
     "citation",
     "year_of_publication",
     "publisher_institution_type_s_",
     "author_institution_type_s_",
-    "peer_review",
-    "model_availability",
-    "data_availability",
-    "uncertainty_quantification",
-    "sensitivity_analysis",
-    "analytical_rigor",
-    "results_validation",
-    "granularity",
-    "completeness",
-    "technology_correlation",
-    "geographical_correlation",
-    "temporal_correlation",
+    # "peer_review",
+    # "model_availability",
+    # "data_availability",
+    # "uncertainty_quantification",
+    # "sensitivity_analysis",
+    # "analytical_rigor",
+    # "results_validation",
+    # "granularity",
+    # "completeness",
+    # "technology_correlation",
+    # "geographical_correlation",
+    # "temporal_correlation",
     "study_region",
     "data_center_type_s_",
     "associated_granularity",
@@ -35,7 +36,21 @@ ENERGY_PROJECTION_OUTPUT_FILTERS = [
 
 # All filters including those without options (for State/Input callbacks)
 ENERGY_PROJECTION_INPUT_FILTERS = ENERGY_PROJECTION_OUTPUT_FILTERS + [
-    "total_quality_rating"
+    "total_quality_rating",
+    "units",
+    # Checkbox filters (for State callbacks only)
+    "peer_review",
+    "model_availability",
+    "data_availability",
+    "uncertainty_quantification",
+    "sensitivity_analysis",
+    "analytical_rigor",
+    "results_validation",
+    "granularity",
+    "completeness",
+    "technology_correlation",
+    "geographical_correlation",
+    "temporal_correlation",
 ]
 
 ENERGY_PROJECTION_DROPDOWN_FILTERS = [
@@ -172,6 +187,11 @@ def filter_data(df, **filter_kwargs):
     print(f"Starting with {len(df)} records")
     filtered_df = df.copy()
 
+    # Apply units filter first
+    units = filter_kwargs.get("units")
+    if units:
+        filtered_df = filtered_df[filtered_df["units"] == units]
+        print(f"After units filter: {len(filtered_df)} records")
     # Extract single-value filters
     citation, year_of_publication, time_horizon, label = [
         filter_kwargs.get(key)
@@ -349,14 +369,16 @@ def register_energy_projections_callbacks(app, df):
         [
             Input("apply-filters-btn", "n_clicks"),
             Input("clear-filters-btn", "n_clicks"),
+            Input("units", "value"),
         ],  # Only button triggers
         [
             State(name, "value") for name in ENERGY_PROJECTION_INPUT_FILTERS
         ],  # All filters as State
         prevent_initial_call=False,
     )
-    def update_filters(apply_clicks, clear_clicks, *filter_values):
+    def update_filters(apply_clicks, clear_clicks, units_value, *filter_values):
         filter_args = dict(zip(ENERGY_PROJECTION_INPUT_FILTERS, filter_values))
+        filter_args["units"] = units_value
 
         ctx = dash.callback_context
 
@@ -365,115 +387,130 @@ def register_energy_projections_callbacks(app, df):
 
             if trigger_id == "clear-filters-btn":
                 print("Clear filters clicked - showing all options")
-                return generate_all_options(df)
+                return generate_all_options(df, units_value)
 
-            elif trigger_id == "apply-filters-btn":
+            elif trigger_id in ["apply-filters-btn", "units"]:
                 print(f"Apply filters clicked with selections: {filter_args}")
                 return generate_filtered_options(df, filter_args)
         else:
             # Initial load - show all options
             print("Initial load - showing all options")
-            return generate_all_options(df)
+            return generate_all_options(df, units_value)
 
-    def generate_all_options(df):
+    def generate_all_options(df, units_value):
         """Generate all available options - used on initial load and clear"""
-        citation_opts = get_single_value_options(df, "citation")
-        pub_year_opts = get_single_value_options(df, "year_of_publication")
-        publisher_opts = get_multi_value_options(df, "publisher_institution_type_s_")
-        author_opts = get_multi_value_options(df, "author_institution_type_s_")
-        study_region_opts = get_multi_value_options(df, "region")
-        data_center_type_opts = get_multi_value_options(df, "data_center_type_s_")
-        associated_granularity_opts = get_multi_value_options(
-            df, "associated_granularity"
-        )
-        modeling_approach_opts = get_multi_value_options(df, "modeling_approach_es_")
-        input_data_type_opts = get_multi_value_options(df, "input_data_type_s_")
-        time_horizon_opts = get_single_value_options(df, "time_horizon")
-        projection_narrative_opts = get_multi_value_options(
-            df, "projection_narrative_s_"
-        )
-        label_opts = get_single_value_options(df, "label")
+        # Filter dataframe by units first
+        units_filtered_df = df[df["units"] == units_value]
 
-        # Checkbox options - all available
-        peer_review_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        # Use static checkbox options to prevent all checkboxes from becoming disabled
-        model_availability_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        data_availability_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        uncertainty_quantification_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        sensitivity_analysis_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        analytical_rigor_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        results_validation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        granularity_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        completeness_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        technology_correlation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        geographical_correlation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        temporal_correlation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
+        citation_opts = get_single_value_options(units_filtered_df, "citation")
+        pub_year_opts = get_single_value_options(
+            units_filtered_df, "year_of_publication"
+        )
+        publisher_opts = get_multi_value_options(
+            units_filtered_df, "publisher_institution_type_s_"
+        )
+        author_opts = get_multi_value_options(
+            units_filtered_df, "author_institution_type_s_"
+        )
+        study_region_opts = get_multi_value_options(units_filtered_df, "region")
+        data_center_type_opts = get_multi_value_options(
+            units_filtered_df, "data_center_type_s_"
+        )
+        associated_granularity_opts = get_multi_value_options(
+            units_filtered_df, "associated_granularity"
+        )
+        modeling_approach_opts = get_multi_value_options(
+            units_filtered_df, "modeling_approach_es_"
+        )
+        input_data_type_opts = get_multi_value_options(
+            units_filtered_df, "input_data_type_s_"
+        )
+        time_horizon_opts = get_single_value_options(units_filtered_df, "time_horizon")
+        projection_narrative_opts = get_multi_value_options(
+            units_filtered_df, "projection_narrative_s_"
+        )
+        label_opts = get_single_value_options(units_filtered_df, "label")
+
+        # # Checkbox options - all available
+        # peer_review_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # # Use static checkbox options to prevent all checkboxes from becoming disabled
+        # model_availability_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # data_availability_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # uncertainty_quantification_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # sensitivity_analysis_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # analytical_rigor_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # results_validation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # granularity_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # completeness_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # technology_correlation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # geographical_correlation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # temporal_correlation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
 
         return (
             citation_opts,  # 1 - citation
             pub_year_opts,  # 2 - year_of_publication
             publisher_opts,  # 3 - publisher_institution_type_s_
             author_opts,  # 4 - author_institution_type_s_
-            peer_review_opts,  # 5 - peer_review
-            model_availability_opts,  # 6 - model_availability
-            data_availability_opts,  # 7 - data_availability
-            uncertainty_quantification_opts,  # 8 - uncertainty_quantification
-            sensitivity_analysis_opts,  # 9 - sensitivity_analysis
-            analytical_rigor_opts,  # 10 - analytical_rigor
-            results_validation_opts,  # 11 - results_validation
-            granularity_opts,  # 12 - granularity
-            completeness_opts,  # 13 - completeness
-            technology_correlation_opts,  # 14 - technology_correlation
-            geographical_correlation_opts,  # 15 - geographical_correlation
-            temporal_correlation_opts,  # 16 - temporal_correlation
+            # peer_review_opts,  # 5 - peer_review
+            # model_availability_opts,  # 6 - model_availability
+            # data_availability_opts,  # 7 - data_availability
+            # uncertainty_quantification_opts,  # 8 - uncertainty_quantification
+            # sensitivity_analysis_opts,  # 9 - sensitivity_analysis
+            # analytical_rigor_opts,  # 10 - analytical_rigor
+            # results_validation_opts,  # 11 - results_validation
+            # granularity_opts,  # 12 - granularity
+            # completeness_opts,  # 13 - completeness
+            # technology_correlation_opts,  # 14 - technology_correlation
+            # geographical_correlation_opts,  # 15 - geographical_correlation
+            # temporal_correlation_opts,  # 16 - temporal_correlation
             study_region_opts,  # 17 - study_region
             data_center_type_opts,  # 18 - data_center_type_s_
             associated_granularity_opts,  # 19 - associated_granularity
@@ -532,6 +569,8 @@ def register_energy_projections_callbacks(app, df):
             return None
         elif filter_name in CHECKLIST_FILTERS:
             return []
+        elif filter_name == "units":
+            return "TWh"
         elif filter_name == "total_quality_rating":
             return [12, 36]
         else:
@@ -541,6 +580,10 @@ def register_energy_projections_callbacks(app, df):
         """Generate options showing what's compatible with current selections (excluding self-filtering)"""
 
         print(f"Generating filtered options for selections: {filter_args}")
+
+        # Get units value and filter the base dataframe first
+        units_value = filter_args.get("units")
+        df = df[df["units"] == units_value]
 
         # Extract all current selections
         citation = filter_args.get("citation")
@@ -1356,68 +1399,68 @@ def register_energy_projections_callbacks(app, df):
 
             return base
 
-        # Generate checkbox options using the helper function
-        peer_review_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        # Use static checkbox options to prevent all checkboxes from becoming disabled
-        model_availability_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        data_availability_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        uncertainty_quantification_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        sensitivity_analysis_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        analytical_rigor_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        results_validation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        granularity_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        completeness_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        technology_correlation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        geographical_correlation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
-        temporal_correlation_opts = [
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-        ]
+        # # Generate checkbox options using the helper function
+        # peer_review_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # # Use static checkbox options to prevent all checkboxes from becoming disabled
+        # model_availability_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # data_availability_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # uncertainty_quantification_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # sensitivity_analysis_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # analytical_rigor_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # results_validation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # granularity_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # completeness_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # technology_correlation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # geographical_correlation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
+        # temporal_correlation_opts = [
+        #     {"label": "1", "value": "1"},
+        #     {"label": "2", "value": "2"},
+        #     {"label": "3", "value": "3"},
+        # ]
 
         print(f"Compatible citations: {[opt['value'] for opt in citation_opts]}")
         print(f"Compatible years: {[opt['value'] for opt in pub_year_opts]}")
@@ -1428,18 +1471,18 @@ def register_energy_projections_callbacks(app, df):
             pub_year_opts,  # 2 - year_of_publication
             publisher_opts,  # 3 - publisher_institution_type_s_
             author_opts,  # 4 - author_institution_type_s_
-            peer_review_opts,  # 5 - peer_review
-            model_availability_opts,  # 6 - model_availability
-            data_availability_opts,  # 7 - data_availability
-            uncertainty_quantification_opts,  # 8 - uncertainty_quantification
-            sensitivity_analysis_opts,  # 9 - sensitivity_analysis
-            analytical_rigor_opts,  # 10 - analytical_rigor
-            results_validation_opts,  # 11 - results_validation
-            granularity_opts,  # 12 - granularity
-            completeness_opts,  # 13 - completeness
-            technology_correlation_opts,  # 14 - technology_correlation
-            geographical_correlation_opts,  # 15 - geographical_correlation
-            temporal_correlation_opts,  # 16 - temporal_correlation
+            # peer_review_opts,  # 5 - peer_review
+            # model_availability_opts,  # 6 - model_availability
+            # data_availability_opts,  # 7 - data_availability
+            # uncertainty_quantification_opts,  # 8 - uncertainty_quantification
+            # sensitivity_analysis_opts,  # 9 - sensitivity_analysis
+            # analytical_rigor_opts,  # 10 - analytical_rigor
+            # results_validation_opts,  # 11 - results_validation
+            # granularity_opts,  # 12 - granularity
+            # completeness_opts,  # 13 - completeness
+            # technology_correlation_opts,  # 14 - technology_correlation
+            # geographical_correlation_opts,  # 15 - geographical_correlation
+            # temporal_correlation_opts,  # 16 - temporal_correlation
             study_region_opts,  # 17 - study_region
             data_center_type_opts,  # 18 - data_center_type_s_
             associated_granularity_opts,  # 19 - associated_granularity
@@ -1452,22 +1495,26 @@ def register_energy_projections_callbacks(app, df):
 
     # Update chart
     @app.callback(
-        [
-            Output("energy-projections-line-chart", "figure"),
-            Output("power-projections-line-chart", "figure"),
-        ],
+        # Output("energy-projections-line-chart", "figure"),
+        # Output("power-projections-line-chart", "figure"),
+        Output("chart-container", "children"),
         [
             Input("apply-filters-btn", "n_clicks"),
             Input("clear-filters-btn", "n_clicks"),
+            Input("units", "value"),
         ],
         [State(name, "value") for name in ENERGY_PROJECTION_INPUT_FILTERS],
         prevent_initial_call=False,
     )
-    def update_dashboard_on_button_click(apply_clicks, clear_clicks, *filter_values):
+    def update_dashboard_on_button_click(
+        apply_clicks, clear_clicks, units_value, *filter_values
+    ):
         filter_args = dict(zip(ENERGY_PROJECTION_INPUT_FILTERS, filter_values))
+        filter_args["units"] = units_value
 
         print(f"\n=== CHART CALLBACK DEBUG ===")
         print(f"Apply clicks: {apply_clicks}, Clear clicks: {clear_clicks}")
+        print(f"Units: {units_value}")
         print(f"Citation: {filter_args.get('citation')}")
         print(f"Total quality rating: {filter_args.get('total_quality_rating')}")
 
@@ -1476,59 +1523,114 @@ def register_energy_projections_callbacks(app, df):
             trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
             if trigger_id == "clear-filters-btn":
-                filtered_df = df.copy()
+                # Even when clearing, apply units filter
+                filtered_df = df[df["units"] == units_value].copy()
                 filters_applied = False
-            elif trigger_id == "apply-filters-btn":
+            elif trigger_id in ["apply-filters-btn", "units"]:
                 filtered_df = filter_data(df, **filter_args)
                 filters_applied = any(
                     filter_args[name]
                     for name in ENERGY_PROJECTION_INPUT_FILTERS
-                    if filter_args[name] not in [None, [], [12, 36]]
+                    if name != "units" and filter_args[name] not in [None, [], [12, 36]]
                 )
             else:
-                return dash.no_update, dash.no_update
+                # Initial load or units change
+                filtered_df = df[df["units"] == units_value].copy()
+                filters_applied = False
         else:
-            filtered_df = df.copy()
+            # Initial load
+            filtered_df = df[df["units"] == units_value].copy()
             filters_applied = False
 
         print(f"Chart callback received {len(filtered_df)} records")
 
-        # Split data by metric type
-        energy_filtered_df = filtered_df[filtered_df["units"] == "TWh"].copy()
-        energy_filtered_df = energy_filtered_df[
-            energy_filtered_df["energy_demand"].notna()
-        ]
-        print(f"Energy chart data: {len(energy_filtered_df)} records")
+        filtered_df = filtered_df[filtered_df["energy_demand"].notna()]
 
-        power_filtered_df = filtered_df[filtered_df["units"] == "GW"].copy()
-        power_filtered_df = power_filtered_df[
-            power_filtered_df["energy_demand"].notna()
-        ]
-        print(f"Power chart data: {len(power_filtered_df)} records")
+        # Add this debugging right after line 1547
 
-        # Split unfiltered data for background
-        energy_full_df = df[df["units"] == "TWh"].copy()
-        power_full_df = df[df["units"] == "GW"].copy()
+        # Create the full dataset for background (filtered by units)
+        chart_full_df = df[df["units"] == units_value].copy()
+        # Generate chart based on units
+        if units_value == "TWh":
+            chart_fig = create_energy_projections_line_plot(
+                filtered_df=filtered_df,
+                full_df=chart_full_df,
+                filters_applied=filters_applied,
+                yaxis_title="Energy Demand (TWh)",
+                y_label="Energy Demand (TWh)",
+            )
+            chart_id = "energy-projections-line-chart"
+            title = "Energy Demand Estimates & Projections (TWh)"
+            section_id = "energy-projections-section"
+            expand_id = "expand-energy-projections"
+            filename = "energy_projections"
+            accordion_children = [
+                dcc.Markdown("""
+                        To be added...
+                        """)
+            ]
+            accordion_title = html.Span(
+                [
+                    "What Do Energy Projections Tell Us?",
+                    html.Span(" Read more...", className="text-link"),
+                ]
+            )
+            # Create the return value
+            return html.Div(
+                [
+                    html.A(id=section_id),
+                    create_chart_row(
+                        chart_id=chart_id,
+                        title=title,
+                        expand_id=expand_id,
+                        accordion_children=accordion_children,
+                        accordion_title=accordion_title,
+                        filename=filename,
+                        figure=chart_fig,
+                    ),
+                ],
+                style={"margin": "35px 0"},
+            )
+        else:  # GW
+            chart_fig = create_energy_projections_line_plot(
+                filtered_df=filtered_df,
+                full_df=chart_full_df,
+                filters_applied=filters_applied,
+                yaxis_title="Power Demand (GW)",
+                y_label="Power Demand (GW)",
+            )
+            chart_id = "energy-projections-line-chart"
+            title = "Power Demand Estimates & Projections (GW)"
+            section_id = "power-projections-section"
+            expand_id = "expand-energy-projections"
+            filename = "energy_projections"
+            accordion_children = [
+                dcc.Markdown("""
+                To be added...
+                """)
+            ]
+            accordion_title = html.Span(
+                [
+                    "What Do Power Projections Tell Us?",
+                    html.Span(" Read more...", className="text-link"),
+                ]
+            )
+            return html.Div(
+                [
+                    html.A(id=section_id),
+                    create_chart_row(
+                        chart_id=chart_id,
+                        title=title,
+                        expand_id=expand_id,
+                        accordion_children=accordion_children,
+                        accordion_title=accordion_title,
+                        filename=filename,
+                        figure=chart_fig,
+                    ),
+                ],
+                style={"margin": "35px 0"},
+            )
 
-        energy_projections_fig = create_energy_projections_line_plot(
-            filtered_df=energy_filtered_df,
-            full_df=energy_full_df,
-            filters_applied=filters_applied,
-            yaxis_title="Energy Demand (TWh)",
-            y_label="Energy Demand (TWh)"
-        )
-
-        power_projections_fig = create_energy_projections_line_plot(
-            filtered_df=power_filtered_df,
-            full_df=power_full_df,
-            filters_applied=filters_applied,
-            yaxis_title="Power Demand (GW)",
-            y_label="Power Demand (GW)"
-        )
-
-        return energy_projections_fig, power_projections_fig
-
-    # Modal callback
     @app.callback(
         [
             Output("energy-graph-modal", "is_open"),
@@ -1537,43 +1639,33 @@ def register_energy_projections_callbacks(app, df):
         ],
         [
             Input("expand-energy-projections", "n_clicks"),
-            Input("expand-power-projections", "n_clicks"),
         ],
         [
             State("energy-graph-modal", "is_open"),
             State("energy-projections-line-chart", "figure"),
-            State("power-projections-line-chart", "figure"),
         ],
         prevent_initial_call=True,
     )
-    def toggle_modal(
-        energy_clicks,
-        power_clicks,
-        is_open,
-        energy_projections_figure,
-        power_projections_figure,
-    ):
-        ctx = dash.callback_context
+    def toggle_modal(expand_clicks, is_open, chart_figure):
+        if not expand_clicks:
+            raise dash.exceptions.PreventUpdate
 
-        if not ctx.triggered:
-            return False, "", {}
+        title = "Energy Projections - Expanded View"
+        if chart_figure and "layout" in chart_figure:
+            ytitle = chart_figure["layout"].get("yaxis", {}).get("title")
+            if isinstance(ytitle, dict):
+                ytitle = ytitle.get("text")
+            if isinstance(ytitle, str):
+                if "TWh" in ytitle:
+                    title = (
+                        "Energy Demand Estimates and Projections (TWh) - Expanded View"
+                    )
+                elif "GW" in ytitle:
+                    title = (
+                        "Power Demand Estimates and Projections (GW) - Expanded View"
+                    )
 
-        button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-        if button_id == "expand-energy-projections":
-            return (
-                not is_open,
-                "Energy Demand Estimates and Projections (TWh) - Expanded View",
-                energy_projections_figure or {},
-            )
-        elif button_id == "expand-power-projections":
-            return (
-                not is_open,
-                "Power Demand Estimates and Projections (GW) - Expanded View",
-                power_projections_figure or {},
-            )
-
-        return is_open, "", {}
+        return (not is_open, title, chart_figure or {})
 
     # Download callbacks
     @app.callback(
