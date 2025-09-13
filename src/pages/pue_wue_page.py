@@ -144,7 +144,7 @@ def create_pue_wue_page(app, pue_wue_df):
             # Sticky bookmark bar
             # Desktop bookmark bar (hidden on mobile/tablet)
             html.Div([
-                create_bookmark_bar(sections, subnav_items)
+                create_bookmark_bar(sections, data_page_parent="pue_wue", subnav_items=None)
             ], 
             className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
             style={
@@ -268,17 +268,6 @@ def create_pue_wue_page(app, pue_wue_df):
             )
         ]),
         
-        # # Summary section
-        # html.Div(
-        #     id='summary',
-        #     style={
-        #         #"backgroundColor": "#f8f9fa",
-        #         "font-size": "14px",
-        #         "padding": "10px",
-        #         "borderRadius": "5px",
-        #         "marginTop": "20px",
-        #     }
-        # ),
     ], fluid=True)
     ], style={
             "marginLeft": "320px",  # Sidebar width (300px) + padding (20px)

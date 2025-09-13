@@ -1,0 +1,38 @@
+---
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: " "
+other-links:
+  - text: "📊 Explore Energy Estimates and Projections Data"
+    href: "/energy-projections"
+    #icon: "fas fa-chart-bar"
+author:
+  - name: "Eric Masanet"
+    affiliation: "Industrial Sustainability Laboratory, University of California, Santa Barbara"
+    email: "email@dcewm.org"
+    orcid: "0000-0000-0000-0000"
+  - name: "Co-author Name"
+date: "2025-08-12"
+google-scholar: true
+
+citation:
+  type: webpage
+  title: "Energy Estimates And Projections FAQs/Methodology"
+  author: 
+    - "Eric Masanet"
+    - "Co-author Name"
+  url: "https://dcewm.org/"
+---
+
+### Energy Estimates And Projections FAQs/Methodology
+
+In progress...
+
+
+#### References
+
+::: {#refs}
+:::
+

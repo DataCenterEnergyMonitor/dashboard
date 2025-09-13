@@ -213,7 +213,7 @@ body {
 .landing-page-title {
     font-family: 'Montserrat', sans-serif;
     font-weight: 600; /* Increased from 500 for better hierarchy */
-    font-size: calc(1.2rem + 1.5vw);
+    font-size: calc(1.2rem + 1.2vw);
     font-style: normal;
     color: #2C3E50;
     margin: 0.67em 0;
@@ -679,17 +679,26 @@ button.accordion-button {
 }
 
 .filter-box .dash-checklist input[type="checkbox"] {
-    margin-right: 8px; /* Space between checkbox and text */
+    margin-right: 8 px; /* Space between checkbox and text */
 }
 
 /* Style individual checkbox items */
 .filter-box .dash-checklist label {
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between checkbox and text */
+    gap: 16px; /* Space between checkbox and text */
     font-size: 0.85rem;
     color: #333;
     cursor: pointer;
+}
+
+.horizontal-checklist label > input[type="checkbox"] {
+    margin-right: 4px !important;
+    margin-left: 4px !important;
+}
+
+.slider-wrapper {
+    padding-left: 5px !important;
 }
 
 /* Bookmark styles */

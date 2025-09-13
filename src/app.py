@@ -12,6 +12,7 @@ from data_loader import (
     load_pue_data,
     load_wue_data,
     create_pue_wue_data,
+    load_energyprojections_data,
     load_energyforecast_data,
     load_reporting_data,
     load_energy_use_data,
@@ -25,6 +26,11 @@ from pages.pue_methods_page import create_pue_methodology_page
 from pages.wue_methods_page import create_wue_methodology_page
 from pages.pue_data_page import create_pue_data_page
 from pages.wue_data_page import create_wue_data_page
+from pages.energy_projections_page import create_energy_projections_page
+from pages.energy_projections_methods_page import (
+    create_energy_projections_methodology_page,
+)
+from pages.energy_projections_data_page import create_energy_projections_data_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -54,8 +60,9 @@ from callbacks.company_profile_callbacks import (
     create_company_profile_callback,
     create_company_profile_download_callback,
 )
-from callbacks.pue_wue_page_callback import (
-    register_pue_wue_callbacks
+from callbacks.pue_wue_page_callback import register_pue_wue_callbacks
+from callbacks.energy_projections_page_callback import (
+    register_energy_projections_callbacks,
 )
 from components.kpi_data_cards import create_kpi_cards
 
@@ -77,31 +84,26 @@ def create_app():
             "https://use.fontawesome.com/releases/v5.15.4/css/all.css",
             "https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500&family=Inter:wght@400;500&display=swap",
             "https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500&display=swap",
+            "https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap",
         ],
         suppress_callback_exceptions=True,
         assets_folder=assets_path,  # Set absolute path to assets
         assets_url_path="assets",  # Explicitly set the assets URL path
     )
 
-
     # Load data
     pue_df = load_pue_data()
-    print("PUE DataFrame loaded successfully", pue_df.shape)
-    print(pue_df.info())  # Display first 5 rows for debugging
-    print(pue_df.head())  # Display first 5 rows for debugging
     wue_df = load_wue_data()
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
-    print("PUE-WUE DataFrame loaded successfully", pue_df.shape)
-    print(pue_wue_df.info())  # Display first 5 rows for debugging
-    print(pue_wue_df.head())  # Display first 5 rows for debugging
+    energyprojections_df = load_energyprojections_data()
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
     # Create data dictionary for charts
     data_dict = {
-        "pue-scatter": {"df": pue_df, "industry_avg": None},
-        "wue-scatter": {"df": wue_df, "industry_avg": None},
+        # "pue-scatter": {"df": pue_df, "industry_avg": None},
+        # "wue-scatter": {"df": wue_df, "industry_avg": None},
         "forecast-scatter": {"df": forecast_df, "industry_avg": None},
         "reporting-bar": {"df": reporting_df},
         "timeline-bar": {"df": reporting_df},
@@ -112,28 +114,28 @@ def create_app():
 
     # Define chart configurations
     chart_configs = {
-        "pue-scatter": {
-            "base_id": "pue",
-            "chart_id": "pue-scatter-chart",
-            "chart_creator": create_pue_scatter_plot,
-            "filename": "pue-data.csv",
-            "filters": [
-                "facility_scope",
-                "company",
-                "iea_region",
-                "iecc_climate_zone_s_",
-                "pue_measurement_level",
-            ],
-            "download_id": "download-pue-data",  # Add download button ID
-        },
-        "wue-scatter": {
-            "base_id": "wue",
-            "chart_id": "wue-scatter-chart",
-            "chart_creator": create_wue_scatter_plot,
-            "filename": "wue-data.csv",
-            "filters": ["facility_scope", "company"],
-            "download_id": "download-wue-data",  # Add download button ID
-        },
+        # "pue-scatter": {
+        #     "base_id": "pue",
+        #     "chart_id": "pue-scatter-chart",
+        #     "chart_creator": create_pue_scatter_plot,
+        #     "filename": "pue-data.csv",
+        #     "filters": [
+        #         "facility_scope",
+        #         "company",
+        #         "iea_region",
+        #         "iecc_climate_zone_s_",
+        #         "pue_measurement_level",
+        #     ],
+        #     "download_id": "download-pue-data",  # Add download button ID
+        # },
+        # "wue-scatter": {
+        #     "base_id": "wue",
+        #     "chart_id": "wue-scatter-chart",
+        #     "chart_creator": create_wue_scatter_plot,
+        #     "filename": "wue-data.csv",
+        #     "filters": ["facility_scope", "company"],
+        #     "download_id": "download-wue-data",  # Add download button ID
+        # },
         "forecast-scatter": {
             "base_id": "forecast",
             "chart_id": "forecast-scatter-chart",
@@ -177,9 +179,10 @@ def create_app():
 
     # Initialize callbacks
     register_pue_wue_callbacks(app, pue_wue_df)
+    register_energy_projections_callbacks(app, energyprojections_df)
 
-    #pue_callback = create_chart_callback(app, data_dict, chart_configs["pue-scatter"])
-    #wue_callback = create_chart_callback(app, data_dict, chart_configs["wue-scatter"])
+    # pue_callback = create_chart_callback(app, data_dict, chart_configs["pue-scatter"])
+    # wue_callback = create_chart_callback(app, data_dict, chart_configs["wue-scatter"])
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -201,24 +204,38 @@ def create_app():
         [dcc.Location(id="url", refresh=False), html.Div(id="page-content")]
     )
 
+    # Create the data sources dictionary for KPI cards
+    kpi_data_sources = {
+        "pue": pue_df,
+        "wue": wue_df,
+        "company_name": pue_wue_df,
+        "energy_projections_studies": energyprojections_df,
+    }
+
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
     def display_page(pathname):
         print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
-        if pathname == "/pue":
-            return create_pue_page(app, pue_df)
-        elif pathname == "/wue":
-            return create_wue_page(app, wue_df)
-        elif pathname == "/pue_wue":
+        # if pathname == "/pue":
+        #     return create_pue_page(app, pue_df)
+        # elif pathname == "/wue":
+        #     return create_wue_page(app, wue_df)
+        if pathname == "/pue_wue":
             return create_pue_wue_page(app, pue_wue_df)
-        elif pathname == '/pue-methodology':  
+        elif pathname == "/pue-methodology":
             return create_pue_methodology_page()
-        elif pathname == '/wue-methodology':  
+        elif pathname == "/wue-methodology":
             return create_wue_methodology_page()
-        elif pathname == '/pue-data':  
+        elif pathname == "/pue-data":
             return create_pue_data_page()
-        elif pathname == '/wue-data':  
+        elif pathname == "/wue-data":
             return create_wue_data_page()
-        elif pathname == "/forecast": 
+        elif pathname == "/energy-projections":
+            return create_energy_projections_page(app, energyprojections_df)
+        elif pathname == "/energy-projections-methodology":
+            return create_energy_projections_methodology_page()
+        elif pathname == "/energy-projections-data":
+            return create_energy_projections_data_page()
+        elif pathname == "/forecast":
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)
         elif pathname == "/reporting":
@@ -235,7 +252,7 @@ def create_app():
             return create_data_centers_101_page()
         else:
             print(f"No route match, defaulting to home page")  # Debug print
-            return create_home_page(pue_wue_df)
+            return create_home_page(kpi_data_sources)
 
     # Navbar toggle callback
     @app.callback(
@@ -249,6 +266,7 @@ def create_app():
         return is_open
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()

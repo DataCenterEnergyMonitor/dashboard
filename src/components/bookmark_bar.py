@@ -3,18 +3,21 @@ from dash import html, dcc
 import yaml
 import os
 
-def create_bookmark_bar(sections, subnav_items=None):
+
+def create_bookmark_bar(sections, data_page_parent, subnav_items=None):
     """Create bookmark navigation bar for data-viz pages"""
 
     menu_structure = load_menu_config()
-    navbar_items = menu_structure.get("navbar", {}).get("data_page", {})
+    navbar_items = (
+        menu_structure.get("navbar", {}).get("data_page", {}).get(data_page_parent, {})
+    )
 
     nav_links = generate_nav_links(navbar_items)
-    
+
     bookmark_buttons = []
     for section in sections:
         button = dbc.Button(
-            section['title'],
+            section["title"],
             href=f"#{section['id']}-section",
             color="outline-primary",
             size="sm",
@@ -25,22 +28,22 @@ def create_bookmark_bar(sections, subnav_items=None):
                 "font-size": "0.85rem",
                 "padding": "5px 15px",
                 "text-decoration": "none",
-                "color": "#6c757d" 
-            }
+                "color": "#6c757d",
+            },
         )
         bookmark_buttons.append(button)
-    
+
     subnav_buttons = []
     if subnav_items:
         for subnav_item in subnav_items:
             # Check if it's a page route or anchor link
-            if 'href' in subnav_item:
-                href = subnav_item['href']
+            if "href" in subnav_item:
+                href = subnav_item["href"]
             else:
                 href = f"#{subnav_item['id']}-subnav_item"
 
             subnav_button = dcc.Link(
-                subnav_item['title'],
+                subnav_item["title"],
                 href=href,
                 className="me-2 mb-2 bookmark-btn",
                 style={
@@ -51,42 +54,49 @@ def create_bookmark_bar(sections, subnav_items=None):
                     "padding": "5px 20px",
                     "text-decoration": "none",
                     "color": "#ffffff",
-                    "display": "inline-block"
-                }
+                    "display": "inline-block",
+                },
             )
             subnav_buttons.append(subnav_button)
-    
-    return html.Div([
-        html.Div([
-            # Left side - bookmark buttons (aligned with chart start)
-            html.Div(bookmark_buttons, 
-                    className="d-flex flex-wrap",
-                    style={"justify-content": "flex-start"}),  # Left align
 
-            # Right-aligned collapse menu
+    return html.Div(
+        [
             html.Div(
-                dbc.Collapse(
-                    id="navbar-collapse",
-                    is_open=True,  # Changed to True to make visible
-                    navbar=True,
-                    className="justify-content-end",
-                    children=[
-                        dbc.Nav(nav_links, navbar=True, className="ms-auto"),
-                    ],
-                    style={"justify-content": "flex-end", 
-                           "margin-right": "50px",
-                           "padding": "5px 15px",
-                           }   
-                ),
-            ),
-            # Right side - subnav buttons 
-            # html.Div(subnav_buttons, 
-            #         className="d-flex flex-wrap",
-            #         style={"justify-content": "flex-end", "margin-right": "50px"})      # Right align
-                    
-        ], className="d-flex justify-content-between align-items-center w-100"),  # Space between
-    ], className="bookmark-navigation bookmark-bar"
+                [
+                    # Left side - bookmark buttons (aligned with chart start)
+                    html.Div(
+                        bookmark_buttons,
+                        className="d-flex flex-wrap",
+                        style={"justify-content": "flex-start"},
+                    ),  # Left align
+                    # Right-aligned collapse menu
+                    html.Div(
+                        dbc.Collapse(
+                            id="navbar-collapse",
+                            is_open=True,  # Changed to True to make visible
+                            navbar=True,
+                            className="justify-content-end",
+                            children=[
+                                dbc.Nav(nav_links, navbar=True, className="ms-auto"),
+                            ],
+                            style={
+                                "justify-content": "flex-end",
+                                "margin-right": "50px",
+                                "padding": "5px 15px",
+                            },
+                        ),
+                    ),
+                    # Right side - subnav buttons
+                    # html.Div(subnav_buttons,
+                    #         className="d-flex flex-wrap",
+                    #         style={"justify-content": "flex-end", "margin-right": "50px"})      # Right align
+                ],
+                className="d-flex justify-content-between align-items-center w-100",
+            ),  # Space between
+        ],
+        className="bookmark-navigation bookmark-bar",
     )
+
 
 def load_menu_config():
     """Load menu configuration from YAML file"""
@@ -106,10 +116,7 @@ def generate_nav_links(items, parent_label=None):
             if "route" in content:
                 link_label = f"{parent_label} / {label}" if parent_label else label
                 nav_links.append(
-                    dbc.NavItem(
-                        dbc.NavLink(link_label, 
-                                    href=content["route"]
-                                    ))
+                    dbc.NavItem(dbc.NavLink(link_label, href=content["route"]))
                 )
             else:
                 # Nested items: flatten into dropdown menu
@@ -117,9 +124,11 @@ def generate_nav_links(items, parent_label=None):
                 for sub_label, sub_content in content.items():
                     if isinstance(sub_content, dict) and "route" in sub_content:
                         dropdown_items.append(
-                            dbc.DropdownMenuItem(sub_label, 
-                                                 href=sub_content["route"],
-                                                 style={"color": "#6c757d"})
+                            dbc.DropdownMenuItem(
+                                sub_label,
+                                href=sub_content["route"],
+                                style={"color": "#6c757d"},
+                            )
                         )
                     elif isinstance(sub_content, dict):
                         # Third-level nesting
@@ -131,9 +140,9 @@ def generate_nav_links(items, parent_label=None):
                                 combined_label = f"{sub_label} / {subsub_label}"
                                 dropdown_items.append(
                                     dbc.DropdownMenuItem(
-                                        combined_label, 
+                                        combined_label,
                                         href=subsub_content["route"],
-                                        style={"color": "#6c757d"}
+                                        style={"color": "#6c757d"},
                                     )
                                 )
 
@@ -148,8 +157,8 @@ def generate_nav_links(items, parent_label=None):
                                 "color": "#6c757d !important",
                                 "font-size": "0.9rem",
                                 "border": "none",
-                                "background": "transparent"
-                            }
+                                "background": "transparent",
+                            },
                         )
                     )
     return nav_links

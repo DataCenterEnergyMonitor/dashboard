@@ -4,24 +4,29 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 
 
-def create_kpi_cards(df, config):
+def create_kpi_cards(kpi_data_sources, config):
     """
     create KPI data cards
     """
 
+    pue_df = kpi_data_sources.get("pue")
+    wue_df = kpi_data_sources.get("wue")
+    pue_wue_df = kpi_data_sources.get("company_name")
+    energyprojections_df = kpi_data_sources.get("energy_projections_studies")
+
     # calculate KPIs
     all_kpis = {
-        "companies_monitored": df["company_name"].nunique()
-        if "company_name" in df.columns
+        "companies_monitored": pue_wue_df["company_name"].nunique()
+        if "company_name" in pue_wue_df.columns
         else 0,
-        "pue_values": df[df['metric']=='pue']["metric_value"].dropna().count()
-        if "metric_value" in df.columns
+        "pue_values": pue_df[pue_df['metric']=='pue']["metric_value"].dropna().count()
+        if "metric_value" in pue_df.columns
         else 0,
-        "wue_values": df[df['metric']=='wue']["metric_value"].dropna().count()
-        if "metric_value" in df.columns
+        "wue_values": wue_df[wue_df['metric']=='wue']["metric_value"].dropna().count()
+        if "metric_value" in wue_df.columns
         else 0,
         # "wue_values": df["metric_value"].dropna().count() if "metric_value" in df.columns else 0,
-        "studies_assessed": df["study_id"].nunique() if "study_id" in df.columns else 0,
+        "studies_assessed": energyprojections_df["citation"].nunique() if "citation" in energyprojections_df.columns else 0,
     }
 
     # get KPIs from the kpi_cards list in the menu_structure

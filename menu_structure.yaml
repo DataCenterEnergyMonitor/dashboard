@@ -25,10 +25,12 @@ navbar:
         route: /pue-methodology
       WUE:
         route: /wue-methodology
+      Energy Projections:
+        route: /energy-projections-methodology
       Reporting Trends:
         route: /about
       Reported Data - Energy:
-        route: /about
+        route: /energy-projections-data
       Reported Data - Water:
         route: /about
       Policies:
@@ -41,7 +43,7 @@ navbar:
       Company Reported Data:
         route: /company-profile
       Energy Demand Estimates and Projections:
-        route: /forecast
+        route: /energy-projections
       Water Demand Estimates and Projections:
         route: /forecast
       Global policies:
@@ -55,16 +57,22 @@ navbar:
     Contact:
       route: /contact
   data_page:
-    Methodology:
-      PUE:
-        route: /pue-methodology
-      WUE:
-        route: /wue-methodology
-    Datasets:
-      PUE:
-        route: /pue-data
-      WUE:
-        route: /wue-data
+    pue_wue:
+      Methodology:
+        PUE:
+          route: /pue-methodology
+        WUE:
+          route: /wue-methodology
+      Datasets:
+        PUE:
+          route: /pue-data
+        WUE:
+          route: /wue-data
+    energy_projections:
+      Methodology:
+        route: /energy-projections-methodology
+      Dataset:
+        route: /energy-projections-data
 
 
 
@@ -83,7 +91,7 @@ landing_page_cards:
     preview: assets/previews/company_profile_preview.png
     description: Comparative company performance metrics
   Energy Demand Estimates and Projections:
-    route: /forecast
+    route: /energy-projections
     preview: assets/previews/energy_forecast_preview.png
     description: Estimates and projections from 100+ studies
   Water Demand Estimates and Projections:
