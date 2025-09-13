@@ -32,6 +32,11 @@ def load_pue_data():
     pue_df["metric"] = "pue"
     pue_df.rename(columns={"pue_type": "metric_type"}, inplace=True)
     pue_df.rename(columns={"pue_value": "metric_value"}, inplace=True)
+    pue_df.rename(columns={'facility_scope_evident_': 'facility_scope_evident'}, inplace=True)
+    pue_df.rename(columns={'geographical_scope_stated_': 'geographical_scope_stated'}, inplace=True)
+    pue_df.rename(columns={'assigned_climate_zone_s_': 'assigned_climate_zones'}, inplace=True)
+    pue_df.rename(columns={'default_climate_zone_s_': 'default_climate_zones'}, inplace=True)
+    pue_df.rename(columns={'is_pue_self_reported_': 'self_reported'}, inplace=True)
 
     return pue_df
 
@@ -59,6 +64,8 @@ def load_wue_data():
         if col in wue_df.columns:
             wue_df[col] = wue_df[col].str.strip()
 
+    wue_df["metric"] = "wue"
+
     # clean column names
     wue_df.rename(
         columns={
@@ -68,13 +75,11 @@ def load_wue_data():
             "assigned_climate_zone_s_": "assigned_climate_zones",
             "default_climate_zone_s_": "default_climate_zones",
             "is_wue_self_reported_": "self_reported",
+            "wue_type": "metric_type",
+            "wue_value": "metric_value"
         },
         inplace=True,
     )
-
-    wue_df["metric"] = "wue"
-    wue_df.rename(columns={"wue_type": "metric_type"}, inplace=True)
-    wue_df.rename(columns={"wue_value": "metric_value"}, inplace=True)
 
     return wue_df
 

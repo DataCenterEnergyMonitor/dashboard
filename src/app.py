@@ -204,6 +204,14 @@ def create_app():
         [dcc.Location(id="url", refresh=False), html.Div(id="page-content")]
     )
 
+    # Create the data sources dictionary for KPI cards
+    kpi_data_sources = {
+        "pue": pue_df,
+        "wue": wue_df,
+        "company_name": pue_wue_df,
+        "energy_projections_studies": energyprojections_df,
+    }
+
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
     def display_page(pathname):
         print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
@@ -244,7 +252,7 @@ def create_app():
             return create_data_centers_101_page()
         else:
             print(f"No route match, defaulting to home page")  # Debug print
-            return create_home_page(pue_wue_df)
+            return create_home_page(kpi_data_sources)
 
     # Navbar toggle callback
     @app.callback(

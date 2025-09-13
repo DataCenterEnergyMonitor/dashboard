@@ -213,7 +213,7 @@ body {
 .landing-page-title {
     font-family: 'Montserrat', sans-serif;
     font-weight: 600; /* Increased from 500 for better hierarchy */
-    font-size: calc(1.2rem + 1.5vw);
+    font-size: calc(1.2rem + 1.2vw);
     font-style: normal;
     color: #2C3E50;
     margin: 0.67em 0;
