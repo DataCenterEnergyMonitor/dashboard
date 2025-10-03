@@ -155,6 +155,11 @@ def create_pue_wue_data(pue_df, wue_df):
     # append wue_df to pue_wue_df dataframe
     pue_wue_df = pd.concat([pue_wue_df, wue_df], ignore_index=True)
 
+    # debug print statement
+    # print("metric_value unique values and types:")
+    # for val in pue_wue_df['metric_value'].unique():
+    #     print(f"Value: {val!r}, Type: {type(val)}")
+
     return pue_wue_df
 
 
