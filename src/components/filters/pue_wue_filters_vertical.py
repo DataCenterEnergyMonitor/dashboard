@@ -13,7 +13,7 @@ def create_pue_wue_filters(df):
                     ""
                 ]),
             ]),
-            
+
             # Scrollable filter content
             html.Div([
                 # Company & Scope Section
@@ -195,7 +195,7 @@ def create_pue_wue_filters(df):
                         className="filter-box mb-2"
                     ),
                     
-                    html.Label("Cooling Technology:", className="filter-label"),
+                    html.Label("Cooling Technology (coming soon):", className="filter-label_disabled"),
                     dcc.Dropdown(
                         id='cooling_technologies', 
                         options=[], 
@@ -203,14 +203,14 @@ def create_pue_wue_filters(df):
                         placeholder="Select cooling technologies", 
                         persistence=True,
                         persistence_type="session",
-                        className="filter-box mb-2"
+                        className="filter-box-disabled mb-2"
                     ),
                 ],id='climate-section'),
             ], style={
                 "overflowY": "auto",
                 "maxHeight": "calc(100vh - 200px)",  # Allow scrolling
                 "paddingRight": "10px",
-                "paddingBottom": "50px" 
+                "paddingBottom": "50px",
             }),
             
             # Fixed buttons at bottom
