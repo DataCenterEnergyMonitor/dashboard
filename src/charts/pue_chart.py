@@ -30,8 +30,8 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             current_x += gap_large
 
     # Calculate progressive jitter amount for each year (e.g., more jitter for later years)
-    min_jitter = 0.15
-    max_jitter = 0.8
+    min_jitter = 0.3
+    max_jitter = 1.1
     year_jitter_map = {}
     for i, year in enumerate(years):
         # Linear interpolation between min_jitter and max_jitter
@@ -242,26 +242,57 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             ):  # Only create background if there are companies to show
                 create_hover_text(background_df)
 
-                background_fig = px.scatter(
-                    background_df,
-                    x="custom_x_jitter",
-                    y="metric_value",
-                    custom_data=custom_data,
-                )
-                background_fig.update_traces(
-                    marker=dict(color="lightgray", size=7, opacity=0.5),
-                    showlegend=False,
-                )
-
-                # Add to main figure
-                for trace in background_fig.data:
-                    pue_fig.add_trace(trace)
-
-                # Reorder so background appears behind colored data
-                pue_fig.data = (
-                    pue_fig.data[-len(background_fig.data) :]
-                    + pue_fig.data[: -len(background_fig.data)]
-                )
+                for company in background_df["company_name"].unique():
+                    company_data = background_df[background_df["company_name"] == company]
+                    
+                    # Create a single gray trace for each company's background data
+                    # Extract custom data values for each row with the same structure as custom_data
+                    customdata_list = company_data[custom_data].values.tolist()
+                    
+                    # Create a single gray trace for each company's background data
+                    background_trace = {
+                        'type': 'scatter',
+                        'mode': 'markers',
+                        'x': company_data["custom_x_jitter"].tolist(),
+                        'y': company_data["metric_value"].tolist(),
+                        'customdata': customdata_list,
+                        'marker': {
+                            'color': 'lightgray',
+                            'size': 7,
+                            'opacity': 0.5
+                        },
+                        'showlegend': False,
+                        'hovertemplate': (
+                            "<b>%{customdata[0]}</b><br>"
+                            + "PUE: %{customdata[1]}<br>"
+                            + "%{customdata[2]}"
+                            + "%{customdata[3]}"
+                            + "%{customdata[4]}"
+                            + "Time Period: %{customdata[5]}<br>"
+                            + "%{customdata[6]}"
+                            + "%{customdata[7]}"
+                            + "%{customdata[8]}"
+                            + "%{customdata[9]}"
+                            + "%{customdata[10]}"
+                            + '<extra></extra>'
+                        ),
+                        'name': company  # for debugging
+                    }
+                    
+                    # Ensure all gray traces are added before colored traces
+                    pue_fig.add_trace(background_trace, row=1, col=1)
+                    
+                # manually reorder: move all colored traces to the front
+                num_colored = len(pue_fig.data) - len(background_df["company_name"].unique())
+                num_gray = len(background_df["company_name"].unique())
+                
+                # Extract traces
+                all_traces = list(pue_fig.data)
+                colored_traces = all_traces[:num_colored]
+                gray_traces = all_traces[num_colored:]
+                
+                # Reorder traces to render gray at the back, colored in front
+                pue_fig.data = tuple(gray_traces + colored_traces)
 
     #xvals = [year_x_map[year] for year in years]
     pue_fig.update_xaxes(
