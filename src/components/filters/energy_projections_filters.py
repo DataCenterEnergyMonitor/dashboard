@@ -32,23 +32,28 @@ def create_energy_projections_filters(df):
                                     #         "marginTop": "20px",
                                     #     },
                                     # ),
-                                    html.Label("Units:", className="filter-label",
-                                               style={'margin-top': '15px'}),
+                                    html.Label(
+                                        "Units:",
+                                        className="filter-label",
+                                        style={"margin-top": "15px"},
+                                    ),
                                     dcc.RadioItems(
                                         id="units",
                                         # options=[
                                         #     {"label": val, "value": val}
                                         #     for val in sorted(df["citation"].unique())
                                         # ],
-                                        options=['TWh', 'GW'],
-                                        value='TWh',
+                                        options=["TWh", "GW"],
+                                        value="TWh",
                                         inline=True,
                                         persistence=True,
                                         persistence_type="session",
                                         className="filter-box horizontal-checklist mb-3",
-                                        labelStyle={"display": "inline-block", "margin-right": "10px"},
-                                    ), 
-
+                                        labelStyle={
+                                            "display": "inline-block",
+                                            "margin-right": "10px",
+                                        },
+                                    ),
                                     html.Label("Citation:", className="filter-label"),
                                     dcc.Dropdown(
                                         id="citation",
@@ -247,9 +252,20 @@ def create_energy_projections_filters(df):
                                         [
                                             "Peer review:",
                                             dbc.Tooltip(
-                                                "1: No peer review or external feedback evident"
-                                                "2: Inputs and comments from external experts acknowledged, but not framed as peer review"
-                                                "3: Peer-reviewed journal; peer-review explicitly acknowledged, whether reviewers named or anonymous",
+                                                html.Div(
+                                                    [
+                                                        html.Strong("1:"),
+                                                        " No peer review or external feedback evident",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Inputs and comments from external experts acknowledged, but not framed as peer review",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " Peer-reviewed journal; peer-review explicitly acknowledged, whether reviewers named or anonymous",
+                                                    ]
+                                                ),
                                                 target="peer-review-tooltip",
                                                 placement="right",
                                             ),
@@ -278,10 +294,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Model Availability:",
                                             dbc.Tooltip(
-                                                "Are equations/code available to replicate results with relevant data inputs?"
-                                                "1: Insufficient documentation for model and results replication"
-                                                "2: Incomplete availability of equations or model code enabling partial replication of results"
-                                                "3: All equations provided in the text (inclusive of supplementary information) and/or via publicly-available code for full results replication",
+                                                html.Div(
+                                                    [
+                                                        "Are equations/code available to replicate results with relevant data inputs?",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " Insufficient documentation for model and results replication",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Incomplete availability of equations or model code enabling partial replication of results",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " All equations provided in the text (inclusive of supplementary information) and/or via publicly-available code for full results replication",
+                                                    ]
+                                                ),
                                                 target="model-availability-tooltip",
                                                 placement="right",
                                             ),
@@ -310,10 +339,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Data Availability:",
                                             dbc.Tooltip(
-                                                "Are input data available publicly?"
-                                                "1: Few/no input data available publicly"
-                                                "2: Some input data available publicly"
-                                                "3: All/most input data available publicly",
+                                                html.Div(
+                                                    [
+                                                        "Are input data available publicly?",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " Few/no input data available publicly",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Some input data available publicly",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " All/most input data available publicly",
+                                                    ]
+                                                ),
                                                 target="data-availability-tooltip",
                                                 placement="right",
                                             ),
@@ -342,9 +384,20 @@ def create_energy_projections_filters(df):
                                         [
                                             "Sensitivity analysis:",
                                             dbc.Tooltip(
-                                                "1: No sensitivity analysis or qualitative discussion of variable contributions"
-                                                "2: Limited/no sensitivity analysis but qualitative discussion of important variables"
-                                                "3: Quantitative sensitivity analysis presented to isolate most important variables",
+                                                html.Div(
+                                                    [
+                                                        html.Strong("1:"),
+                                                        " No sensitivity analysis or qualitative discussion of variable contributions",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Limited/no sensitivity analysis but qualitative discussion of important variables",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " Quantitative sensitivity analysis presented to isolate most important variables",
+                                                    ]
+                                                ),
                                                 target="sensitivity-analysis-tooltip",
                                                 placement="right",
                                             ),
@@ -373,9 +426,20 @@ def create_energy_projections_filters(df):
                                         [
                                             "Uncertainty quantification:",
                                             dbc.Tooltip(
-                                                "1: No quantitative treatment of uncertainty; only point values presented for results"
-                                                "2: Uncertainty quantified for some, but not all, results and/or insufficiently described"
-                                                "3: Quantitative uncertainty analysis provided, inclusive of upper/lower values and/or scenarios, for all results with clear descriptions",
+                                                html.Div(
+                                                    [
+                                                        html.Strong("1:"),
+                                                        " No quantitative treatment of uncertainty; only point values presented for results",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Uncertainty quantified for some, but not all, results and/or insufficiently described",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " Quantitative uncertainty analysis provided, inclusive of upper/lower values and/or scenarios, for all results with clear descriptions",
+                                                    ]
+                                                ),
                                                 target="uncertainty-quantification-tooltip",
                                                 placement="right",
                                             ),
@@ -404,10 +468,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Analytical rigor:",
                                             dbc.Tooltip(
-                                                "to capture if deep discussion of assumptions/approach is offered or casual assumptions"
-                                                "1: Limited/no critical discussion/justification of data source(s), modeling approach(s), assumptions, and results"
-                                                "2: Some critical discussion/justification of data sources, modeling approaches, assumptions, and results"
-                                                "3: Thorough discussion/justification of data source(s), modeling approach(s), assumptions, and results",
+                                                html.Div(
+                                                    [
+                                                        "To capture if deep discussion of assumptions/approach is offered or casual assumptions",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " Limited/no critical discussion/justification of data source(s), modeling approach(s), assumptions, and results",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Some critical discussion/justification of data sources, modeling approaches, assumptions, and results",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " Thorough discussion/justification of data source(s), modeling approach(s), assumptions, and results",
+                                                    ]
+                                                ),
                                                 target="analytical-rigor-tooltip",
                                                 placement="right",
                                             ),
@@ -436,10 +513,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Results validation:",
                                             dbc.Tooltip(
-                                                'Does analysis "ground truth" its results by comparing to other values or performing reality checks'
-                                                "1: No comparisions/discussions of results in context of any previous work or available validation data"
-                                                "2: Comparisons/discussions of results in context of limited body of previous work and/or available validation data"
-                                                "3: Comparisons/discussions of results in context of comprehensive body of previous work and/or available validation data",
+                                                html.Div(
+                                                    [
+                                                        'Does analysis "ground truth" its results by comparing to other values or performing reality checks',
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " No comparisions/discussions of results in context of any previous work or available validation data",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Comparisons/discussions of results in context of limited body of previous work and/or available validation data",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " Comparisons/discussions of results in context of comprehensive body of previous work and/or available validation data",
+                                                    ]
+                                                ),
                                                 target="results-validation-tooltip",
                                                 placement="right",
                                             ),
@@ -468,10 +558,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Granularity:",
                                             dbc.Tooltip(
-                                                "How detailed is the approach and reporting such that energy demand drivers are isolated and transparent?"
-                                                "1: No analysis or reporting at the levels of different data center, IT equipment, and infrastructure equipment types; total data center or total sector only"
-                                                "2: Partial analysis or reporting at the levels of different data center, IT equipment, and infrastructure equipment types; e.g., all IT together, all infrastructure together"
-                                                "3: Substantial analysis or reporting at the levels of different data center, IT equipment, and infrastructure equipment types",
+                                                html.Div(
+                                                    [
+                                                        "How detailed is the approach and reporting such that energy demand drivers are isolated and transparent?",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " No analysis or reporting at the levels of different data center, IT equipment, and infrastructure equipment types; total data center or total sector only",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Partial analysis or reporting at the levels of different data center, IT equipment, and infrastructure equipment types; e.g., all IT together, all infrastructure together",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " Substantial analysis or reporting at the levels of different data center, IT equipment, and infrastructure equipment types",
+                                                    ]
+                                                ),
                                                 target="granularity-tooltip",
                                                 placement="right",
                                             ),
@@ -500,10 +603,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Completeness:",
                                             dbc.Tooltip(
-                                                "Does the study 's approach/data correspond to its stated scope?"
-                                                "1: Model/data scope omit major elements of stated or reasonably intepreted physical systems scope, with no attempt to fill gaps"
-                                                "2: Model/data scope omit minor aspects of stated or reasonably interpreted pyhsical systems scope, with simplified assumptions used to fill gaps"
-                                                "3: Model/data scope fully cover stated or reasonably interpreted pyhsical systems scope",
+                                                html.Div(
+                                                    [
+                                                        "Does the study's approach/data correspond to its stated scope?",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " Model/data scope omit major elements of stated or reasonably intepreted physical systems scope, with no attempt to fill gaps",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " Model/data scope omit minor aspects of stated or reasonably interpreted pyhsical systems scope, with simplified assumptions used to fill gaps",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " Model/data scope fully cover stated or reasonably interpreted pyhsical systems scope",
+                                                    ]
+                                                ),
                                                 target="completeness-tooltip",
                                                 placement="right",
                                             ),
@@ -532,10 +648,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Technological Correlation:",
                                             dbc.Tooltip(
-                                                "Data are representative of actual or expected technology types, in the past or future"
-                                                "1: To be defined"
-                                                "2: To be defined"
-                                                "3: To be defined",
+                                                html.Div(
+                                                    [
+                                                        "Data are representative of actual or expected technology types, in the past or future",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " To be defined",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " To be defined",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " To be defined",
+                                                    ]
+                                                ),
                                                 target="technological-correlation-tooltip",
                                                 placement="right",
                                             ),
@@ -564,10 +693,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Geographical Correlation:",
                                             dbc.Tooltip(
-                                                "Data are representative of technology performance in the region(s) of study, in the past or future"
-                                                "1: To be defined"
-                                                "2: To be defined"
-                                                "3: To be defined",
+                                                html.Div(
+                                                    [
+                                                        "Data are representative of technology performance in the region(s) of study, in the past or future",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " To be defined",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " To be defined",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " To be defined",
+                                                    ]
+                                                ),
                                                 target="geographical-correlation-tooltip",
                                                 placement="right",
                                             ),
@@ -596,10 +738,23 @@ def create_energy_projections_filters(df):
                                         [
                                             "Temporal Correlation:",
                                             dbc.Tooltip(
-                                                "Data are representative of technological change expected over analyzed time horizons"
-                                                "1: To be defined"
-                                                "2: To be defined"
-                                                "3: To be defined",
+                                                html.Div(
+                                                    [
+                                                        "Data are representative of technological change expected over analyzed time horizons",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("1:"),
+                                                        " To be defined",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("2:"),
+                                                        " To be defined",
+                                                        html.Br(),
+                                                        html.Br(),
+                                                        html.Strong("3:"),
+                                                        " To be defined",
+                                                    ]
+                                                ),
                                                 target="temporal-correlation-tooltip",
                                                 placement="right",
                                             ),
