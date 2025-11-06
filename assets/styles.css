@@ -387,6 +387,14 @@ body {
     margin-bottom: 8px;
 }
 
+/* wider, responsive tooltips across the app */
+.tooltip .tooltip-inner {
+  max-width: clamp(240px, 35vw, 340px); /* grows with viewport, capped */
+  white-space: normal;                  /* allow wrapping */
+  text-align: left;                     
+  padding: 10px 12px;  
+}
+
 .button-text {
     font-family: 'Inter', sans-serif;
     font-weight: 500;
