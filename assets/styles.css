@@ -672,6 +672,14 @@ button.accordion-button {
     color: #333;
 }
 
+.filter-label_disabled {
+    font-size: 0.9rem;
+    /*font-weight: bold;*/
+    display: block;
+    margin-bottom: 0.09rem;
+    color: #aaa;
+}
+
 .filter-box {
     font-size: 0.85rem;
     padding-bottom: 5px;
@@ -698,6 +706,16 @@ button.accordion-button {
     font-size: 0.85rem;
     color: #333;
     cursor: pointer;
+}
+
+.filter-box-disabled {
+    font-size: 0.85rem;
+    padding-bottom: 5px;
+    /*border: 1px solid #babdc0;*/
+    border-radius: 5px;
+    margin: 5px;
+    font-size: 0.85rem;
+    color: #aaa;
 }
 
 .horizontal-checklist label > input[type="checkbox"] {

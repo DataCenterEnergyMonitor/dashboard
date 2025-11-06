@@ -50,7 +50,8 @@ def filter_data(df, company_name, time_period_category, measurement_category, me
     # Multi-value climate and cooling fields
     filtered_df = apply_multi_value_filter(filtered_df, 'assigned_climate_zones', assigned_climate_zones)
     filtered_df = apply_multi_value_filter(filtered_df, 'default_climate_zones', default_climate_zones)
-    filtered_df = apply_multi_value_filter(filtered_df, 'assigned_cooling_technologies', cooling_technologies)
+    # TODO: Temporarily disabled - enable when cooling technology options are finalized
+    #filtered_df = apply_multi_value_filter(filtered_df, 'assigned_cooling_technologies', cooling_technologies)
     
     return filtered_df
 

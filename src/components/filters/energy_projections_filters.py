@@ -39,21 +39,15 @@ def create_energy_projections_filters(df):
                                     ),
                                     dcc.RadioItems(
                                         id="units",
-                                        # options=[
-                                        #     {"label": val, "value": val}
-                                        #     for val in sorted(df["citation"].unique())
-                                        # ],
                                         options=["TWh", "GW"],
                                         value="TWh",
                                         inline=True,
                                         persistence=True,
                                         persistence_type="session",
                                         className="filter-box horizontal-checklist mb-3",
-                                        labelStyle={
-                                            "display": "inline-block",
-                                            "margin-right": "10px",
-                                        },
-                                    ),
+                                        labelStyle={"display": "inline-block", "margin-right": "10px"},
+                                    ), 
+
                                     html.Label("Citation:", className="filter-label"),
                                     dcc.Dropdown(
                                         id="citation",
