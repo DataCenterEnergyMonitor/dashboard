@@ -8,11 +8,11 @@
 }
 
 .nav-link {
-    color: rgba(255, 255, 255, 0.85) !important; 
+    color: #374440 !important;/*rgba(255, 255, 255, 0.85) !important; */
 }
 
 .nav-link:hover {
-    color: white !important;
+    color: #88a9c3 !important;/*#9a9c8f !important;*/
 } 
 
 .dropdown-menu {
@@ -97,7 +97,7 @@ a:hover {
 }
 
 .navbar {
-    background-color: #00588D !important; /* #343a40; */
+    background-color: #ffffff !important; /* #00588D; */
     font-family: 'Inter', sans-serif;
     color: #404040;
     font-size: clamp(14px, 2vw, 16px);
@@ -210,31 +210,49 @@ body {
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500&display=swap');
 
 /* Typography hierarchy */
-.landing-page-title {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600; /* Increased from 500 for better hierarchy */
-    font-size: calc(1.2rem + 1.2vw);
+.landing-page-title 
+{
+    font-family: 'Roboto Mono', sans-serif;
+    font-weight: 500; 
+    text-align: center;
+    font-size: calc(1.4rem + 1.2vw);
     font-style: normal;
     color: #2C3E50;
     margin: 0.67em 0;
-    margin-bottom: 24px; /* Reduced from 32px */
+    margin-bottom: 24px; 
     line-height: 120%;
-    letter-spacing: -0.96px;
+    letter-spacing: -0.00001em; /*-0.96px; */
 }
+/* {position: absolute;
+width: 1552px;
+height: 248px;
+left: 32px;
+top: 115px;
+
+font-family: 'Roboto Mono';
+font-style: normal;
+font-weight: 500;
+font-size: 64px;
+line-height: 150%;
+text-align: center;
+letter-spacing: -0.022em; 
+
+color: rgba(0, 0, 0, 0.8);} */
 
 /* Subsection headers (h3) */
 .landing-page-description {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Roboto Mono', sans-serif;
     font-weight: 400; /* Increased from 100 for better readability */
     font-style: normal;
     color: rgba(64, 64, 64, 0.8); /* Increased opacity for better contrast */
     text-align: center;
-    max-width: 70%; /* Reduced from 80% for better readability */
+    max-width: 85%;
     margin-top: 0.5rem;
     margin-bottom: 0.5rem; /* Reduced from 2rem */
     margin-left: auto;
     margin-right: auto;
     line-height: 1.6; /* Increased from 120% */
+    letter-spacing: -0.022em;
     font-size: calc(0.8rem + 0.5vw); 
 }
 
@@ -267,7 +285,7 @@ body {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); /* Restored subtle gradient */
     border: 1px solid #e9ecef;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-bottom: 0.15rem solid #00bf63;
+    border-right: 0.15rem solid #395970 /*#00bf63; */
     /* No hover effects - static cards */
 }
 

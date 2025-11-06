@@ -1,6 +1,6 @@
 # Site configuration
 site_config:
-  title: Data Center Energy and Water Monitor
+  title: DATA CENTER ENERGY AND WATER MONITOR
   subtitle: A data repository for understanding, quantifying, and monitoring the energy and water use of the data center industry
   header_logo: assets/icon.png
 

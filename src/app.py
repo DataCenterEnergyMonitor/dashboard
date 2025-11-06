@@ -85,6 +85,7 @@ def create_app():
             "https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500&family=Inter:wght@400;500&display=swap",
             "https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500&display=swap",
             "https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap",
+            "https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap",
         ],
         suppress_callback_exceptions=True,
         assets_folder=assets_path,  # Set absolute path to assets

@@ -32,7 +32,7 @@ def create_navbar():
                                 html.Img(
                                     src=site_config.get('navbar_logo', 'assets/isalab-logo.png'),
                                     className="img-fluid",
-                                    style={'maxHeight': '45px'}
+                                    style={'maxHeight': '70px'} #45
                                 ),
                                 className="navbar-brand mb-0 h1",
                                 href="/"
