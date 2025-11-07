@@ -43,7 +43,8 @@ def create_timeline_bar_plot(filtered_df):
         y='company_name',
         color='reporting_scope',
         color_discrete_map=REPORTING_SCOPE_COLORS,
-        barmode='stack'
+        barmode='stack',
+        template='simple_white'
     )
 
     # Update layout using common style

@@ -60,7 +60,8 @@ def create_forecast_scatter_plot(filtered_df):
                         'geographic_scope',
                         'author_type_s_',
                         'year',
-                        'peer_reviewed_']
+                        'peer_reviewed_'],
+            template='simple_white'
         )
 
         # Update layout

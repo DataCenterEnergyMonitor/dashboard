@@ -1,4 +1,5 @@
 import plotly.express as px
+import plotly.io as pio
 import pandas as pd
 
 
@@ -11,6 +12,9 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
         filters_applied: Boolean indicating if filters are actively applied
         full_df: unfiltered DataFrame
     """
+    # Reset template to avoid Plotly template corruption bug
+    pio.templates.default = "simple_white"
+
     company_list = full_df["company_name"].unique()
     # Define brand colors for specific companies
     brand_colors = {
@@ -136,20 +140,26 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
 
     filtered_df = filtered_df.copy()
     create_hover_text(filtered_df)
-    # Create the scatter plot
-    pue_wue_fig = px.scatter(
-        filtered_df,
-        x="metric_value",
-        y="wue_value",
-        color="company_name" if filters_applied else None,
-        color_discrete_map=color_map,
-        labels={
+
+    # Create the scatter plot with conditional parameters
+    scatter_params = {
+        "data_frame": filtered_df,
+        "x": "metric_value",
+        "y": "wue_value",
+        "labels": {
             "metric_value": "Power Usage Effectiveness (PUE)",
             "wue_value": "Water Usage Effectiveness (WUE)",
             "company_name": "Company Name",
         },
-        custom_data=custom_data,
-    )
+        "custom_data": custom_data,
+    }
+
+    # Only add color parameters if filters are applied
+    if filters_applied:
+        scatter_params["color"] = "company_name"
+        scatter_params["color_discrete_map"] = color_map
+
+    pue_wue_fig = px.scatter(**scatter_params)
 
     if not filters_applied:
         pue_wue_fig.update_traces(
@@ -208,7 +218,7 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
             title_font=dict(size=14),
         ),
         yaxis=dict(
-            range=[-0.02, filtered_df['wue_value'].max()+0.2],
+            range=[-0.02, filtered_df["wue_value"].max() + 0.2],
             showgrid=False,  # Disable gridlines
             showline=True,
             linecolor="black",
@@ -222,7 +232,7 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
             xanchor="left",
             x=1.02,
             traceorder="normal",
-            ),
+        ),
         # margin=dict(t=100, b=100),  # set bottom margin for citation
         showlegend=filters_applied,
         template="simple_white",

@@ -96,11 +96,62 @@ a:hover {
     color: inherit;
 }
 
+/* Navbar hamburger styling */
+.navbar-toggler {
+    border: none !important;
+    padding: 0.25rem 0.75rem !important;
+    margin: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0 !important;
+}
+
+.navbar-toggler:focus,
+.navbar-toggler:active,
+.navbar-toggler:hover {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+}
+
+/* Prevent hamburger from moving when clicked */
+.navbar-toggler[aria-expanded="true"],
+.navbar-toggler[aria-expanded="false"] {
+    position: relative !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
+/* Ensure logo and hamburger stay together */
+.navbar-brand {
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+}
+
 .navbar {
     background-color: #ffffff !important; /* #00588D; */
     font-family: 'Inter', sans-serif;
     color: #404040;
     font-size: clamp(14px, 2vw, 16px);
+}
+
+/* Desktop: Create space between left and right menus */
+@media (min-width: 992px) {
+    /* Make collapse a flexbox container */
+    .navbar-expand-lg .navbar-collapse {
+        display: flex !important;
+        flex-grow: 1;
+    }
+    
+    /* Left nav stays on left */
+    .navbar-expand-lg .navbar-collapse .navbar-nav.me-auto {
+        margin-right: 0;
+    }
+    
+    /* Right nav gets pushed to the right with calculated margin */
+    .navbar-expand-lg .navbar-collapse .navbar-nav.ms-auto {
+        margin-left: auto;
+    }
 }
 
 /* Change navbar brand color */

@@ -812,6 +812,7 @@ def create_energy_projections_line_plot(
         },
         color_discrete_map=color_map,
         custom_data=custom_data,
+        template="simple_white",
     )
 
     # If filters are applied, determine which traces should be highlighted (PRESERVE ORIGINAL LOGIC)
