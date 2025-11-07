@@ -1,4 +1,5 @@
 import plotly.express as px
+import plotly.io as pio
 import pandas as pd
 import hashlib
 
@@ -12,6 +13,13 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         filters_applied: Boolean indicating if filters are actively applied
         full_df: unfiltered DataFrame
     """
+    # Reset template to avoid Plotly template corruption bug
+    pio.templates.default = "simple_white"
+
+    # Make copies to avoid modifying the original DataFrames
+    filtered_df = filtered_df.copy()
+    full_df = full_df.copy()
+
     # Define years and set progressive gaps along the timeline
     # Use full dataset to ensure all years are included for consistent x-axis
     years = sorted(full_df["time_period_value"].unique())
@@ -43,27 +51,47 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     def add_deterministic_x_jitter(row):
         """Create deterministic x-jitter with more variation for same company/year"""
         jitter_amt = year_jitter_map[row["time_period_value"]]
-        
-        # Create hash from company name, year, facility scope, region and city
 
-        hash_input = f"{row['company_name']}_{row['time_period_value']}_{row.get('facility_scope', '')}_{row.get('region', '')}_{row.get('city', '')}"
+        # Create hash from company name, year, facility scope, region and city
+        # Use empty string for missing values
+        facility_scope = (
+            row["facility_scope"]
+            if "facility_scope" in row.index and pd.notna(row["facility_scope"])
+            else ""
+        )
+        region = (
+            row["region"] if "region" in row.index and pd.notna(row["region"]) else ""
+        )
+        city = row["city"] if "city" in row.index and pd.notna(row["city"]) else ""
+
+        hash_input = f"{row['company_name']}_{row['time_period_value']}_{facility_scope}_{region}_{city}"
         hash_value = int(hashlib.md5(hash_input.encode()).hexdigest()[:8], 16)
-    
+
         # Normalize hash to [-1, 1] range
         normalized_hash = (hash_value / (16**8 - 1)) * 2 - 1
-    
-        # Apply jitter
-        return year_x_map[row["time_period_value"]] + normalized_hash * jitter_amt
+
+        # Apply jitter - explicitly return a scalar float
+        result = float(
+            year_x_map[row["time_period_value"]] + normalized_hash * jitter_amt
+        )
+        return result
 
     # Apply deterministic jitter
-    full_df["custom_x_jitter"] = full_df.apply(add_deterministic_x_jitter, axis=1)
-    filtered_df["custom_x_jitter"] = filtered_df.apply(
-        add_deterministic_x_jitter, axis=1
+    full_df["custom_x_jitter"] = full_df.apply(
+        lambda row: add_deterministic_x_jitter(row), axis=1
     )
+    # Check if filtered_df is empty before applying jitter
+    if not filtered_df.empty:
+        filtered_df["custom_x_jitter"] = filtered_df.apply(
+            lambda row: add_deterministic_x_jitter(row), axis=1
+        )
+    else:
+        # Create empty custom_x_jitter column for empty DataFrame
+        filtered_df["custom_x_jitter"] = pd.Series([], dtype=float)
 
     # Sort by company name for consistent ordering
-    full_df = full_df.sort_values("company_name").copy()
-    filtered_df = filtered_df.sort_values("company_name").copy()
+    full_df = full_df.sort_values("company_name")
+    filtered_df = filtered_df.sort_values("company_name")
 
     # Calculate y-axis range to avoid extra empty space
     ymin = max(1, filtered_df["metric_value"].min() - 0.05)
@@ -185,38 +213,44 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         )
 
     custom_data = [
-        'company_name', 
+        "company_name",
         "metric_value",
-        'metric_type',
-        'measurement_category',
-        'time_period_category',
+        "metric_type",
+        "measurement_category",
+        "time_period_category",
         "time_period_value",
-        'facility_scope',
-        'region_text',
-        'country',
-        'city',
-        'climate_text'
+        "facility_scope",
+        "region_text",
+        "country",
+        "city",
+        "climate_text",
     ]
 
     filtered_df = filtered_df.copy()
     create_hover_text(filtered_df)
 
     # Create the scatter plot
-    pue_fig = px.scatter(
-        filtered_df,
-        x="custom_x_jitter",
-        y="metric_value",
-        color="company_name" if filters_applied else None,
-        color_discrete_map=color_map,
-        labels={
+    # Note: Don't pass template here to avoid Plotly template corruption bug
+    scatter_params = {
+        "data_frame": filtered_df,
+        "x": "custom_x_jitter",
+        "y": "metric_value",
+        "labels": {
             "custom_x_jitter": "Time Period",
             "metric_value": "Power Usage Effectiveness (PUE)",
             "company_name": "Company Name",
         },
-        custom_data=custom_data,
+        "custom_data": custom_data,
         # width=1200,
         # height=700,
-    )
+    }
+
+    # Only add color parameters if filters are applied
+    if filters_applied:
+        scatter_params["color"] = "company_name"
+        scatter_params["color_discrete_map"] = color_map
+
+    pue_fig = px.scatter(**scatter_params)
 
     if not filters_applied:
         pue_fig.update_traces(
@@ -243,26 +277,24 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                 create_hover_text(background_df)
 
                 for company in background_df["company_name"].unique():
-                    company_data = background_df[background_df["company_name"] == company]
-                    
+                    company_data = background_df[
+                        background_df["company_name"] == company
+                    ]
+
                     # Create a single gray trace for each company's background data
                     # Extract custom data values for each row with the same structure as custom_data
                     customdata_list = company_data[custom_data].values.tolist()
-                    
+
                     # Create a single gray trace for each company's background data
                     background_trace = {
-                        'type': 'scatter',
-                        'mode': 'markers',
-                        'x': company_data["custom_x_jitter"].tolist(),
-                        'y': company_data["metric_value"].tolist(),
-                        'customdata': customdata_list,
-                        'marker': {
-                            'color': 'lightgray',
-                            'size': 7,
-                            'opacity': 0.5
-                        },
-                        'showlegend': False,
-                        'hovertemplate': (
+                        "type": "scatter",
+                        "mode": "markers",
+                        "x": company_data["custom_x_jitter"].tolist(),
+                        "y": company_data["metric_value"].tolist(),
+                        "customdata": customdata_list,
+                        "marker": {"color": "lightgray", "size": 7, "opacity": 0.5},
+                        "showlegend": False,
+                        "hovertemplate": (
                             "<b>%{customdata[0]}</b><br>"
                             + "PUE: %{customdata[1]}<br>"
                             + "%{customdata[2]}"
@@ -274,27 +306,29 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
                             + "%{customdata[8]}"
                             + "%{customdata[9]}"
                             + "%{customdata[10]}"
-                            + '<extra></extra>'
+                            + "<extra></extra>"
                         ),
-                        'name': company  # for debugging
+                        "name": company,  # for debugging
                     }
-                    
+
                     # Ensure all gray traces are added before colored traces
                     pue_fig.add_trace(background_trace, row=1, col=1)
-                    
+
                 # manually reorder: move all colored traces to the front
-                num_colored = len(pue_fig.data) - len(background_df["company_name"].unique())
+                num_colored = len(pue_fig.data) - len(
+                    background_df["company_name"].unique()
+                )
                 num_gray = len(background_df["company_name"].unique())
-                
+
                 # Extract traces
                 all_traces = list(pue_fig.data)
                 colored_traces = all_traces[:num_colored]
                 gray_traces = all_traces[num_colored:]
-                
+
                 # Reorder traces to render gray at the back, colored in front
                 pue_fig.data = tuple(gray_traces + colored_traces)
 
-    #xvals = [year_x_map[year] for year in years]
+    # xvals = [year_x_map[year] for year in years]
     pue_fig.update_xaxes(
         range=[xmin - 1, xmax + 1],
         tickvals=[year_x_map[year] for year in years],
@@ -352,7 +386,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             + "%{customdata[8]}"  # country (if exists)
             + "%{customdata[9]}"  # city (if exists)
             + "%{customdata[10]}"  # Climate zone (if exists)
-            + '<extra></extra>'
+            + "<extra></extra>"
         )
     )
     return pue_fig

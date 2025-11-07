@@ -143,6 +143,7 @@ def create_power_projections_line_plot(
                 "label": "Scenario",
             },
             custom_data=custom_data,
+            template="simple_white",
         )
     else:
         # No filters applied
@@ -157,6 +158,7 @@ def create_power_projections_line_plot(
                 "energy_demand": "Energy Demand (TWh)",
             },
             custom_data=custom_data,
+            template="simple_white",
         )
 
     if not filters_applied:
@@ -193,6 +195,7 @@ def create_power_projections_line_plot(
                     color="citation",  # Group by citation for proper line continuity
                     line_dash="label",  # Different line styles for scenarios
                     custom_data=custom_data,
+                    template="simple_white",
                 )
                 background_fig.update_traces(
                     line=dict(color="lightgray", width=2),

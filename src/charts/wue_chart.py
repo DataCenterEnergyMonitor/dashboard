@@ -1,16 +1,25 @@
 import plotly.express as px
+import plotly.io as pio
 import pandas as pd
 import hashlib
+
 
 def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     """
     Create WUE scatter plot
-    
+
     Args:
         filtered_df: DataFrame to display
         filters_applied: Boolean indicating if filters are actively applied
         full_df: unfiltered DataFrame
     """
+    # Reset template to avoid Plotly template corruption bug
+    pio.templates.default = "simple_white"
+
+    # Make copies to avoid modifying the original DataFrames
+    filtered_df = filtered_df.copy()
+    full_df = full_df.copy()
+
     # Define years and set progressive gaps along the timeline
     # Use full dataset to ensure all years are included for consistent x-axis
     years = sorted(full_df["time_period_value"].unique())
@@ -42,35 +51,50 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     def add_deterministic_x_jitter(row):
         """Create deterministic x-jitter with more variation for same company/year"""
         jitter_amt = year_jitter_map[row["time_period_value"]]
-        
-        # Create hash from company name, year, facility scope, region and city
 
-        hash_input = f"{row['company_name']}_{row['time_period_value']}_{row.get('facility_scope', '')}_{row.get('region', '')}_{row.get('city', '')}"
+        # Create hash from company name, year, facility scope, region and city
+        # Use empty string for missing values
+        facility_scope = (
+            row["facility_scope"]
+            if "facility_scope" in row.index and pd.notna(row["facility_scope"])
+            else ""
+        )
+        region = (
+            row["region"] if "region" in row.index and pd.notna(row["region"]) else ""
+        )
+        city = row["city"] if "city" in row.index and pd.notna(row["city"]) else ""
+
+        hash_input = f"{row['company_name']}_{row['time_period_value']}_{facility_scope}_{region}_{city}"
         hash_value = int(hashlib.md5(hash_input.encode()).hexdigest()[:8], 16)
-    
+
         # Normalize hash to [-1, 1] range
         normalized_hash = (hash_value / (16**8 - 1)) * 2 - 1
-    
-        # Apply jitter
-        return year_x_map[row["time_period_value"]] + normalized_hash * jitter_amt
+
+        # Apply jitter - explicitly return a scalar float
+        result = float(
+            year_x_map[row["time_period_value"]] + normalized_hash * jitter_amt
+        )
+        return result
 
     # Apply deterministic jitter
-    full_df["custom_x_jitter"] = full_df.apply(add_deterministic_x_jitter, axis=1)
+    full_df["custom_x_jitter"] = full_df.apply(
+        lambda row: add_deterministic_x_jitter(row), axis=1
+    )
     # Check if filtered_df is empty before applying jitter
     if not filtered_df.empty:
         filtered_df["custom_x_jitter"] = filtered_df.apply(
-            add_deterministic_x_jitter, axis=1
+            lambda row: add_deterministic_x_jitter(row), axis=1
         )
     else:
         # Create empty custom_x_jitter column for empty DataFrame
         filtered_df["custom_x_jitter"] = pd.Series([], dtype=float)
 
     # Sort by company name for consistent ordering
-    full_df = full_df.sort_values("company_name").copy()
-    filtered_df = filtered_df.sort_values("company_name").copy()
+    full_df = full_df.sort_values("company_name")
+    filtered_df = filtered_df.sort_values("company_name")
 
     # Calculate y-axis range to avoid extra empty space
-    ymin = max(1, filtered_df["metric_value"].min() - 0.05) 
+    ymin = max(1, filtered_df["metric_value"].min() - 0.05)
     ymax = filtered_df["metric_value"].max() + 0.05
 
     # Calculate x-axis range to avoid extra empty space
@@ -132,112 +156,144 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     if filtered_df.empty:
         return {
-            'data': [],
-            'layout': {
-                'xaxis': {'title': 'Time Period', 'visible': True},
-                'yaxis': {'title': 'Water Usage Effectiveness (WUE)', 'visible': True},
-                'showlegend': False,
-                'annotations': [{
-                    'text': 'No data available for selected filters',
-                    'xref': 'paper',
-                    'yref': 'paper',
-                    'x': 0.5,
-                    'y': 0.5,
-                    'showarrow': False,
-                    'font': {'size': 16, 'color': 'gray'}
-                }],
-                'plot_bgcolor': 'white'
-            }
+            "data": [],
+            "layout": {
+                "xaxis": {"title": "Time Period", "visible": True},
+                "yaxis": {"title": "Water Usage Effectiveness (WUE)", "visible": True},
+                "showlegend": False,
+                "annotations": [
+                    {
+                        "text": "No data available for selected filters",
+                        "xref": "paper",
+                        "yref": "paper",
+                        "x": 0.5,
+                        "y": 0.5,
+                        "showarrow": False,
+                        "font": {"size": 16, "color": "gray"},
+                    }
+                ],
+                "plot_bgcolor": "white",
+            },
         }
-          
+
     # Create fields for hover text
     def create_hover_text(df):
         """Process DataFrame fields for hover text display"""
-        df['metric_type'] = df['metric_type'].apply(
-            lambda x: f'WUE Type: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-        df['measurement_category'] = df['measurement_category'].apply(
-            lambda x: f'Measurement Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-        df['time_period_category'] = df['time_period_category'].apply(
-            lambda x: f'Time Period Category: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-        df['facility_scope'] = df['facility_scope'].apply(
-            lambda x: f'Facility Scope: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-        df['region_text'] = df['region'].apply(
-            lambda x: f'Region: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-        df['country'] = df['country'].apply(
-            lambda x: f'Country: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-        df['city'] = df['city'].apply(
-            lambda x: f'City: {x}<br>' if pd.notna(x) and str(x).strip() else '')
-        df['climate_text'] = df['assigned_climate_zones'].apply(
-            lambda x: f'IECC Climate Zone: {x}<br>' if pd.notna(x) and str(x).strip() else '')
+        df["metric_type"] = df["metric_type"].apply(
+            lambda x: f"WUE Type: {x}<br>" if pd.notna(x) and str(x).strip() else ""
+        )
+        df["measurement_category"] = df["measurement_category"].apply(
+            lambda x: f"Measurement Category: {x}<br>"
+            if pd.notna(x) and str(x).strip()
+            else ""
+        )
+        df["time_period_category"] = df["time_period_category"].apply(
+            lambda x: f"Time Period Category: {x}<br>"
+            if pd.notna(x) and str(x).strip()
+            else ""
+        )
+        df["facility_scope"] = df["facility_scope"].apply(
+            lambda x: f"Facility Scope: {x}<br>"
+            if pd.notna(x) and str(x).strip()
+            else ""
+        )
+        df["region_text"] = df["region"].apply(
+            lambda x: f"Region: {x}<br>" if pd.notna(x) and str(x).strip() else ""
+        )
+        df["country"] = df["country"].apply(
+            lambda x: f"Country: {x}<br>" if pd.notna(x) and str(x).strip() else ""
+        )
+        df["city"] = df["city"].apply(
+            lambda x: f"City: {x}<br>" if pd.notna(x) and str(x).strip() else ""
+        )
+        df["climate_text"] = df["assigned_climate_zones"].apply(
+            lambda x: f"IECC Climate Zone: {x}<br>"
+            if pd.notna(x) and str(x).strip()
+            else ""
+        )
 
     custom_data = [
-        'company_name', 
+        "company_name",
         "metric_value",
-        'metric_type',
-        'measurement_category',
-        'time_period_category',
+        "metric_type",
+        "measurement_category",
+        "time_period_category",
         "time_period_value",
-        'facility_scope',
-        'region_text',
-        'country',
-        'city',
-        'climate_text'
+        "facility_scope",
+        "region_text",
+        "country",
+        "city",
+        "climate_text",
     ]
-    
+
     filtered_df = filtered_df.copy()
     create_hover_text(filtered_df)
 
     # Create the scatter plot
-    wue_fig = px.scatter(
-            filtered_df,
-            x='custom_x_jitter',
-            y='metric_value',
-            color='company_name' if filters_applied else None,
-            color_discrete_map=color_map,
-            labels={
-                "custom_x_jitter": "Time Period",
-                "metric_value": "Water Usage Effectiveness (WUE)",
-                "company_name": "Company Name"
-            },
-            custom_data=custom_data
-        )
+    # Note: Don't pass template here to avoid Plotly template corruption bug
+    scatter_params = {
+        "data_frame": filtered_df,
+        "x": "custom_x_jitter",
+        "y": "metric_value",
+        "labels": {
+            "custom_x_jitter": "Time Period",
+            "metric_value": "Water Usage Effectiveness (WUE)",
+            "company_name": "Company Name",
+        },
+        "custom_data": custom_data,
+    }
+
+    # Only add color parameters if filters are applied
+    if filters_applied:
+        scatter_params["color"] = "company_name"
+        scatter_params["color_discrete_map"] = color_map
+
+    wue_fig = px.scatter(**scatter_params)
 
     if not filters_applied:
         wue_fig.update_traces(
-            marker=dict(color='lightgray', size=8, opacity=0.7),
-            showlegend=False
+            marker=dict(color="lightgray", size=8, opacity=0.7), showlegend=False
         )
     else:
-        wue_fig.update_traces(marker=dict(size=9, opacity=0.7, line=dict(width=0.5, color="grey")))
-        
+        wue_fig.update_traces(
+            marker=dict(size=9, opacity=0.7, line=dict(width=0.5, color="grey"))
+        )
+
         # Add background traces to foreground figure
         if full_df is not None and len(full_df) > len(filtered_df):
             # Get companies that are in the fildered data
-            filtered_companies = set(filtered_df['company_name'].unique())
-            
+            filtered_companies = set(filtered_df["company_name"].unique())
+
             # Filter background data to exclude companies already displayed
-            background_df = full_df[~full_df['company_name'].isin(filtered_companies)].copy()
-            
-            if not background_df.empty:  # Only create background if there are companies to show
+            background_df = full_df[
+                ~full_df["company_name"].isin(filtered_companies)
+            ].copy()
+
+            if (
+                not background_df.empty
+            ):  # Only create background if there are companies to show
                 create_hover_text(background_df)
 
                 background_fig = px.scatter(
-                    background_df, 
-                    x='custom_x_jitter', 
-                    y='metric_value',
-                    custom_data=custom_data
+                    background_df,
+                    x="custom_x_jitter",
+                    y="metric_value",
+                    custom_data=custom_data,
                 )
                 background_fig.update_traces(
-                    marker=dict(color='lightgray', size=8, opacity=0.5),
-                    showlegend=False
+                    marker=dict(color="lightgray", size=8, opacity=0.5),
+                    showlegend=False,
                 )
-                
+
                 # Add to main figure
                 for trace in background_fig.data:
                     wue_fig.add_trace(trace)
-                
+
                 # Reorder so background appears behind colored data
-                wue_fig.data = wue_fig.data[-len(background_fig.data):] + wue_fig.data[:-len(background_fig.data)]
+                wue_fig.data = (
+                    wue_fig.data[-len(background_fig.data) :]
+                    + wue_fig.data[: -len(background_fig.data)]
+                )
     wue_fig.update_xaxes(
         range=[xmin - 1, xmax + 1],
         tickvals=[year_x_map[year] for year in years],
@@ -251,24 +307,24 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
 
     wue_fig.update_layout(
         font_family="Inter",
-        plot_bgcolor='white',
+        plot_bgcolor="white",
         margin=dict(r=250),
         xaxis=dict(
             showgrid=False,  # disable gridlines
             dtick=1,  # force yearly intervals
             showline=True,
-            linecolor='black',
+            linecolor="black",
             linewidth=1,
-            title_font=dict(size=14)
+            title_font=dict(size=14),
         ),
-    yaxis=dict(
-        range=[-0.02, filtered_df['metric_value'].max()+0.2],
-        showgrid=False,  # Disable gridlines
-        showline=True,
-        linecolor='black',
-        linewidth=1,
-        title_font=dict(size=14)
-    ),
+        yaxis=dict(
+            range=[-0.02, filtered_df["metric_value"].max() + 0.2],
+            showgrid=False,  # Disable gridlines
+            showline=True,
+            linecolor="black",
+            linewidth=1,
+            title_font=dict(size=14),
+        ),
         legend=dict(
             orientation="v",
             yanchor="top",
@@ -277,9 +333,9 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             x=1.02,
             traceorder="normal",
         ),
-        #margin=dict(t=100, b=100),  # set bottom margin for citation
+        # margin=dict(t=100, b=100),  # set bottom margin for citation
         showlegend=filters_applied,
-        template='simple_white'
+        template="simple_white",
     )
 
     # Update marker size and hover template
@@ -296,7 +352,7 @@ def create_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
             + "%{customdata[8]}"  # country (if exists)
             + "%{customdata[9]}"  # city (if exists)
             + "%{customdata[10]}"  # Climate zone (if exists)
-            + '<extra></extra>'
+            + "<extra></extra>"
         )
     )
     return wue_fig
