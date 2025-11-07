@@ -49,7 +49,7 @@ def create_chart_row(chart_id, title, expand_id, accordion_children=None, accord
     }
     
     # Page layout styles
-    card_header_style = {"border": 'none', "padding": "0px 15px", "marginBottom": "0px", "backgroundColor": "#ffffff"}
+    card_header_style = {"border": 'none', "padding": "8px 15px", "marginBottom": "0px", "backgroundColor": "#ffffff"}
     card_body_style = {"border": 'none', "paddingTop": "0px", "backgroundColor": "#ffffff", "minHeight": "65vh"}
     card_style = {"border": "none", "boxShadow": "none", "height": "auto"}
     graph_style = {"height": "65vh", "width": "100%", "marginTop": "0px","paddingTop": "0px", "border": "none" }
@@ -149,7 +149,7 @@ def create_pue_wue_page(app, pue_wue_df):
             className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
             style={
                 "position": "fixed",      
-                "top": "80px",            
+                "top": "90px",            
                 "left": "320px",         
                 "right": "0",             
                 "zIndex": "1000",
@@ -170,7 +170,7 @@ def create_pue_wue_page(app, pue_wue_df):
             className="d-block d-lg-none",  # Show on <992px, hide on ≥992px
             style={
                 "position": "fixed",      
-                "top": "80px",            
+                "top": "90px",            
                 "left": "0",              
                 "right": "0",             
                 "zIndex": "1000",
@@ -259,11 +259,17 @@ def create_pue_wue_page(app, pue_wue_df):
                 chart_id="pue-wue-scatter-chart", 
                 title="WUE vs PUE Relationship",
                 expand_id="expand-pue-wue",
-                # description_md='''
-                # ##### PUE vs WUE Relationship
-                
-                # To be updated...
-                # ''',
+                accordion_children = [
+                                dcc.Markdown(
+                                    """
+                                    In progress
+                                    """
+                                ),
+                    ],
+                    accordion_title=html.Span([
+                        "What Does the WUE-PUE Relationship Tell Us?",
+                        html.Span(" Read more...", className="text-link"),
+                    ]),
                 filename="pue_wue_comparison"
             )
         ]),

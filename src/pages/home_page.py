@@ -177,7 +177,7 @@ def create_home_page(df=None):
                     # ),
                 ],
                 className="my-4 container px-3",
-                style={"maxWidth": "1000px", "margin": "0 auto"},
+                style={"maxWidth": "60vw", "margin": "0 auto"},
             ),
             # KPI Cards
             create_kpi_cards(df, menu_config)

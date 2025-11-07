@@ -6,56 +6,58 @@ site_config:
 
 navbar:
   main:
-    About:
-      route: /about
-    Learn:
-      Data Centers Energy 101:
-        route: /data-centers-101
-        #preview: assets/previews/data_center_101_preview.svg
-      Data Centers Water 101:
-        route: /data-centers-101
-    Companies:
-      route: /companies
-    Methodology:
+    left-menu:
+      Explore Data:
+        PUE/WUE:
+          route: /pue_wue
+        Company Reporting Trends:
+          route: /reporting
+        Company Reported Data:
+          route: /company-profile
+        Energy Demand Estimates and Projections:
+          route: /energy-projections
+        Water Demand Estimates and Projections:
+          route: /forecast
+        Global policies:
+          route: /global-policies
+        # Data Center Energy Use:
+        #   route: /energy-use
       Methodology:
+        Methodology:
+          route: /about
+        Company Selection:
+          route: /about
+        PUE:
+          route: /pue-methodology
+        WUE:
+          route: /wue-methodology
+        Energy Projections:
+          route: /energy-projections-methodology
+        Reporting Trends:
+          route: /about
+        Reported Data - Energy:
+          route: /energy-projections-data
+        Reported Data - Water:
+          route: /about
+        Policies:
+          route: /about
+      Companies:
+        route: /companies
+      Learn:
+        Data Centers Energy 101:
+          route: /data-centers-101
+          #preview: assets/previews/data_center_101_preview.svg
+        Data Centers Water 101:
+          route: /data-centers-101
+    right-menu:
+      About:
         route: /about
-      Company Selection:
-        route: /about
-      PUE:
-        route: /pue-methodology
-      WUE:
-        route: /wue-methodology
-      Energy Projections:
-        route: /energy-projections-methodology
-      Reporting Trends:
-        route: /about
-      Reported Data - Energy:
-        route: /energy-projections-data
-      Reported Data - Water:
-        route: /about
-      Policies:
-        route: /about
-    Explore Data:
-      PUE/WUE:
-        route: /pue_wue
-      Company Reporting Trends:
-        route: /reporting
-      Company Reported Data:
-        route: /company-profile
-      Energy Demand Estimates and Projections:
-        route: /energy-projections
-      Water Demand Estimates and Projections:
-        route: /forecast
-      Global policies:
-        route: /global-policies
-      # Data Center Energy Use:
-      #   route: /energy-use
-    Research:
-      route: /research
-    Newsletter:
-      route: /newsletter
-    Contact:
-      route: /contact
+      Research:
+        route: /research
+      Newsletter:
+        route: /newsletter
+      Contact:
+        route: /contact
   data_page:
     pue_wue:
       Methodology:
