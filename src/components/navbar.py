@@ -12,9 +12,11 @@ def load_menu_config():
 def create_navbar():
     menu_structure = load_menu_config()
     site_config = menu_structure.get('site_config', {})
-    navbar_items = menu_structure.get('navbar', {}).get('main', {})
+    navbar_left_items = menu_structure.get('navbar', {}).get('main', {}).get('left-menu', {})
+    navbar_right_items = menu_structure.get('navbar', {}).get('main', {}).get('right-menu', {})
 
-    nav_links = generate_nav_links(navbar_items)
+    nav_left_links = generate_nav_links(navbar_left_items)
+    nav_right_links = generate_nav_links(navbar_right_items)
 
     return html.Nav(
         className="navbar navbar-expand-lg navbar-dark bg-dark",
@@ -45,11 +47,22 @@ def create_navbar():
                         id="navbar-collapse",
                         is_open=False,
                         navbar=True,
-                        style={"marginRight": "45px"},
+                        #style={"marginRight": "45px"},
                         # className= "position-absolute translate-middle-x", #"justify-content-center",
                         #className="justify-content-center w-100",
                         children=[
-                            dbc.Nav(nav_links, navbar=True), #className="ms-auto"
+                            dbc.Nav(nav_left_links, navbar=True), #className="ms-auto"
+                        ]
+                    ),
+                    dbc.Collapse(
+                        id="navbar-collapse",
+                        is_open=False,
+                        navbar=True,
+                        style={"marginLeft": "800px"},
+                        # className= "position-absolute translate-middle-x", #"justify-content-center",
+                        #className="justify-content-center w-100",
+                        children=[
+                            dbc.Nav(nav_right_links, navbar=True), #className="ms-auto"
                         ]
                     )
                 ]
