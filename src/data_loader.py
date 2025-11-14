@@ -1,10 +1,38 @@
 import pandas as pd
 from pathlib import Path
-import janitor
+#import janitor
 from janitor import clean_names
-import datetime
 import re
+import os
+import json
+import glob
+from datetime import datetime
 
+
+
+def update_metadata(excel_path, json_path="data/metadata.json"):
+
+    mtime = os.path.getmtime(excel_path)
+    last_modified = datetime.fromtimestamp(mtime).isoformat()
+    
+    # Get the current file's directory (src folder)
+    current_dir = Path(__file__).parent
+    json_path=current_dir.parent / "data" / "metadata.json"
+    
+    # read existing JSON or initialize
+    try:
+        with open(json_path, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {"metadata": {}}
+
+    data["metadata"].update({
+        "source_file": os.path.basename(excel_path),
+        "last_updated": last_modified
+    })
+
+    with open(json_path, "w") as f:
+        json.dump(data, f, indent=2)
 
 def load_pue_data():
     # Get the current file's directory (src folder)
@@ -361,7 +389,7 @@ def load_reporting_data():
         reporting_df[col] = reporting_df[col].str.strip()
 
     # companies report the data one year later than the current year
-    current_reporting_year = datetime.datetime.now().year - 1
+    current_reporting_year = datetime.now().year - 1
     previous_reporting_year = current_reporting_year - 1
 
     # Strip whitespace from the 'company_name' and 'reporting_scope' columns
@@ -638,3 +666,52 @@ def load_company_profile_data():
     print(company_profile_df.columns)
 
     return company_profile_df
+
+def update_metadata():
+    """Locate excel files and update metadata.json."""
+
+    project_root = Path(__file__).resolve().parents[1]
+    data_dir = project_root / "data"
+    json_path = data_dir / "metadata.json"
+
+    # Ensure the data folder exists
+    data_dir.mkdir(exist_ok=True)
+
+        # load existing metadata or initialize if missing
+    try:
+        with open(json_path, "r") as f:
+            metadata = json.load(f)
+    except FileNotFoundError:
+        metadata = {"files": [], "last_updated": None}
+
+    # convert list of files to dict for easy lookup
+    files_dict = {f["source_file"]: f for f in metadata.get("files", [])}
+
+    # retrieve last modified time stamp for each excel file in data_dir
+    for path in glob.glob(os.path.join(data_dir, "*.xlsx")):
+        fname = os.path.basename(path)
+        if fname.startswith("~$"):
+            continue  # skip temporary Excel files
+
+        mtime = datetime.fromtimestamp(os.path.getmtime(path)).isoformat()
+
+        if fname in files_dict:
+            # update if modified time changed
+            if files_dict[fname]["last_modified"] != mtime:
+                files_dict[fname]["last_modified"] = mtime
+        else:
+            # add new file entry
+            files_dict[fname] = {"source_file": fname, "last_modified": mtime}
+
+    metadata["files"] = list(files_dict.values())
+
+    # calculate most recent modification time across all files
+    metadata["last_updated"] = (
+        max(f["last_modified"] for f in metadata["files"])
+        if metadata["files"]
+        else None
+    )
+
+    # write to json
+    with open(json_path, "w") as f:
+        json.dump(metadata, f, indent=2)

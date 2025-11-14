@@ -5,6 +5,8 @@ project:
 website:
   search: true 
 
+jupyter: python3
+
 format:
   html:
     # Defaults for ALL pages
@@ -27,4 +29,9 @@ format:
 bibliography: references.bib
 csl: apa.csl
 cite-method: citeproc
-    
+
+# metadata-files:
+#   - params.yml
+
+metadata:
+  last_updated_pue_dataset: "October 06, 2025 at 15:02"

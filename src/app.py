@@ -8,6 +8,9 @@ import dash
 from dash import Dash, dcc, html, Input, Output, callback
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+
+from helpers.export_json_for_quarto import export_json_for_quarto
+
 from data_loader import (
     load_pue_data,
     load_wue_data,
@@ -17,6 +20,7 @@ from data_loader import (
     load_reporting_data,
     load_energy_use_data,
     load_company_profile_data,
+    update_metadata,
 )
 
 from pages.pue_page import create_pue_page
@@ -34,6 +38,7 @@ from pages.energy_projections_data_page import create_energy_projections_data_pa
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
+from pages.companies_page import create_companies_page
 from pages.contact_page import create_contact_page
 from pages.energy_forecast_page import create_forecast_page
 from pages.reporting_page import create_reporting_page
@@ -101,6 +106,29 @@ def create_app():
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
+
+    # Update last modified timestamp for each imported dataset
+    update_metadata()
+
+    # Export Datasets metadata to quarto parameters 
+    export_json_for_quarto()
+
+    # DELETE
+    # Read and print metadata to check
+    import json
+    from pathlib import Path
+
+    json_path = Path("data") / "metadata.json" 
+
+    with open(json_path, "r") as f:
+        metadata = json.load(f)
+
+    # Pretty-print
+    import pprint
+    pprint.pprint(metadata)
+
+    ######
+
     # Create data dictionary for charts
     data_dict = {
         # "pue-scatter": {"df": pue_df, "industry_avg": None},
@@ -247,6 +275,8 @@ def create_app():
             return create_company_profile_page(app, company_profile_df, energy_use_df)
         elif pathname == "/about":
             return create_about_page()
+        elif pathname == "/companies":
+            return create_companies_page()
         elif pathname == "/contact":
             return create_contact_page()
         elif pathname == "/data-centers-101":
