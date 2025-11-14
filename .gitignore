@@ -7,3 +7,4 @@ data/
 **/._.DS_Store
 **/__pycache__/
 __pycache__/
+assets/static_pages/site_libs
