@@ -1,0 +1,97 @@
+---
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-title: " "
+other-links:
+  - text: "Companies"
+    href: "/companies"
+author:
+  - name: "Eric Masanet"
+    affiliation: "Industrial Sustainability Laboratory, University of California, Santa Barbara"
+    email: "email@dcewm.org"
+    orcid: "0000-0000-0000-0000"
+  - name: "Co-author Name"
+date: "2025-08-12"
+google-scholar: true
+
+params:
+  my_parameter: "Default value"
+  another_value: 0
+  last_updated_ai_data_center_studies_centraltable_28012025: February 26, 2025 at 20:32
+  last_updated_dc_energy_use_pue: February 13, 2025 at 12:15
+  last_updated_dcewm_energystudiesdata: September 09, 2025 at 14:59
+  last_updated_dcewm_puedataset: October 06, 2025 at 15:02
+  last_updated_dcewm_wuedataset: October 06, 2025 at 15:05
+  last_updated_modules: April 02, 2025 at 10:55
+
+citation:
+  type: webpage
+  title: "Companies"
+  author: 
+    - "Eric Masanet"
+  url: "https://dcewm.org/"
+---
+
+### Companies
+
+Our company-related datasets aim to capture reporting practices and data from the world’s largest data center operators.  These operators include hyperscalers, cloud providers, colocation and/or wholesale data center companies, telecommunications companies, and companies that disclose data on their internal enterprise data centers.  
+
+There are many hundreds of these companies globally. They range from large multinationals that operate hundreds of data centers to smaller regional operators who may only operate a few.  
+
+The table below summarizes the companies that we currently monitor for reported energy, water, PUE, and WUE data.  The methodology and data sources for this table are described here. 
+
+Our PUE and WUE datasets also contain a limited number of data points from high performance computing data centers operated by public sector organizations, such as government agencies and research laboratories.
+
+**What are we missing?**
+
+If you have suggestions for companies, information sources, or reported data that we are missing, we’d love to hear from you!  Please submit your tips and recommendations using our contact form.     
+
+#### Companies monitored
+
+The table below summarizes our list of companies, their key characteristics, and our progress in gathering data from them.  Progress indicated below falls into three categories:
+
+The company has been researched yielding data in our datasets <span style="color:green;">(green)</span>\
+The company has been researched, but no public data were found <span style="color:red;">(red)</span>\
+This research is underway or has not yet been completed.  Please check back for updates. <span style="color:orange;">(orange)</span>\
+
+```{python}
+#| echo: false
+#| label: last-modified_date
+#| output: asis
+import json
+import os
+from pathlib import Path
+from datetime import datetime
+
+current_path = Path(os.getcwd())
+project_root = current_path.parents[2]
+json_path = project_root / "data" / "metadata.json"
+target_file = "DCEWM-PUEDataset.xlsx"
+
+with open(json_path) as f:
+    data = json.load(f)
+
+last_modified_iso = next(
+    (f["last_modified"] for f in data["files"] if f["source_file"] == target_file),
+    "File not found"
+)
+if last_modified_iso:
+    dt = datetime.fromisoformat(last_modified_iso)
+    last_modified = dt.strftime("%B %d, %Y at %H:%M")
+else:
+    last_modified = "File not found"
+
+print(f"Last updated: {last_modified}")
+```
+
+
+...
+
+<table> 
+
+#### References
+
+::: {#refs}
+:::
