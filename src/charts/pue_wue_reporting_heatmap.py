@@ -174,6 +174,8 @@ def create_pue_wue_reporting_heatmap_plot(
         text=hover_texts,
         hoverongaps=False,
         hoverinfo="skip" if header_only else "text",
+        zmin=0.0,
+        zmax=1.0,
         colorscale=[
             [0.0, REPORTING_SCOPE_COLORS["company not established"]],
             [0.09, REPORTING_SCOPE_COLORS["company not established"]],
