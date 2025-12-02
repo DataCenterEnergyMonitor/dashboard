@@ -15,6 +15,7 @@ from data_loader import (
     load_pue_data,
     load_wue_data,
     create_pue_wue_data,
+    load_pue_wue_companies_data,
     load_energyprojections_data,
     load_energyforecast_data,
     load_reporting_data,
@@ -101,11 +102,13 @@ def create_app():
     pue_df = load_pue_data()
     wue_df = load_wue_data()
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
+    pue_wue_companies_df = load_pue_wue_companies_data()
     energyprojections_df = load_energyprojections_data()
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
+
 
     # Update last modified timestamp for each imported dataset
     update_metadata()
@@ -207,7 +210,7 @@ def create_app():
     }
 
     # Initialize callbacks
-    register_pue_wue_callbacks(app, pue_wue_df)
+    register_pue_wue_callbacks(app, pue_wue_df, pue_wue_companies_df)
     register_energy_projections_callbacks(app, energyprojections_df)
 
     # pue_callback = create_chart_callback(app, data_dict, chart_configs["pue-scatter"])

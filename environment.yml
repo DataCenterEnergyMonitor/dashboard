@@ -40,7 +40,8 @@ dependencies:
   - numpy=1.24.3
   - plotly=5.18.0
   - scikit-learn=1.3.0
-  - pyjanitor=0.32.1 
+  - pyjanitor=0.32.1
+  - pandas-flavor=0.7.0
   - jupyter-dash
   - openpyxl
   - boto3

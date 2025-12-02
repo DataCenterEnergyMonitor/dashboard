@@ -7,32 +7,33 @@ import os
 import json
 import glob
 from datetime import datetime
+import numpy as np
+import sys
+import time
 
+# def update_metadata(excel_path, json_path="data/metadata.json"):
 
-
-def update_metadata(excel_path, json_path="data/metadata.json"):
-
-    mtime = os.path.getmtime(excel_path)
-    last_modified = datetime.fromtimestamp(mtime).isoformat()
+#     mtime = os.path.getmtime(excel_path)
+#     last_modified = datetime.fromtimestamp(mtime).isoformat()
     
-    # Get the current file's directory (src folder)
-    current_dir = Path(__file__).parent
-    json_path=current_dir.parent / "data" / "metadata.json"
+#     # Get the current file's directory (src folder)
+#     current_dir = Path(__file__).parent
+#     json_path=current_dir.parent / "data" / "metadata.json"
     
-    # read existing JSON or initialize
-    try:
-        with open(json_path, "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = {"metadata": {}}
+#     # read existing JSON or initialize
+#     try:
+#         with open(json_path, "r") as f:
+#             data = json.load(f)
+#     except FileNotFoundError:
+#         data = {"metadata": {}}
 
-    data["metadata"].update({
-        "source_file": os.path.basename(excel_path),
-        "last_updated": last_modified
-    })
+#     data["metadata"].update({
+#         "source_file": os.path.basename(excel_path),
+#         "last_updated": last_modified
+#     })
 
-    with open(json_path, "w") as f:
-        json.dump(data, f, indent=2)
+#     with open(json_path, "w") as f:
+#         json.dump(data, f, indent=2)
 
 def load_pue_data():
     # Get the current file's directory (src folder)
@@ -123,6 +124,14 @@ def create_pue_wue_data(pue_df, wue_df):
     pue_df = pue_df.copy()
     wue_df = wue_df.copy()
 
+    # # DEBUG: list of columns
+    # print("PUE columns:", pue_df.columns.tolist())
+    # print("\nWUE columns:", wue_df.columns.tolist())
+    
+    # print("\nClimate zones in PUE:", "assigned_climate_zones" in pue_df.columns)
+    # print("Climate zones in WUE:", "assigned_climate_zones" in wue_df.columns)
+    
+
     wue_selected = wue_df[
         [
             "company_name",
@@ -184,6 +193,134 @@ def create_pue_wue_data(pue_df, wue_df):
     pue_wue_df = pd.concat([pue_wue_df, wue_df], ignore_index=True)
 
     return pue_wue_df
+
+def fill_inactive_company_years(df):
+    """
+    For companies marked as 'company Inactive', fill all subsequent years 
+    with the same status.
+    """
+    # Get all unique companies and years
+    all_companies = df['company'].unique()
+    all_years = sorted(df['year'].unique())
+    
+    filled_rows = []
+    
+    for company in all_companies:
+        company_data = df[df['company'] == company].sort_values('year')
+        
+        # Find the year when company became inactive
+        inactive_rows = company_data[company_data['reports_pue'] == 'company Inactive']
+        
+        if not inactive_rows.empty:
+            # Get the first year of inactivity
+            first_inactive_year = inactive_rows['year'].min()
+            
+            # Fill all years after that
+            for year in all_years:
+                if year >= first_inactive_year:
+                    # Check if this year already exists
+                    existing = company_data[company_data['year'] == year]
+                    
+                    if existing.empty:
+                        # Create new row for this year
+                        new_row = {
+                            'company': company,
+                            'year': year,
+                            'reports_pue': 'company Inactive',
+                        }
+                        filled_rows.append(new_row)
+    
+    # Append new rows to original dataframe
+    if filled_rows:
+        filled_df = pd.concat([df, pd.DataFrame(filled_rows)], ignore_index=True)
+        return filled_df
+    
+    return df
+
+# load companies list data for pue and wue reporting
+def load_pue_wue_companies_data():
+    # Get the current file's directory (src folder)
+    current_dir = Path(__file__).parent
+    # Go up one level and into data directory
+    data_path = current_dir.parent / "data" / "Companies_list.xlsx"
+
+    companies_df = pd.read_excel(data_path, sheet_name="summary", index_col=None, skiprows=1)
+    companies_df = companies_df.clean_names()
+
+    # Clean string columns
+    string_columns = [
+        "company",
+        "entity_status",
+        "successor_entity",
+        "year_founded"
+    ]
+    for col in string_columns:
+        if col in companies_df.columns:
+            companies_df[col] = companies_df[col].str.strip()
+
+    # Set NaN values in year_founded to 2000
+    companies_df['year_founded'] = pd.to_numeric(companies_df['year_founded'], errors='coerce')
+    companies_df['year_founded'].fillna(2000, inplace=True)
+    companies_df['year_founded'] = companies_df['year_founded'].astype(int)
+
+    # Go up one level and into data directory
+    data_path = current_dir.parent / "data" / "Companies_list.xlsx"
+
+    df = pd.read_excel(data_path, sheet_name="reporting_status", index_col=None)
+    df = df.clean_names()
+
+    # Clean string columns
+    string_columns = [
+        "company",
+        "reports_pue",
+        "reports_wue"
+    ]
+    for col in string_columns:
+        if col in df.columns:
+            df[col] = df[col].str.strip()
+
+    # Merge the two dataframes
+    pue_wue_reporting_df = pd.merge(
+        df,
+        companies_df,
+        on="company",
+        how="left"
+    )
+
+    # Keep only relevant fields
+    pue_wue_reporting_df = pue_wue_reporting_df[
+            [
+                "company",
+                "year",
+                "reports_pue",
+                "reports_wue",
+                "year_founded",
+                "entity_status",
+                "successor_entity",
+                "status_effective_date",
+            ]
+        ]
+
+    # Set NaN values in year_founded to 2000
+    pue_wue_reporting_df['year_founded'] = pd.to_numeric(pue_wue_reporting_df['year_founded'], errors='coerce')
+    pue_wue_reporting_df['year_founded'].fillna(2000, inplace=True)
+    pue_wue_reporting_df['year_founded'] = pue_wue_reporting_df['year_founded'].astype(int)
+
+    # Set reporting status to Company not established if year_founded > reporting year 
+    pue_wue_reporting_df.loc[pue_wue_reporting_df['year'] < pue_wue_reporting_df['year_founded'], ['reports_pue', 'reports_wue']] = 'company not established'
+
+    # handle Pending Data status
+    current_date = datetime.today()
+    current_year = current_date.year
+    pue_wue_reporting_df.loc[
+        (pue_wue_reporting_df['year'] == current_year) &
+        (pue_wue_reporting_df[['entity_status']].eq(
+            'no reporting evident').all(axis=1)), ['reports_pue', 'reports_wue']] = 'not yet released'
+    
+    pue_wue_reporting_df = fill_inactive_company_years(pue_wue_reporting_df)
+    pue_wue_reporting_df.rename(columns={"company": "company_name"}, inplace=True)
+
+    return pue_wue_reporting_df
 
 
 # data load for Energy Demand and Projections page

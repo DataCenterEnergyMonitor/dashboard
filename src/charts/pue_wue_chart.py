@@ -77,7 +77,7 @@ def create_pue_wue_scatter_plot(filtered_df, full_df=None, filters_applied=False
                 "showlegend": False,
                 "annotations": [
                     {
-                        "text": "No data available for selected filters",
+                        "text": "No data available for selected companies",
                         "xref": "paper",
                         "yref": "paper",
                         "x": 0.5,
