@@ -831,6 +831,30 @@ button.accordion-button {
     border-color: transparent !important;
 }
 
+/* Bookmark tab button styling (for tab navigation) */
+.bookmark-tab-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 0.85rem;
+    margin: 0 5px;
+    height: 32px;
+    cursor: pointer;
+}
+
+.bookmark-tab-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.bookmark-tab-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 88, 141, 0.25);
+}
+
 .bookmark-bar {
     left: 320px;            /* ✅ Start after sidebar */
     right: 0;               /* ✅ Extend to right edge */

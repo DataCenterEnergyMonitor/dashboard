@@ -742,7 +742,7 @@ def create_pue_wue_page(app, pue_wue_df):
                         className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
                         style={
                             "position": "fixed",
-                            "top": "90px",
+                            "top": "100px",
                             "left": "320px",
                             "right": "0",
                             "zIndex": "1000",

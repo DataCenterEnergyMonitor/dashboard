@@ -17,6 +17,7 @@ from data_loader import (
     create_pue_wue_data,
     load_pue_wue_companies_data,
     load_energyprojections_data,
+    load_global_policies_data,
     load_energyforecast_data,
     load_reporting_data,
     load_energy_use_data,
@@ -36,6 +37,7 @@ from pages.energy_projections_methods_page import (
     create_energy_projections_methodology_page,
 )
 from pages.energy_projections_data_page import create_energy_projections_data_page
+from pages.global_policies_page import create_global_policies_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -69,6 +71,11 @@ from callbacks.company_profile_callbacks import (
 from callbacks.pue_wue_page_callback import register_pue_wue_callbacks
 from callbacks.energy_projections_page_callback import (
     register_energy_projections_callbacks,
+)
+
+# from callbacks.global_policies.area_tab_callback import register_global_policies_area_callbacks
+from callbacks.global_policies.global_policies_page_callback import (
+    register_global_policies_page_callbacks,
 )
 from components.kpi_data_cards import create_kpi_cards
 
@@ -104,16 +111,16 @@ def create_app():
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
     pue_wue_companies_df = load_pue_wue_companies_data()
     energyprojections_df = load_energyprojections_data()
+    globalpolicies_df = load_global_policies_data()
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
 
-
     # Update last modified timestamp for each imported dataset
     update_metadata()
 
-    # Export Datasets metadata to quarto parameters 
+    # Export Datasets metadata to quarto parameters
     export_json_for_quarto()
 
     # DELETE
@@ -121,13 +128,14 @@ def create_app():
     import json
     from pathlib import Path
 
-    json_path = Path("data") / "metadata.json" 
+    json_path = Path("data") / "metadata.json"
 
     with open(json_path, "r") as f:
         metadata = json.load(f)
 
     # Pretty-print
     import pprint
+
     pprint.pprint(metadata)
 
     ######
@@ -212,9 +220,8 @@ def create_app():
     # Initialize callbacks
     register_pue_wue_callbacks(app, pue_wue_df, pue_wue_companies_df)
     register_energy_projections_callbacks(app, energyprojections_df)
-
-    # pue_callback = create_chart_callback(app, data_dict, chart_configs["pue-scatter"])
-    # wue_callback = create_chart_callback(app, data_dict, chart_configs["wue-scatter"])
+    register_global_policies_page_callbacks(app, globalpolicies_df)
+    # register_global_policies_area_callbacks(app, globalpolicies_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -267,6 +274,8 @@ def create_app():
             return create_energy_projections_methodology_page()
         elif pathname == "/energy-projections-data":
             return create_energy_projections_data_page()
+        elif pathname == "/global-policies":
+            return create_global_policies_page(app, globalpolicies_df)
         elif pathname == "/forecast":
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)

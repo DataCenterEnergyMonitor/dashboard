@@ -445,6 +445,125 @@ def load_energyprojections_data():
 
     return df
 
+def load_global_policies_data():
+    # Get the current file's directory (src folder)
+    current_dir = Path(__file__).parent
+    # Go up one level and into data directory
+    data_path = current_dir.parent / "data" / "DCEWM-GlobalPolicies.xlsx"
+
+    df = pd.read_excel(data_path, sheet_name="Policy_Eval", index_col=None, skiprows=2)
+
+    df = df[
+        [
+            "policy_id",
+            "version",
+            "authors",
+            "offices_held",
+            "date_introduced",
+            "date_of_amendment",
+            "date_enacted",
+            "date_killed",
+            "date_in_effect",
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "date_of_status",
+            "measurement_and_reporting",
+            "procurement_standard",
+            "performance_standard",
+            "research_demonstration_development",
+            "capacity_building",
+            "rate_structuring",
+            "development_incentives",
+            "development_restrictions",
+            "other",
+            "energy",
+            "power",
+            "water",
+            "emissions",
+            "other_environemental",
+            "taxes",
+            "permits",
+            "employement",
+            "communities",
+        ]
+    ]
+
+    # pivot longer all instrument and objective columns
+    instrument_columns = [
+        "measurement_and_reporting",
+        "procurement_standard",
+        "performance_standard",
+        "research_demonstration_development",
+        "capacity_building",
+        "rate_structuring",
+        "development_incentives",
+        "development_restrictions",
+        "other",
+    ]
+    transposed_df = df.melt(
+        id_vars=[col for col in df.columns if col not in instrument_columns],
+        value_vars=instrument_columns,
+        var_name="instrument",
+        value_name="has_instrument",
+    )
+
+    objective_columns = [
+        "energy",
+        "power",
+        "water",
+        "emissions",
+        "other_environemental",
+        "taxes",
+        "permits",
+        "employement",
+        "communities",
+    ]
+    transposed_df = transposed_df.melt(
+        id_vars=[col for col in transposed_df.columns if col not in objective_columns],
+        value_vars=objective_columns,
+        var_name="objective",
+        value_name="has_objective",
+    )
+
+    clean_df = transposed_df.drop_duplicates()
+
+    # Extract year: check if numeric year (1900-2100) first, otherwise parse as datetime
+    def extract_year(date_col):
+        numeric = pd.to_numeric(date_col, errors="coerce")
+        year_mask = (numeric >= 1900) & (numeric <= 2100)
+        result = numeric.where(year_mask)
+        dt_years = pd.to_datetime(date_col, errors="coerce").dt.year
+        return result.fillna(dt_years)
+
+
+    # Convert to datetime: handle numeric years (1900-2100) or parse as datetime
+    def to_datetime(date_col):
+        numeric = pd.to_numeric(date_col, errors="coerce")
+        year_mask = (numeric >= 1900) & (numeric <= 2100)
+        year_dates = pd.to_datetime(numeric.astype(str), format="%Y", errors="coerce")
+        dt_dates = pd.to_datetime(date_col, errors="coerce")
+        return year_dates.where(year_mask).fillna(dt_dates)
+
+
+    # Extract year with fallback: date_introduced -> date_enacted -> date_in_effect
+    clean_df["year_introduced"] = extract_year(clean_df["date_introduced"])
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_enacted"]))
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_in_effect"]))
+
+    # Convert date_introduced to datetime with same fallback logic
+    clean_df["date_introduced"] = to_datetime(clean_df["date_introduced"])
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_enacted"]))
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_in_effect"]))
+
+    return clean_df
 
 def load_energyforecast_data():
     # Get the current file's directory (src folder)
