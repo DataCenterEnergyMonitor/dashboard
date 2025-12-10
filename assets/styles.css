@@ -849,10 +849,7 @@ button.accordion-button {
 .bookmark-tab-btn:hover {
     opacity: 0.9;
     transform: translateY(-1px);
-}
-
-.bookmark-tab-btn:focus {
-    box-shadow: 0 0 0 0.2rem rgba(0, 88, 141, 0.25);
+    background-color: #c9d8e4 !important;
 }
 
 .bookmark-bar {
@@ -864,6 +861,13 @@ button.accordion-button {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
+}
+
+/* Ensure global policies tabs are always visible */
+#global-policies-tabs-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Smooth scrolling */

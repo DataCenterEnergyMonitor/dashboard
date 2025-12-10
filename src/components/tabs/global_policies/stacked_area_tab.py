@@ -1,6 +1,5 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.bookmark_bar import create_bookmark_bar
 from components.filters.global_policies.area_tab_filters import (
     create_global_policies_area_tab_filters,
 )
@@ -195,29 +194,8 @@ def create_stacked_area_tab(app, globalpolicies_df):
             create_global_policies_area_tab_filters(globalpolicies_df),
             html.Div(
                 [
-                    # Sticky bookmark bar
-                    # Desktop bookmark bar (hidden on mobile/tablet)
-                    html.Div(
-                        [
-                            create_bookmark_bar(
-                                sections,
-                                data_page_parent="global_policies",
-                                subnav_items=None,
-                            )
-                        ],
-                        className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
-                        style={
-                            "position": "fixed",
-                            "top": "100px",
-                            "left": "320px",
-                            "right": "0",
-                            "zIndex": "1000",
-                            "backgroundColor": "white",
-                            "padding": "8px 20px",
-                            "height": "80px",
-                        },
-                    ),
-                    # Mobile bookmark bar (hidden on desktop)
+                    # Note: Bookmark bar removed - tabs are now handled at page level
+                    # Mobile navigation kept for mobile devices
                     html.Div(
                         [
                             # Simplified mobile navigation

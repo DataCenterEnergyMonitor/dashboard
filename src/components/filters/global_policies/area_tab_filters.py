@@ -68,10 +68,10 @@ def create_global_policies_area_tab_filters(df):
                                         "State/Province:", className="filter-label"
                                     ),
                                     dcc.Dropdown(
-                                        id="gp_state",
+                                        id="gp_state_province",
                                         options=[],
                                         multi=True,
-                                        placeholder="Select states",
+                                        placeholder="Select states/provinces",
                                         persistence=True,
                                         persistence_type="session",
                                         className="filter-box mb-2",
@@ -225,10 +225,10 @@ def create_global_policies_area_tab_filters(df):
                         ],
                         style={
                             "width": "300px",
-                            "height": "calc(100vh - 150px)",  # Subtract navbar height
+                            "height": "calc(100vh - 100px)",  # Subtract navbar height
                             "position": "fixed",
                             "left": "0",
-                            "top": "150px",
+                            "top": "100px",
                             "borderRight": "1px solid #dee2e6",
                             "padding": "20px",
                             "zIndex": "999",  # Lower than navbar but higher than content

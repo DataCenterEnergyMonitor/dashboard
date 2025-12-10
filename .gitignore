@@ -8,3 +8,4 @@ data/
 **/__pycache__/
 __pycache__/
 assets/static_pages/site_libs
+src/static_pages/_quarto_params.yml

@@ -55,13 +55,17 @@ def create_bookmark_tabs(tabs_config, active_tab_id="tab-1", data_page_parent=No
                     # Left side - tab buttons
                     html.Div(
                         tab_buttons,
-                        className="d-flex flex-wrap",
-                        style={"justify-content": "flex-start"},
+                        className="d-flex",
+                        style={
+                            "justify-content": "flex-start",
+                            "flex-wrap": "nowrap",  # Prevent wrapping so all tabs are visible
+                            "overflow": "visible",  # Ensure all tabs are visible
+                        },
                     ),
                     # Right-aligned collapse menu (if nav_links exist)
                     html.Div(
                         dbc.Collapse(
-                            id="navbar-collapse",
+                            id="bookmark-tabs-navbar-collapse",  # Unique ID to avoid conflicts
                             is_open=True,
                             navbar=True,
                             className="justify-content-end",
@@ -80,10 +84,14 @@ def create_bookmark_tabs(tabs_config, active_tab_id="tab-1", data_page_parent=No
                     if nav_links
                     else html.Div(),
                 ],
-                className="d-flex justify-content-between align-items-center w-200",
+                className="d-flex justify-content-between align-items-center w-100",
             ),
         ],
         className="bookmark-navigation bookmark-bar",
+        style={
+            "overflow": "visible",  # Ensure all tabs are visible
+            "whiteSpace": "nowrap",  # Prevent wrapping
+        },
     )
 
 
