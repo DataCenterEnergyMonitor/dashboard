@@ -77,6 +77,9 @@ from callbacks.energy_projections_page_callback import (
 from callbacks.global_policies.global_policies_page_callback import (
     register_global_policies_page_callbacks,
 )
+from callbacks.global_policies.area_tab_callback import (
+    register_global_policies_area_callbacks
+)
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -221,7 +224,7 @@ def create_app():
     register_pue_wue_callbacks(app, pue_wue_df, pue_wue_companies_df)
     register_energy_projections_callbacks(app, energyprojections_df)
     register_global_policies_page_callbacks(app, globalpolicies_df)
-    # register_global_policies_area_callbacks(app, globalpolicies_df)
+    register_global_policies_area_callbacks(app, globalpolicies_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )

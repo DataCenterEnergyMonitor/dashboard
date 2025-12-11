@@ -229,7 +229,7 @@ def create_stacked_area_tab(app, globalpolicies_df):
                     dbc.Container(
                         [
                             # Single chart container is updated by callback
-                            html.Div(id="chart-container"),
+                            html.Div(id="gp-chart-container"),
                         ],
                         fluid=True,
                     ),
