@@ -3,9 +3,12 @@ import plotly.io as pio
 import pandas as pd
 import colorsys
 import plotly.colors as pc
+from datetime import datetime
 
 
-def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_applied=False):
+def create_global_policies_stacked_area_plot(
+    filtered_df, full_df=None, filters_applied=False
+):
     """
     Create stacked area plot
 
@@ -20,9 +23,11 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
 
     # Make copies to avoid modifying the original DataFrames
     filtered_df = filtered_df.copy()
-    #full_df = full_df.copy()
+    # full_df = full_df.copy()
 
-    filtered_df["area_group"] = filtered_df["country"] + " - " + filtered_df["jurisdiction_level"]
+    filtered_df["area_group"] = (
+        filtered_df["country"] + " - " + filtered_df["jurisdiction_level"]
+    )
     df_unique = filtered_df.drop_duplicates(
         subset=[
             "policy_id",
@@ -51,17 +56,58 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
     # Remove rows with NaN year_introduced for cleaner plot
     df_yearly = df_yearly[df_yearly["year_introduced"].notna()]
 
+    # Convert year_introduced to numeric and then to int to ensure consistent type
+    df_yearly["year_introduced"] = pd.to_numeric(
+        df_yearly["year_introduced"], errors="coerce"
+    )
+    df_yearly = df_yearly[df_yearly["year_introduced"].notna()]
+    df_yearly["year_introduced"] = df_yearly["year_introduced"].astype(int)
+
     # Ensure all years are present for each area_group (fill missing years with 0)
     # This is important for correct cumulative calculation
     all_years = sorted(df_yearly["year_introduced"].unique())
+    # Ensure all_years are integers
+    all_years = [int(year) for year in all_years]
     all_area_groups = df_yearly["area_group"].unique()
+
+    # Get the minimum year from the full dataset (baseline year, e.g., 2007)
+    # If full_df is provided, use its min year, otherwise use 2007 as default
+    if full_df is not None and "year_introduced" in full_df.columns:
+        full_df_years = pd.to_numeric(
+            full_df["year_introduced"], errors="coerce"
+        ).dropna()
+        if len(full_df_years) > 0:
+            baseline_year = int(full_df_years.min())
+        else:
+            baseline_year = 2007  # Default baseline year
+    else:
+        baseline_year = 2007  # Default baseline year
+
+    # If there's only one year in the filtered data, add baseline year as first point (with 0 policies)
+    # Area plots need at least 2 points to display
+    # For single data point: baseline_year - data_year shows 0 policies, data_year onwards shows actual count
+    if len(all_years) == 1:
+        data_year = all_years[0]
+        # Add baseline year before the data year (ensure baseline_year < data_year)
+        if baseline_year >= data_year:
+            baseline_year = (
+                data_year - 1
+            )  # Use year before data year if baseline is not earlier
+        all_years = [baseline_year, data_year]
+        print(
+            f"Only one year found ({data_year}), adding baseline year {baseline_year} for area plot rendering"
+        )
 
     # Create complete year-area_group combinations
     from itertools import product
 
     complete_index = pd.DataFrame(
-        list(product(all_years, all_area_groups)), columns=["year_introduced", "area_group"]
+        list(product(all_years, all_area_groups)),
+        columns=["year_introduced", "area_group"],
     )
+
+    # Ensure year_introduced is int type to match df_yearly
+    complete_index["year_introduced"] = complete_index["year_introduced"].astype(int)
 
     # Merge with actual data, filling missing with 0
     df_yearly = complete_index.merge(
@@ -75,6 +121,62 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
     df_yearly["cumulative_policues"] = df_yearly.groupby("area_group")[
         "unique_ids"
     ].cumsum()
+
+    # If we added a baseline year for single-year case, ensure baseline year has 0 cumulative policies
+    # and extend the data year's cumulative value to current year
+    original_years = sorted(
+        df_yearly[df_yearly["unique_ids"] > 0]["year_introduced"].unique()
+    )
+    if len(original_years) == 1 and len(all_years) == 2:
+        data_year = original_years[0]
+        baseline_year = all_years[0]  # First year is the baseline
+        current_year = datetime.now().year
+
+        # For each area_group:
+        # 1. Set baseline year cumulative to 0 (already done by merge with fillna, but ensure it)
+        # 2. Add current year with same cumulative as data year (flat line after data year)
+        for area_group in all_area_groups:
+            # Ensure baseline year is 0
+            baseline_mask = (df_yearly["area_group"] == area_group) & (
+                df_yearly["year_introduced"] == baseline_year
+            )
+            if baseline_mask.any():
+                df_yearly.loc[baseline_mask, "cumulative_policues"] = 0
+                df_yearly.loc[baseline_mask, "unique_ids"] = 0
+
+            # Add current year with same cumulative as data year (if current year > data year)
+            if current_year > data_year:
+                data_year_mask = (df_yearly["area_group"] == area_group) & (
+                    df_yearly["year_introduced"] == data_year
+                )
+                if data_year_mask.any():
+                    cumulative_value = df_yearly.loc[
+                        data_year_mask, "cumulative_policues"
+                    ].iloc[0]
+                    # Check if current year already exists, if not add it
+                    current_year_mask = (df_yearly["area_group"] == area_group) & (
+                        df_yearly["year_introduced"] == current_year
+                    )
+                    if not current_year_mask.any():
+                        # Add new row for current year
+                        new_row = pd.DataFrame(
+                            {
+                                "year_introduced": [current_year],
+                                "area_group": [area_group],
+                                "unique_ids": [0],
+                                "cumulative_policues": [cumulative_value],
+                            }
+                        )
+                        df_yearly = pd.concat([df_yearly, new_row], ignore_index=True)
+                        # Update all_years to include current_year for proper x-axis range
+                        if current_year not in all_years:
+                            all_years.append(current_year)
+                            all_years = sorted(all_years)
+                    else:
+                        df_yearly.loc[current_year_mask, "cumulative_policues"] = (
+                            cumulative_value
+                        )
+                        df_yearly.loc[current_year_mask, "unique_ids"] = 0
 
     # Get final cumulative count for each area_group (for legend sorting and labels)
     final_counts = (
@@ -110,7 +212,6 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
         color = palette[i % len(palette)]
         country_colors[country] = color
 
-
     # Create color map for area_groups with different shades for jurisdiction levels
     def adjust_color_shade(hex_color, shade_factor):
         """Adjust color shade: shade_factor > 1 = lighter, < 1 = darker
@@ -126,7 +227,6 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
 
         # Convert back to hex
         return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
-
 
     # Merge final counts with area_groups and create labels with counts
     df_yearly = df_yearly.merge(final_counts, on="area_group", how="left")
@@ -174,6 +274,7 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
         color_map_labeled[labeled_name] = color_map[area_group]
 
     # Create figure with labeled area_groups
+    # Add unique_ids as custom_data so we can show policies introduced per year in hover
     fig = px.area(
         df_yearly,
         x="year_introduced",
@@ -181,9 +282,22 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
         color="area_group_label",
         line_group="area_group_label",
         color_discrete_map=color_map_labeled,
+        custom_data=["unique_ids"],  # Add unique_ids for hover display
         template="plotly_white",
         # facet_col="jurisdiction_level",  # optional — separate panels for national/city
-        title="Cumulative Number of Policies Over Time",
+        # title="Cumulative Number of Policies Over Time",
+    )
+
+    # Update hover template with user-friendly names
+    # Show: Area Group, Year, Policies Introduced (in that year), Cumulative Policies
+    fig.update_traces(
+        hovertemplate=(
+            "<b>%{fullData.name}</b><br>"
+            + "Year: %{x}<br>"
+            + "Policies Introduced: %{customdata[0]}<br>"
+            + "Cumulative Policies: %{y}<br>"
+            + "<extra></extra>"
+        )
     )
 
     # Sort legend by final count (descending) - update trace order
@@ -208,5 +322,120 @@ def create_global_policies_stacked_area_plot(filtered_df, full_df=None, filters_
     min_year = df_yearly["year_introduced"].min()
     max_year = df_yearly["year_introduced"].max()
     fig.update_xaxes(range=[min_year - 1, max_year + 0.5])
+
+    # Calculate y-axis limits based on full dataset
+    # Get max cumulative policies from filtered data (sum across all groups per year, then max)
+    # For each year, sum cumulative policies across all area_groups
+    yearly_totals_filtered = df_yearly.groupby("year_introduced")[
+        "cumulative_policues"
+    ].sum()
+    max_cumulative_filtered = yearly_totals_filtered.max()
+
+    # Calculate total cumulative policies from full dataset (N)
+    # This should be the sum across ALL groups, not max per group
+    if full_df is not None:
+        # Process full_df similar to filtered_df to get cumulative policies
+        full_df_copy = full_df.copy()
+        full_df_copy["area_group"] = (
+            full_df_copy["country"] + " - " + full_df_copy["jurisdiction_level"]
+        )
+        full_df_unique = full_df_copy.drop_duplicates(
+            subset=[
+                "policy_id",
+                "area_group",
+                "authors",
+                "jurisdiction_level",
+                "region",
+                "supranational_policy_area",
+                "country",
+                "state_province",
+                "city",
+                "county",
+                "order_type",
+                "status",
+                "year_introduced",
+            ]
+        )
+
+        # Count unique policies per year and area_group
+        full_df_yearly = (
+            full_df_unique.groupby(["year_introduced", "area_group"])["policy_id"]
+            .nunique()
+            .reset_index(name="unique_ids")
+        )
+
+        # Remove NaN years
+        full_df_yearly = full_df_yearly[full_df_yearly["year_introduced"].notna()]
+
+        # Convert year_introduced to numeric and then to int to ensure consistent type
+        full_df_yearly["year_introduced"] = pd.to_numeric(
+            full_df_yearly["year_introduced"], errors="coerce"
+        )
+        full_df_yearly = full_df_yearly[full_df_yearly["year_introduced"].notna()]
+        full_df_yearly["year_introduced"] = full_df_yearly["year_introduced"].astype(
+            int
+        )
+
+        if len(full_df_yearly) > 0:
+            # Get all years and area groups
+            full_all_years = sorted(full_df_yearly["year_introduced"].unique())
+            # Ensure full_all_years are integers
+            full_all_years = [int(year) for year in full_all_years]
+            full_all_area_groups = full_df_yearly["area_group"].unique()
+
+            # Create complete index
+            from itertools import product
+
+            full_complete_index = pd.DataFrame(
+                list(product(full_all_years, full_all_area_groups)),
+                columns=["year_introduced", "area_group"],
+            )
+
+            # Ensure year_introduced is int type
+            full_complete_index["year_introduced"] = full_complete_index[
+                "year_introduced"
+            ].astype(int)
+
+            # Merge and calculate cumulative
+            full_df_yearly = full_complete_index.merge(
+                full_df_yearly, on=["year_introduced", "area_group"], how="left"
+            ).fillna({"unique_ids": 0})
+
+            full_df_yearly = full_df_yearly.sort_values(
+                ["area_group", "year_introduced"]
+            )
+            full_df_yearly["cumulative_policues"] = full_df_yearly.groupby(
+                "area_group"
+            )["unique_ids"].cumsum()
+
+            # Calculate total cumulative across ALL groups for each year
+            # Then take the max across all years
+            yearly_totals_full = full_df_yearly.groupby("year_introduced")[
+                "cumulative_policues"
+            ].sum()
+            N_cumulative_full = int(yearly_totals_full.max())
+        else:
+            # If full_df has no valid data, use filtered max
+            N_cumulative_full = int(max_cumulative_filtered)
+    else:
+        # If no full_df provided, use filtered max
+        N_cumulative_full = int(max_cumulative_filtered)
+
+    # Calculate y-axis max based on the logic:
+    # If filtered max < (N/5 rounded), then y_max = (N/3 rounded), else y_max = N
+    threshold = round(N_cumulative_full / 5)
+    if max_cumulative_filtered < threshold:
+        y_max = round(N_cumulative_full / 3)
+    else:
+        y_max = N_cumulative_full
+
+    # Ensure y_max is at least max_cumulative_filtered to show all data
+    y_max = max(int(y_max), int(max_cumulative_filtered))
+
+    # Set y-axis range with no decimals
+    fig.update_yaxes(
+        range=[0, y_max],
+        tickformat="d",  # Format as integer (no decimals)
+    )
 
     return fig

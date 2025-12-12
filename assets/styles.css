@@ -949,3 +949,46 @@ a[id$="-section"] {
         margin-left: 320px !important;
     }
 }
+
+/* Style disabled checklist items (for instrument and objective filters) */
+/* Dash Checklist typically wraps items in labels, so target labels containing disabled checkboxes */
+/* Modern browsers: use :has() selector */
+#gp_instrument.dash-checklist label:has(input[type="checkbox"]:disabled),
+#gp_objective.dash-checklist label:has(input[type="checkbox"]:disabled),
+#gp_instrument label:has(input[type="checkbox"]:disabled),
+#gp_objective label:has(input[type="checkbox"]:disabled) {
+    color: #999 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Fallback for older browsers: target labels that are siblings of disabled checkboxes */
+#gp_instrument input[type="checkbox"]:disabled + label,
+#gp_instrument input[type="checkbox"]:disabled ~ label,
+#gp_objective input[type="checkbox"]:disabled + label,
+#gp_objective input[type="checkbox"]:disabled ~ label {
+    color: #999 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* If items are wrapped in divs (using :has() for modern browsers) */
+#gp_instrument > div:has(input[type="checkbox"]:disabled),
+#gp_objective > div:has(input[type="checkbox"]:disabled) {
+    color: #999 !important;
+    opacity: 0.6;
+}
+
+#gp_instrument > div:has(input[type="checkbox"]:disabled) label,
+#gp_objective > div:has(input[type="checkbox"]:disabled) label {
+    color: #999 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Style the disabled checkbox itself */
+#gp_instrument input[type="checkbox"]:disabled,
+#gp_objective input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

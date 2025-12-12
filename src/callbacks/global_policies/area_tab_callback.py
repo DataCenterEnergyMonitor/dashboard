@@ -29,6 +29,66 @@ def get_multi_value_options(df, column):
     return [{"label": val, "value": val} for val in sorted(all_values) if val]
 
 
+def _get_instrument_options_with_disabled(full_df, filtered_df):
+    """Get all instrument options with disabled state for items not in filtered data"""
+    # Get all possible instrument values from full dataset (where has_instrument is True)
+    full_has_instrument_true = (
+        (full_df["has_instrument"] == True)
+        | (full_df["has_instrument"] == 1)
+        | (full_df["has_instrument"].astype(str).str.upper().isin(["YES", "TRUE", "1"]))
+    )
+    all_instruments = set(
+        full_df[full_has_instrument_true]["instrument"].dropna().unique()
+    )
+
+    # Get available instrument values from filtered dataset
+    available_instruments = set(filtered_df["instrument"].dropna().unique())
+
+    # Create options with disabled state
+    options = []
+    for val in sorted(all_instruments):
+        if val and str(val).strip():
+            options.append(
+                {
+                    "label": str(val),
+                    "value": val,
+                    "disabled": val
+                    not in available_instruments,  # Disable if not available
+                }
+            )
+    return options
+
+
+def _get_objective_options_with_disabled(full_df, filtered_df):
+    """Get all objective options with disabled state for items not in filtered data"""
+    # Get all possible objective values from full dataset (where has_objective is True)
+    full_has_objective_true = (
+        (full_df["has_objective"] == True)
+        | (full_df["has_objective"] == 1)
+        | (full_df["has_objective"].astype(str).str.upper().isin(["YES", "TRUE", "1"]))
+    )
+    all_objectives = set(
+        full_df[full_has_objective_true]["objective"].dropna().unique()
+    )
+
+    # Get available objective values from filtered dataset
+    available_objectives = set(filtered_df["objective"].dropna().unique())
+
+    # Create options with disabled state
+    options = []
+    for val in sorted(all_objectives):
+        if val and str(val).strip():
+            options.append(
+                {
+                    "label": str(val),
+                    "value": val,
+                    "disabled": val
+                    not in available_objectives,  # Disable if not available
+                }
+            )
+    return options
+
+
 def filter_data(
     df,
     gp_jurisdiction_level,
@@ -130,7 +190,7 @@ def filter_data(
 
 
 def register_global_policies_area_callbacks(app, df):
-    # Update all filters
+    # Update all filters and handle clearing
     @app.callback(
         [
             Output("gp_jurisdiction_level", "options"),
@@ -143,6 +203,18 @@ def register_global_policies_area_callbacks(app, df):
             Output("gp_status", "options"),
             Output("gp_instrument", "style"),
             Output("gp_objective", "style"),
+            Output("gp_instrument", "options"),  # Change to options to support disabled
+            Output("gp_objective", "options"),  # Change to options to support disabled
+            Output("gp_instrument", "value"),  # Clear incompatible values
+            Output("gp_objective", "value"),  # Clear incompatible values
+            Output("gp_jurisdiction_level", "value"),  # For clear button
+            Output("gp_region", "value"),  # For clear button
+            Output("gp_country", "value"),  # For clear button
+            Output("gp_state_province", "value"),  # For clear button
+            Output("gp_county", "value"),  # For clear button
+            Output("gp_city", "value"),  # For clear button
+            Output("gp_order_type", "value"),  # For clear button
+            Output("gp_status", "value"),  # For clear button
         ],
         [
             Input("gp_jurisdiction_level", "value"),
@@ -155,6 +227,7 @@ def register_global_policies_area_callbacks(app, df):
             Input("gp_status", "value"),
             Input("gp_instrument", "value"),
             Input("gp_objective", "value"),
+            Input("gp_clear-filters-btn", "n_clicks"),  # Add clear button as input
         ],
     )
     def update_filters(
@@ -168,7 +241,69 @@ def register_global_policies_area_callbacks(app, df):
         gp_status,
         gp_instrument,
         gp_objective,
+        clear_clicks,
     ):
+        ctx = dash.callback_context
+
+        # Handle clear button click
+        if ctx.triggered:
+            trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+            if trigger_id == "gp_clear-filters-btn":
+                # Return all options and cleared values
+                base_df = df.copy()
+                # For clear, show all instruments/objectives as enabled
+                # Create filtered dataframes with all instruments/objectives available
+                all_instrument_df = base_df[
+                    (base_df["has_instrument"] == True)
+                    | (base_df["has_instrument"] == 1)
+                    | (
+                        base_df["has_instrument"]
+                        .astype(str)
+                        .str.upper()
+                        .isin(["YES", "TRUE", "1"])
+                    )
+                ]
+                all_objective_df = base_df[
+                    (base_df["has_objective"] == True)
+                    | (base_df["has_objective"] == 1)
+                    | (
+                        base_df["has_objective"]
+                        .astype(str)
+                        .str.upper()
+                        .isin(["YES", "TRUE", "1"])
+                    )
+                ]
+                return (
+                    [
+                        {"label": str(val), "value": val}
+                        for val in sorted(
+                            base_df["jurisdiction_level"].dropna().unique()
+                        )
+                    ],
+                    get_multi_value_options(base_df, "region"),
+                    get_multi_value_options(base_df, "country"),
+                    get_multi_value_options(base_df, "state_province"),
+                    get_multi_value_options(base_df, "county"),
+                    get_multi_value_options(base_df, "city"),
+                    get_multi_value_options(base_df, "order_type"),
+                    get_multi_value_options(base_df, "status"),
+                    {},
+                    {},
+                    # Get all instrument/objective options (all enabled when cleared)
+                    _get_instrument_options_with_disabled(df, all_instrument_df),
+                    _get_objective_options_with_disabled(df, all_objective_df),
+                    [],  # Clear instrument
+                    [],  # Clear objective
+                    None,  # Clear jurisdiction_level
+                    None,  # Clear region
+                    None,  # Clear country
+                    None,  # Clear state_province
+                    None,  # Clear county
+                    None,  # Clear city
+                    None,  # Clear order_type
+                    None,  # Clear status
+                )
+
         # Start with full data for each filter's options
         base_df = df.copy()
 
@@ -271,11 +406,20 @@ def register_global_policies_area_callbacks(app, df):
             )
         )
         instrument_df = instrument_df[has_instrument_true]
-        # Get unique instrument values (not using get_multi_value_options since these are single values)
-        gp_instrument_opts = [
-            {"label": str(val), "value": val}
-            for val in sorted(instrument_df["instrument"].dropna().unique())
-        ]
+        # Get unique instrument values that are valid for current filters
+        valid_instrument_values = set(instrument_df["instrument"].dropna().unique())
+
+        # Get all instrument options with disabled state
+        gp_instrument_opts = _get_instrument_options_with_disabled(df, instrument_df)
+
+        # Check if current instrument selections are still valid, clear if not
+        if gp_instrument:
+            # Filter to only keep valid selections
+            gp_instrument_value = [
+                v for v in gp_instrument if v in valid_instrument_values
+            ]
+        else:
+            gp_instrument_value = []
 
         objective_df = base_df.copy()
         # Apply jurisdiction level filter first
@@ -313,11 +457,20 @@ def register_global_policies_area_callbacks(app, df):
             )
         )
         objective_df = objective_df[has_objective_true]
-        # Get unique objective values (not using get_multi_value_options since these are single values)
-        gp_objective_opts = [
-            {"label": str(val), "value": val}
-            for val in sorted(objective_df["objective"].dropna().unique())
-        ]
+        # Get unique objective values that are valid for current filters
+        valid_objective_values = set(objective_df["objective"].dropna().unique())
+
+        # Get all objective options with disabled state
+        gp_objective_opts = _get_objective_options_with_disabled(df, objective_df)
+
+        # Check if current objective selections are still valid, clear if not
+        if gp_objective:
+            # Filter to only keep valid selections
+            gp_objective_value = [
+                v for v in gp_objective if v in valid_objective_values
+            ]
+        else:
+            gp_objective_value = []
 
         # Style outputs for instrument and objective (no special styling needed)
         gp_instrument_style = {}
@@ -334,41 +487,19 @@ def register_global_policies_area_callbacks(app, df):
             gp_status_opts,
             gp_instrument_style,
             gp_objective_style,
+            gp_instrument_opts,  # Return options with disabled state
+            gp_objective_opts,  # Return options with disabled state
+            gp_instrument_value,  # Return cleared/validated instrument values
+            gp_objective_value,  # Return cleared/validated objective values
+            dash.no_update,  # Don't change jurisdiction_level value
+            dash.no_update,  # Don't change region value
+            dash.no_update,  # Don't change country value
+            dash.no_update,  # Don't change state_province value
+            dash.no_update,  # Don't change county value
+            dash.no_update,  # Don't change city value
+            dash.no_update,  # Don't change order_type value
+            dash.no_update,  # Don't change status value
         )
-
-    # callback to handle Clear All button
-    @app.callback(
-        [
-            Output("gp_jurisdiction_level", "value"),
-            Output("gp_region", "value"),
-            Output("gp_country", "value"),
-            Output("gp_state_province", "value"),
-            Output("gp_county", "value"),
-            Output("gp_city", "value"),
-            Output("gp_order_type", "value"),
-            Output("gp_status", "value"),
-            Output("gp_instrument", "value"),
-            Output("gp_objective", "value"),
-        ],
-        [Input("gp_clear-filters-btn", "n_clicks")],
-        prevent_initial_call=True,
-    )
-    def clear_all_filters(clear_clicks):
-        if clear_clicks:
-            # Clear all filter values
-            return (
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                [],
-                [],
-            )
-        return dash.no_update
 
     # Update chart
     @app.callback(
@@ -462,7 +593,7 @@ def register_global_policies_area_callbacks(app, df):
 
         # Create chart component using create_chart_row
         chart_id = "gp-stacked-area-chart"
-        title = "Cumulative Policies Across Jurisdictions Over Time"
+        title = "Cumulative Number of Policies Across Jurisdictions Over Time"
         expand_id = "expand-gp-stacked-area"
         filename = "global_policies_stacked_area"
 
@@ -501,7 +632,7 @@ def register_global_policies_area_callbacks(app, df):
 
         return (
             not is_open,
-            "Cumulative Policies Across Jurisdictions Over Time - Expanded View",
+            "Cumulative Number of Policies Across Jurisdictions Over Time - Expanded View",
             gp_stacked_area_fig or {},
         )
 
