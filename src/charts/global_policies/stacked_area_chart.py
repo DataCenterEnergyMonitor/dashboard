@@ -118,7 +118,7 @@ def create_global_policies_stacked_area_plot(
     df_yearly = df_yearly.sort_values(["area_group", "year_introduced"])
 
     # Calculate cumulative sum AFTER sorting (so it accumulates correctly across years)
-    df_yearly["cumulative_policues"] = df_yearly.groupby("area_group")[
+    df_yearly["cumulative_policies"] = df_yearly.groupby("area_group")[
         "unique_ids"
     ].cumsum()
 
@@ -141,7 +141,7 @@ def create_global_policies_stacked_area_plot(
                 df_yearly["year_introduced"] == baseline_year
             )
             if baseline_mask.any():
-                df_yearly.loc[baseline_mask, "cumulative_policues"] = 0
+                df_yearly.loc[baseline_mask, "cumulative_policies"] = 0
                 df_yearly.loc[baseline_mask, "unique_ids"] = 0
 
             # Add current year with same cumulative as data year (if current year > data year)
@@ -151,7 +151,7 @@ def create_global_policies_stacked_area_plot(
                 )
                 if data_year_mask.any():
                     cumulative_value = df_yearly.loc[
-                        data_year_mask, "cumulative_policues"
+                        data_year_mask, "cumulative_policies"
                     ].iloc[0]
                     # Check if current year already exists, if not add it
                     current_year_mask = (df_yearly["area_group"] == area_group) & (
@@ -164,7 +164,7 @@ def create_global_policies_stacked_area_plot(
                                 "year_introduced": [current_year],
                                 "area_group": [area_group],
                                 "unique_ids": [0],
-                                "cumulative_policues": [cumulative_value],
+                                "cumulative_policies": [cumulative_value],
                             }
                         )
                         df_yearly = pd.concat([df_yearly, new_row], ignore_index=True)
@@ -173,14 +173,14 @@ def create_global_policies_stacked_area_plot(
                             all_years.append(current_year)
                             all_years = sorted(all_years)
                     else:
-                        df_yearly.loc[current_year_mask, "cumulative_policues"] = (
+                        df_yearly.loc[current_year_mask, "cumulative_policies"] = (
                             cumulative_value
                         )
                         df_yearly.loc[current_year_mask, "unique_ids"] = 0
 
     # Get final cumulative count for each area_group (for legend sorting and labels)
     final_counts = (
-        df_yearly.groupby("area_group")["cumulative_policues"].max().reset_index()
+        df_yearly.groupby("area_group")["cumulative_policies"].max().reset_index()
     )
     final_counts.columns = ["area_group", "final_count"]
 
@@ -278,12 +278,17 @@ def create_global_policies_stacked_area_plot(
     fig = px.area(
         df_yearly,
         x="year_introduced",
-        y="cumulative_policues",
+        y="cumulative_policies",
         color="area_group_label",
         line_group="area_group_label",
         color_discrete_map=color_map_labeled,
         custom_data=["unique_ids"],  # Add unique_ids for hover display
         template="plotly_white",
+        labels={
+            "cumulative_policies": "Number of Policies",
+            "year_introduced": "Year Introduced",
+            "area_group_label": "Geographic Scope - Jurisdiction Level (Policy Count)"
+        },
         # facet_col="jurisdiction_level",  # optional — separate panels for national/city
         # title="Cumulative Number of Policies Over Time",
     )
@@ -327,7 +332,7 @@ def create_global_policies_stacked_area_plot(
     # Get max cumulative policies from filtered data (sum across all groups per year, then max)
     # For each year, sum cumulative policies across all area_groups
     yearly_totals_filtered = df_yearly.groupby("year_introduced")[
-        "cumulative_policues"
+        "cumulative_policies"
     ].sum()
     max_cumulative_filtered = yearly_totals_filtered.max()
 
@@ -404,14 +409,14 @@ def create_global_policies_stacked_area_plot(
             full_df_yearly = full_df_yearly.sort_values(
                 ["area_group", "year_introduced"]
             )
-            full_df_yearly["cumulative_policues"] = full_df_yearly.groupby(
+            full_df_yearly["cumulative_policies"] = full_df_yearly.groupby(
                 "area_group"
             )["unique_ids"].cumsum()
 
             # Calculate total cumulative across ALL groups for each year
             # Then take the max across all years
             yearly_totals_full = full_df_yearly.groupby("year_introduced")[
-                "cumulative_policues"
+                "cumulative_policies"
             ].sum()
             N_cumulative_full = int(yearly_totals_full.max())
         else:

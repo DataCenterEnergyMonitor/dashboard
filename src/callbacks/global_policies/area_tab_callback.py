@@ -2,6 +2,8 @@ import dash
 from pathlib import Path
 from dash import Dash, Input, Output, State, callback, dcc, html, callback_context
 import pandas as pd
+import json
+from datetime import datetime
 from charts.global_policies.stacked_area_chart import (
     create_global_policies_stacked_area_plot,
 )
@@ -27,6 +29,45 @@ def get_multi_value_options(df, column):
         values = [v.strip() for v in str(value_str).split(",")]
         all_values.update(values)
     return [{"label": val, "value": val} for val in sorted(all_values) if val]
+
+
+def get_global_policies_last_modified_date():
+    """Get the last modified date for DCEWM-GlobalPolicies.xlsx from metadata.json"""
+    try:
+        # Get the project root directory
+        # Path(__file__) = src/callbacks/global_policies/area_tab_callback.py
+        # .parent = src/callbacks/global_policies/
+        # .parent = src/callbacks/
+        # .parent = src/
+        # .parent = dashboard/ (project root)
+        root_dir = Path(__file__).parent.parent.parent.parent
+        json_path = root_dir / "data" / "metadata.json"
+
+        if not json_path.exists():
+            print(f"Warning: Metadata file not found at {json_path.absolute()}")
+            return None
+
+        with open(json_path, "r") as f:
+            metadata = json.load(f)
+
+        # Find the GlobalPolicies file entry
+        for file_info in metadata.get("files", []):
+            if file_info.get("source_file") == "DCEWM-GlobalPolicies.xlsx":
+                last_modified = file_info.get("last_modified")
+                if last_modified:
+                    # Parse ISO format date and format as "Month Day, Year"
+                    dt = datetime.fromisoformat(last_modified)
+                    return dt.strftime("%B %d, %Y")
+
+        print("Warning: DCEWM-GlobalPolicies.xlsx not found in metadata")
+        return None
+    except (FileNotFoundError, KeyError, ValueError) as e:
+        # If metadata file doesn't exist or parsing fails, return None
+        print(f"Warning: Could not load last modified date: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return None
 
 
 def _get_instrument_options_with_disabled(full_df, filtered_df):
@@ -593,7 +634,29 @@ def register_global_policies_area_callbacks(app, df):
 
         # Create chart component using create_chart_row
         chart_id = "gp-stacked-area-chart"
-        title = "Cumulative Number of Policies Across Jurisdictions Over Time"
+
+        # Get last modified date and add to title with styling
+        last_modified_date = get_global_policies_last_modified_date()
+        if last_modified_date:
+            # Create HTML title with date on new line and smaller font
+            title = html.Div(
+                [
+                    html.Div(
+                        "Cumulative Number of Policies Across Jurisdictions Over Time"
+                    ),
+                    html.Div(
+                        f"(as of {last_modified_date})",
+                        style={
+                            "fontSize": "0.85em",
+                            "color": "#666",
+                            "marginTop": "4px",
+                        },
+                    ),
+                ]
+            )
+        else:
+            title = "Cumulative Number of Policies Across Jurisdictions Over Time"
+
         expand_id = "expand-gp-stacked-area"
         filename = "global_policies_stacked_area"
 
@@ -630,9 +693,31 @@ def register_global_policies_area_callbacks(app, df):
         if not expand_clicks:
             raise dash.exceptions.PreventUpdate
 
+        # Get last modified date for modal title
+        last_modified_date = get_global_policies_last_modified_date()
+        if last_modified_date:
+            # Create HTML modal title with date on new line and smaller font
+            modal_title = html.Div(
+                [
+                    html.Div(
+                        "Cumulative Number of Policies Across Jurisdictions Over Time - Expanded View"
+                    ),
+                    html.Div(
+                        f"(as of {last_modified_date})",
+                        style={
+                            "fontSize": "0.85em",
+                            "color": "#666",
+                            "marginTop": "4px",
+                        },
+                    ),
+                ]
+            )
+        else:
+            modal_title = "Cumulative Number of Policies Across Jurisdictions Over Time - Expanded View"
+
         return (
             not is_open,
-            "Cumulative Number of Policies Across Jurisdictions Over Time - Expanded View",
+            modal_title,
             gp_stacked_area_fig or {},
         )
 
