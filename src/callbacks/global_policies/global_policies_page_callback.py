@@ -2,7 +2,7 @@ from dash import Input, Output, State, callback_context, html
 
 # import the tab creation functions
 from components.tabs.global_policies.stacked_area_tab import create_stacked_area_tab
-from components.tabs.global_policies.heatmap_tab import create_heatmap_tab
+from components.tabs.global_policies.policy_matrix_tab import create_heatmap_tab
 from components.tabs.global_policies.choropleth_map_tab import create_choropleth_map_tab
 
 # Track if callbacks have been registered to prevent duplicates

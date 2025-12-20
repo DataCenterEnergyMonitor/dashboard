@@ -436,7 +436,7 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                     pue_wue_filtered_df["wue_value"].notna()
                 ]
 
-                # Apply company filter to SECOND dataframe
+                # Apply company filter to second dataframe
                 if company:
                     trends_filtered_df = pue_wue_companies_df[
                         pue_wue_companies_df["company_name"].isin(company)
@@ -598,7 +598,31 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                 "Read Me",
             ],
             internal_prefix="_internal_",
-            # skip_rows=1,
+            new_column_names = {
+                "company_name":"Company name",
+                "pue_value":"PUE value",
+                "time_period_category":"Time period category",
+                "time_period_value":"Time period value",
+                "measurement_category":"Measurement category",
+                "pue_type":"PUE type",
+                "facility_scope_evident":"Facility scope evident?",
+                "facility_scope":"Facility scope",
+                "fleet_wide_reporting_basis":"Fleet-wide reporting basis",
+                "geographical_scope_stated":"Geographical scope stated?",
+                "verbatim_geographical_scope":"Verbatim geographical scope",
+                "city":"City",
+                "county":"County",
+                "state_province":"State/Province",
+                "country":"Country",
+                "region":"Region",
+                "assigned_climate_zones":"Assigned climate zone(s)",
+                "default_climate_zones":"Default climate zone(s)",
+                "assigned_cooling_technologies":"Assigned cooling technologies",
+                "pue_self_reported":"Is PUE self-reported?",
+                "source_type":"Source type",
+                "url":"URL"
+            },
+            skip_rows=1,
             n_clicks=n_clicks,
         )
 
@@ -636,8 +660,34 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                 "WUE",
                 "Read Me",
             ],
+            new_column_names={
+                "company_name":"Company name",
+                "wue_value":"WUE value",
+                "wue_pue_matching":"WUE & PUE Matching? ",
+                "time_period_category":"Time period category",
+                "time_period_value":"Time period value",
+                "measurement_category":"Measurement category",
+                "category_1_water_inputs":"Category 1 water input(s)",
+                "wue_type":"WUE type",
+                "facility_scope_evident":"Facility scope evident?",
+                "facility_scope":"Facility scope",
+                "geographical_scope_stated":"Geographical scope stated?",
+                "verbatim_geographical_scope":"Verbatim geographical scope",
+                "city":"City",
+                "county":"County",
+                "state_province":"State/Province",
+                "country":"Country",
+                "region":"Region",
+                "assigned_climate_zones":"Assigned climate zone(s)",
+                "default_climate_zones":"Default climate zone(s)",
+                "assigned_cooling_technologies":"Assigned cooling technologies",
+                "wue_self_reported":"Is WUE self-reported?",
+                "source_type":"Source type",
+                "apa_citation":"APA citation",
+                "url":"URL"
+            },
             internal_prefix="_internal_",
-            # skip_rows=1,
+            skip_rows=1,
             n_clicks=n_clicks,
         )
 
@@ -663,7 +713,31 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                 "Read Me",
             ],
             internal_prefix="_internal_",
-            # skip_rows=1,
+            new_column_names = {
+                "company_name":"Company name",
+                "pue_value":"PUE value",
+                "time_period_category":"Time period category",
+                "time_period_value":"Time period value",
+                "measurement_category":"Measurement category",
+                "pue_type":"PUE type",
+                "facility_scope_evident":"Facility scope evident?",
+                "facility_scope":"Facility scope",
+                "fleet_wide_reporting_basis":"Fleet-wide reporting basis",
+                "geographical_scope_stated":"Geographical scope stated?",
+                "verbatim_geographical_scope":"Verbatim geographical scope",
+                "city":"City",
+                "county":"County",
+                "state_province":"State/Province",
+                "country":"Country",
+                "region":"Region",
+                "assigned_climate_zones":"Assigned climate zone(s)",
+                "default_climate_zones":"Default climate zone(s)",
+                "assigned_cooling_technologies":"Assigned cooling technologies",
+                "pue_self_reported":"Is PUE self-reported?",
+                "source_type":"Source type",
+                "url":"URL"
+            },
+            skip_rows=1,
             n_clicks=n_clicks,
         )
 

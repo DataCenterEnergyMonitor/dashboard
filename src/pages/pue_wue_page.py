@@ -724,11 +724,11 @@ def create_chart_row(
     )
 
 
-def create_pue_wue_page(app, pue_wue_df):
+def create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_pue_wue_filters(pue_wue_df),
+            create_pue_wue_filters(df1=pue_wue_df, df2=pue_wue_companies_df),
             html.Div(
                 [
                     # Sticky bookmark bar

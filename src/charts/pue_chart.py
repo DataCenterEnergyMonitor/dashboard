@@ -105,7 +105,7 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
     # Define brand colors for specific companies
     brand_colors = {
         "Google": "#F4B400",  # Google Yellow
-        "Microsoft": "#008AD7",  # Microsoft Gray
+        "Microsoft Azure": "#008AD7",  # Microsoft Gray
         "Meta (Facebook)": "#1877F2",  # Meta Blue
         "Amazon/AWS": "#FF9900",  # Amazon Orange
         "Oracle": "#C74634",  # Oracle Red
@@ -140,6 +140,8 @@ def create_pue_scatter_plot(filtered_df, full_df=None, filters_applied=False):
         "China Telecom": "#E60012",  # China Telecom Red
         "China Unicom": "#E60012",  # China Unicom Red
         "VISA": "#1A1F71",  # VISA Blue
+        "Z-Holding/Yahoo":'#410297', # Yahoo Purple
+        "LY Corporation": '#410297', # Yahoo Purple
     }
 
     palette = px.colors.qualitative.Bold

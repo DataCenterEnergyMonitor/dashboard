@@ -4,7 +4,7 @@ from dash import Dash, Input, Output, State, callback, dcc, html, callback_conte
 import pandas as pd
 import json
 from datetime import datetime
-from charts.global_policies.stacked_area_chart import (
+from charts.global_policies.gp_stacked_area_chart import (
     create_global_policies_stacked_area_plot,
 )
 from components.excel_export import create_filtered_excel_download

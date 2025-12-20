@@ -1,6 +1,6 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.global_policies.area_tab_filters import (
+from components.filters.global_policies.gp_area_tab_filters import (
     create_global_policies_area_tab_filters,
 )
 

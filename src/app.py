@@ -77,7 +77,7 @@ from callbacks.energy_projections_page_callback import (
 from callbacks.global_policies.global_policies_page_callback import (
     register_global_policies_page_callbacks,
 )
-from callbacks.global_policies.area_tab_callback import (
+from callbacks.global_policies.gp_area_tab_callback import (
     register_global_policies_area_callbacks
 )
 from components.kpi_data_cards import create_kpi_cards
@@ -262,7 +262,7 @@ def create_app():
         # elif pathname == "/wue":
         #     return create_wue_page(app, wue_df)
         if pathname == "/pue_wue":
-            return create_pue_wue_page(app, pue_wue_df)
+            return create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df)
         elif pathname == "/pue-methodology":
             return create_pue_methodology_page()
         elif pathname == "/wue-methodology":
