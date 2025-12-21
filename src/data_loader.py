@@ -41,7 +41,7 @@ def load_pue_data():
     # Go up one level and into data directory
     data_path = current_dir.parent / "data" / "DCEWM-PUEDataset.xlsx"
 
-    pue_df = pd.read_excel(data_path, sheet_name="PUE", index_col=None)
+    pue_df = pd.read_excel(data_path, sheet_name="PUE", index_col=None, skiprows=1)
     pue_df = pue_df.clean_names()
 
     # Clean string columns
@@ -61,11 +61,11 @@ def load_pue_data():
     pue_df["metric"] = "pue"
     pue_df.rename(columns={"pue_type": "metric_type"}, inplace=True)
     pue_df.rename(columns={"pue_value": "metric_value"}, inplace=True)
-    pue_df.rename(columns={'facility_scope_evident_': 'facility_scope_evident'}, inplace=True)
-    pue_df.rename(columns={'geographical_scope_stated_': 'geographical_scope_stated'}, inplace=True)
-    pue_df.rename(columns={'assigned_climate_zone_s_': 'assigned_climate_zones'}, inplace=True)
-    pue_df.rename(columns={'default_climate_zone_s_': 'default_climate_zones'}, inplace=True)
-    pue_df.rename(columns={'is_pue_self_reported_': 'self_reported'}, inplace=True)
+    # pue_df.rename(columns={'facility_scope_evident_': 'facility_scope_evident'}, inplace=True)
+    # pue_df.rename(columns={'geographical_scope_stated_': 'geographical_scope_stated'}, inplace=True)
+    # pue_df.rename(columns={'assigned_climate_zone_s_': 'assigned_climate_zones'}, inplace=True)
+    # pue_df.rename(columns={'default_climate_zone_s_': 'default_climate_zones'}, inplace=True)
+    # pue_df.rename(columns={'is_pue_self_reported_': 'self_reported'}, inplace=True)
 
     return pue_df
 
@@ -76,7 +76,7 @@ def load_wue_data():
     # Go up one level and into data directory
     data_path = current_dir.parent / "data" / "DCEWM-WUEDataset.xlsx"
 
-    wue_df = pd.read_excel(data_path, sheet_name="WUE", index_col=None)
+    wue_df = pd.read_excel(data_path, sheet_name="WUE", index_col=None, skiprows=1)
     wue_df = wue_df.clean_names()
 
     # Clean string columns
@@ -98,12 +98,12 @@ def load_wue_data():
     # clean column names
     wue_df.rename(
         columns={
-            "category_1_water_input_s_": "category_1_water_inputs",
-            "facility_scope_evident_": "facility_scope_evident",
-            "geographical_scope_stated_": "geographical_scope_stated",
-            "assigned_climate_zone_s_": "assigned_climate_zones",
-            "default_climate_zone_s_": "default_climate_zones",
-            "is_wue_self_reported_": "self_reported",
+            # "category_1_water_input_s_": "category_1_water_inputs",
+            # "facility_scope_evident_": "facility_scope_evident",
+            # "geographical_scope_stated_": "geographical_scope_stated",
+            # "assigned_climate_zone_s_": "assigned_climate_zones",
+            # "default_climate_zone_s_": "default_climate_zones",
+            # "is_wue_self_reported_": "self_reported",
             "wue_type": "metric_type",
             "wue_value": "metric_value"
         },
@@ -196,44 +196,43 @@ def create_pue_wue_data(pue_df, wue_df):
 
 def fill_inactive_company_years(df):
     """
-    For companies marked as 'company Inactive', fill all subsequent years 
-    with the same status.
+    For companies marked as 'company Inactive', fill all subsequent years
     """
-    # Get all unique companies and years
-    all_companies = df['company'].unique()
     all_years = sorted(df['year'].unique())
-    
     filled_rows = []
     
-    for company in all_companies:
-        company_data = df[df['company'] == company].sort_values('year')
+    for company, company_data in df.groupby('company'):
         
-        # Find the year when company became inactive
+        # find the rows where a company became inactive
         inactive_rows = company_data[company_data['reports_pue'] == 'company Inactive']
         
         if not inactive_rows.empty:
-            # Get the first year of inactivity
-            first_inactive_year = inactive_rows['year'].min()
+            # extract the metadata from the first recorded inactive year
+            first_row = inactive_rows.sort_values('year').iloc[0]
+            first_inactive_year = first_row['year']
             
-            # Fill all years after that
+            successor = first_row.get('successor_entity', "")
+            status_date = first_row.get('status_effective_date', "")
+            if status_date and hasattr(status_date, 'strftime'):
+                status_date = status_date.strftime('%Y-%m-%d')
+            
+            # create a set of years that already have data for this company
+            existing_years = set(company_data['year'])
+            
+            # append the rows with inactive company details following the row with the first inactive year
             for year in all_years:
-                if year >= first_inactive_year:
-                    # Check if this year already exists
-                    existing = company_data[company_data['year'] == year]
-                    
-                    if existing.empty:
-                        # Create new row for this year
-                        new_row = {
-                            'company': company,
-                            'year': year,
-                            'reports_pue': 'company Inactive',
-                        }
-                        filled_rows.append(new_row)
+                if year > first_inactive_year and year not in existing_years:
+                    filled_rows.append({
+                        'company': company,
+                        'year': year,
+                        'reports_pue': 'company Inactive',
+                        'reports_wue': 'company Inactive',
+                        'successor_entity': successor,
+                        'status_effective_date': status_date,
+                    })
     
-    # Append new rows to original dataframe
     if filled_rows:
-        filled_df = pd.concat([df, pd.DataFrame(filled_rows)], ignore_index=True)
-        return filled_df
+        return pd.concat([df, pd.DataFrame(filled_rows)], ignore_index=True)
     
     return df
 
@@ -310,12 +309,29 @@ def load_pue_wue_companies_data():
     pue_wue_reporting_df.loc[pue_wue_reporting_df['year'] < pue_wue_reporting_df['year_founded'], ['reports_pue', 'reports_wue']] = 'company not established'
 
     # handle Pending Data status
-    current_date = datetime.today()
-    current_year = current_date.year
-    pue_wue_reporting_df.loc[
-        (pue_wue_reporting_df['year'] == current_year) &
-        (pue_wue_reporting_df[['entity_status']].eq(
-            'no reporting evident').all(axis=1)), ['reports_pue', 'reports_wue']] = 'not yet released'
+    # current_date = datetime.today()
+    # current_year = current_date.year
+    # pue_wue_reporting_df.loc[
+    #     (pue_wue_reporting_df['year'] == current_year) &
+    #     (pue_wue_reporting_df[['entity_status']].eq(
+    #         'no reporting evident').all(axis=1)), ['reports_pue', 'reports_wue']] = 'not yet released'
+    cols_to_check = ['reports_pue', 'reports_wue']
+    current_year = datetime.today().year
+
+    # iterate and update each column separately
+    for col in cols_to_check:
+        mask = (
+            (pue_wue_reporting_df['year'] == current_year) & 
+            (
+                pue_wue_reporting_df[col].isna() | 
+                pue_wue_reporting_df[col].eq('') | 
+                pue_wue_reporting_df[col].eq('no reporting evident') |
+                pue_wue_reporting_df[col].eq('not yet released')
+            )
+        )
+        
+        # Apply update to this column only
+        pue_wue_reporting_df.loc[mask, col] = 'pending'
     
     pue_wue_reporting_df = fill_inactive_company_years(pue_wue_reporting_df)
     pue_wue_reporting_df.rename(columns={"company": "company_name"}, inplace=True)
@@ -445,6 +461,125 @@ def load_energyprojections_data():
 
     return df
 
+def load_global_policies_data():
+    # Get the current file's directory (src folder)
+    current_dir = Path(__file__).parent
+    # Go up one level and into data directory
+    data_path = current_dir.parent / "data" / "DCEWM-GlobalPolicies.xlsx"
+
+    df = pd.read_excel(data_path, sheet_name="Policy_Eval", index_col=None, skiprows=2)
+
+    df = df[
+        [
+            "policy_id",
+            "version",
+            "authors",
+            "offices_held",
+            "date_introduced",
+            "date_of_amendment",
+            "date_enacted",
+            "date_killed",
+            "date_in_effect",
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "date_of_status",
+            "Measurement and Reporting",
+            "Procurement standard",
+            "Performance standard",
+            "Research, demonstration, and development",
+            "Capacity building",
+            "Rate structuring",
+            "Development incentives",
+            "Development restrictions",
+            "Other",
+            "Energy",
+            "Power",
+            "Water",
+            "Emissions",
+            "Other Environemental",
+            "Taxes",
+            "Permits",
+            "Employement",
+            "Communities",
+        ]
+    ]
+
+    # pivot longer all instrument and objective columns
+    instrument_columns = [
+            "Measurement and Reporting",
+            "Procurement standard",
+            "Performance standard",
+            "Research, demonstration, and development",
+            "Capacity building",
+            "Rate structuring",
+            "Development incentives",
+            "Development restrictions",
+            "Other",
+    ]
+    transposed_df = df.melt(
+        id_vars=[col for col in df.columns if col not in instrument_columns],
+        value_vars=instrument_columns,
+        var_name="instrument",
+        value_name="has_instrument",
+    )
+
+    objective_columns = [
+            "Energy",
+            "Power",
+            "Water",
+            "Emissions",
+            "Other Environemental",
+            "Taxes",
+            "Permits",
+            "Employement",
+            "Communities",
+    ]
+    transposed_df = transposed_df.melt(
+        id_vars=[col for col in transposed_df.columns if col not in objective_columns],
+        value_vars=objective_columns,
+        var_name="objective",
+        value_name="has_objective",
+    )
+
+    clean_df = transposed_df.drop_duplicates()
+
+    # Extract year: check if numeric year (1900-2100) first, otherwise parse as datetime
+    def extract_year(date_col):
+        numeric = pd.to_numeric(date_col, errors="coerce")
+        year_mask = (numeric >= 1900) & (numeric <= 2100)
+        result = numeric.where(year_mask)
+        dt_years = pd.to_datetime(date_col, errors="coerce").dt.year
+        return result.fillna(dt_years)
+
+
+    # Convert to datetime: handle numeric years (1900-2100) or parse as datetime
+    def to_datetime(date_col):
+        numeric = pd.to_numeric(date_col, errors="coerce")
+        year_mask = (numeric >= 1900) & (numeric <= 2100)
+        year_dates = pd.to_datetime(numeric.astype(str), format="%Y", errors="coerce")
+        dt_dates = pd.to_datetime(date_col, errors="coerce")
+        return year_dates.where(year_mask).fillna(dt_dates)
+
+
+    # Extract year with fallback: date_introduced -> date_enacted -> date_in_effect
+    clean_df["year_introduced"] = extract_year(clean_df["date_introduced"])
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_enacted"]))
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_in_effect"]))
+
+    # Convert date_introduced to datetime with same fallback logic
+    clean_df["date_introduced"] = to_datetime(clean_df["date_introduced"])
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_enacted"]))
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_in_effect"]))
+
+    return clean_df
 
 def load_energyforecast_data():
     # Get the current file's directory (src folder)

@@ -831,6 +831,27 @@ button.accordion-button {
     border-color: transparent !important;
 }
 
+/* Bookmark tab button styling (for tab navigation) */
+.bookmark-tab-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 0.85rem;
+    margin: 0 5px;
+    height: 32px;
+    cursor: pointer;
+}
+
+.bookmark-tab-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    background-color: #c9d8e4 !important;
+}
+
 .bookmark-bar {
     left: 320px;            /* ✅ Start after sidebar */
     right: 0;               /* ✅ Extend to right edge */
@@ -840,6 +861,13 @@ button.accordion-button {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
+}
+
+/* Ensure global policies tabs are always visible */
+#global-policies-tabs-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Smooth scrolling */
@@ -920,4 +948,47 @@ a[id$="-section"] {
     .responsive-content {
         margin-left: 320px !important;
     }
+}
+
+/* Style disabled checklist items (for instrument and objective filters) */
+/* Dash Checklist typically wraps items in labels, so target labels containing disabled checkboxes */
+/* Modern browsers: use :has() selector */
+#gp_instrument.dash-checklist label:has(input[type="checkbox"]:disabled),
+#gp_objective.dash-checklist label:has(input[type="checkbox"]:disabled),
+#gp_instrument label:has(input[type="checkbox"]:disabled),
+#gp_objective label:has(input[type="checkbox"]:disabled) {
+    color: #999 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Fallback for older browsers: target labels that are siblings of disabled checkboxes */
+#gp_instrument input[type="checkbox"]:disabled + label,
+#gp_instrument input[type="checkbox"]:disabled ~ label,
+#gp_objective input[type="checkbox"]:disabled + label,
+#gp_objective input[type="checkbox"]:disabled ~ label {
+    color: #999 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* If items are wrapped in divs (using :has() for modern browsers) */
+#gp_instrument > div:has(input[type="checkbox"]:disabled),
+#gp_objective > div:has(input[type="checkbox"]:disabled) {
+    color: #999 !important;
+    opacity: 0.6;
+}
+
+#gp_instrument > div:has(input[type="checkbox"]:disabled) label,
+#gp_objective > div:has(input[type="checkbox"]:disabled) label {
+    color: #999 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Style the disabled checkbox itself */
+#gp_instrument input[type="checkbox"]:disabled,
+#gp_objective input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

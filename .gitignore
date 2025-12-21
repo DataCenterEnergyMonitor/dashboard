@@ -1,5 +1,7 @@
 *.ipynb
 src/*.ipynb
+*.ipynb_
+src/*.ipynb_
 data/
 .DS_Store
 ._.DS_Store
@@ -8,3 +10,4 @@ data/
 **/__pycache__/
 __pycache__/
 assets/static_pages/site_libs
+src/static_pages/_quarto_params.yml

@@ -9,7 +9,7 @@ REPORTING_SCOPE_COLORS = {
     "both fleet-wide and individual data center values": "#1A6210",
     "company not established": "#D9DDDC",
     "company Inactive": "#D9DDDC",
-    "not yet released": "#EBF4DF",
+    "pending": "#EBF4DF",
 }
 
 
@@ -133,15 +133,33 @@ def create_pue_wue_reporting_heatmap_plot(
                 if "company not established" in scopes:
                     value = 0.06
                     text = f"{company_name} ({year})<br>Company not established"
+                # elif "company Inactive" in scopes:
+                #     value = 0.01
+                #     text = f"{company_name} ({year})<br>Company inactive"
                 elif "company Inactive" in scopes:
                     value = 0.01
-                    text = f"{company_name} ({year})<br>Company inactive"
+                    
+                    inactive_row = year_data[year_data[reporting_column] == "company Inactive"]
+                    
+                    if not inactive_row.empty:
+                        row = inactive_row.iloc[0]
+                        successor_entity = row.get('successor_entity', "")
+                        status_effective_date = row.get('status_effective_date', "")
+                        
+                        if status_effective_date and hasattr(status_effective_date, 'strftime'):
+                            status_effective_date = status_effective_date.strftime('%Y-%m-%d')
+                            
+                        successor_info = f"<br>Reports under {successor_entity} as of {status_effective_date}" if successor_entity else ""
+                    else:
+                        successor_info = ""
+
+                    text = f"{company_name} ({year})<br>Company inactive{successor_info}"
                 elif "no reporting evident" in scopes:
                     value = 0.21
                     text = f"{company_name} ({year})<br>No reporting"
-                elif "not yet released" in scopes:
+                elif "pending" in scopes:
                     value = 0.35
-                    text = f"{company_name} ({year})<br>Not yet released"
+                    text = f"{company_name} ({year})<br>Pending"
                 elif "both fleet-wide and individual data center values" in scopes:
                     value = 0.95
                     text = f"{company_name} ({year})<br>Reporting: fleet-wide and individual data center values"
@@ -183,8 +201,8 @@ def create_pue_wue_reporting_heatmap_plot(
             [0.12, REPORTING_SCOPE_COLORS["company Inactive"]],
             [0.12, REPORTING_SCOPE_COLORS["no reporting evident"]],
             [0.30, REPORTING_SCOPE_COLORS["no reporting evident"]],
-            [0.30, REPORTING_SCOPE_COLORS["not yet released"]],
-            [0.40, REPORTING_SCOPE_COLORS["not yet released"]],
+            [0.30, REPORTING_SCOPE_COLORS["pending"]],
+            [0.40, REPORTING_SCOPE_COLORS["pending"]],
             [0.40, REPORTING_SCOPE_COLORS["individual data center values only"]],
             [0.70, REPORTING_SCOPE_COLORS["individual data center values only"]],
             [0.70, REPORTING_SCOPE_COLORS["fleet-wide values only"]],
@@ -219,7 +237,7 @@ def create_pue_wue_reporting_heatmap_plot(
         "Fleet vs Individual DC": REPORTING_SCOPE_COLORS[
             "both fleet-wide and individual data center values"
         ],
-        "Pending data submission": REPORTING_SCOPE_COLORS["not yet released"],
+        "Pending data submission": REPORTING_SCOPE_COLORS["pending"],
     }
 
     legend_traces = [

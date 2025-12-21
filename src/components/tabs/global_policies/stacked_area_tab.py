@@ -1,23 +1,15 @@
-import dash
-from dash import Input, Output, dcc, html
+from dash import dcc, html
 import dash_bootstrap_components as dbc
-from layouts.base_layout import create_base_layout
-from components.bookmark_bar import create_bookmark_bar
-from components.filters.energy_projections_filters import (
-    create_energy_projections_filters,
+from components.filters.global_policies.gp_area_tab_filters import (
+    create_global_policies_area_tab_filters,
 )
 
-
 # define bookmark sections
-sections = [
-    # {"id": "energy-projections", "title": "Energy Projections"},
-    # {"id": "power-projections", "title": "Power Projections"},
-]
+sections = []
 
 subnav_items = [
-    {"id": "pue-subnav", "title": "Methodology", "href": "/pue-methodology"},
-    # {"id": "wue-subnav", "title": "WUE", "href": "/wue-methodology"},
-    {"id": "wue-subnav", "title": "Dataset"},
+    # {"id": "pue-subnav", "title": "Methodology", "href": "/pue-methodology"},
+    # {"id": "wue-subnav", "title": "Dataset"},
 ]
 
 
@@ -88,7 +80,6 @@ def create_chart_row(
         "margin": {"l": 60, "r": 120, "t": 20, "b": 60},
         "height": None,
     }
-    # description_style = {"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px", "font-size": "0.8rem"}
 
     # if accordion_children:
     accordion_element = html.Div(
@@ -105,8 +96,6 @@ def create_chart_row(
             style={"width": "80%"},
         ),
     )
-    # else:
-    #     accordion_element = None
 
     return dbc.Row(
         [
@@ -176,7 +165,9 @@ def create_chart_row(
                                         id=chart_id,
                                         config=chart_config,
                                         style=graph_style,
-                                        figure=figure if figure is not None else {"layout": graph_layout},
+                                        figure=figure
+                                        if figure is not None
+                                        else {"layout": graph_layout},
                                     )
                                 ],
                                 style=card_body_style,
@@ -196,49 +187,23 @@ def create_chart_row(
     )
 
 
-def create_energy_projections_page(app, energy_projections_df):
+def create_stacked_area_tab(app, globalpolicies_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_energy_projections_filters(energy_projections_df),
+            create_global_policies_area_tab_filters(globalpolicies_df),
             html.Div(
                 [
-                    # Sticky bookmark bar
-                    # Desktop bookmark bar (hidden on mobile/tablet)
-                    html.Div(
-                        [
-                            create_bookmark_bar(
-                                sections,
-                                data_page_parent="energy_projections",
-                                subnav_items=None,
-                            )
-                        ],
-                        className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
-                        style={
-                            "position": "fixed",
-                            "top": "100px",
-                            "left": "320px",
-                            "right": "0",
-                            "zIndex": "1000",
-                            "backgroundColor": "white",
-                            "padding": "8px 20px",
-                            "height": "80px",
-                        },
-                    ),
-                    # Mobile bookmark bar (hidden on desktop)
+                    # Note: Bookmark bar removed - tabs are now handled at page level
+                    # Mobile navigation kept for mobile devices
                     html.Div(
                         [
                             # Simplified mobile navigation
                             dbc.Nav(
                                 [
                                     dbc.NavLink(
-                                        "Energy Projections",
-                                        href="#energy-projections-section",
-                                        className="px-2",
-                                    ),
-                                    dbc.NavLink(
-                                        "Power Projections",
-                                        href="#power-projections-section",
+                                        "Global Policies",
+                                        href="#global-policies-cumulative-trends-section",
                                         className="px-2",
                                     ),
                                 ],
@@ -262,71 +227,9 @@ def create_energy_projections_page(app, energy_projections_df):
                         },
                     ),
                     dbc.Container(
-                    #     [
-                    #         # Energy Projections (TWh) Chart
-                    #         html.Div(
-                    #             [
-                    #                 html.A(id="energy-projections-section"),
-                    #                 create_chart_row(
-                    #                     chart_id="energy-projections-line-chart",
-                    #                     title="Energy Demand Estimates & Projections (TWh)",
-                    #                     expand_id="expand-energy-projections",
-                    #                     accordion_children=[
-                    #                         dcc.Markdown(
-                    #                             """
-                    #                     Descriptions to be added...:
-                    #                     """
-                    #                         ),
-                    #                     ],
-                    #                     accordion_title=html.Span(
-                    #                         [
-                    #                             "What Do Energy Projections Tell Us?",
-                    #                             html.Span(
-                    #                                 " Read more...",
-                    #                                 className="text-link",
-                    #                             ),
-                    #                         ]
-                    #                     ),
-                    #                     filename="energy_projections_chart",
-                    #                 ),
-                    #             ],
-                    #             style={"margin": "35px 0"},
-                    #         ),
-                    #         html.Br(),
-                    #         # Power Projections (GW) Chart
-                    #         html.Div(
-                    #             [
-                    #                 html.A(id="power-projections-section"),
-                    #                 create_chart_row(
-                    #                     chart_id="power-projections-line-chart",
-                    #                     title="Power Demand Estimates & Projections (GW)",
-                    #                     expand_id="expand-power-projections",
-                    #                     accordion_children=[
-                    #                         dcc.Markdown(
-                    #                             """
-                    #                 Descriptions to be added...:
-                    #                 """
-                    #                         )
-                    #                     ],
-                    #                     accordion_title=html.Span(
-                    #                         [
-                    #                             "What Do Power Projections Tell Us?",
-                    #                             html.Span(
-                    #                                 " Read more...",
-                    #                                 className="text-link",
-                    #                             ),
-                    #                         ]
-                    #                     ),
-                    #                     filename="power_projections_chart",
-                    #                 ),
-                    #             ]
-                    #         ),
-                    #     ],
-                    #     fluid=True,
-                    # ),
-                                            [
+                        [
                             # Single chart container is updated by callback
-                            html.Div(id="chart-container"),
+                            html.Div(id="gp-chart-container"),
                         ],
                         fluid=True,
                     ),
@@ -342,11 +245,11 @@ def create_energy_projections_page(app, energy_projections_df):
             # Modal for expanded view
             dbc.Modal(
                 [
-                    dbc.ModalHeader(dbc.ModalTitle(id="energy-modal-title")),
+                    dbc.ModalHeader(dbc.ModalTitle(id="stacked-area-modal-title")),
                     dbc.ModalBody(
                         [
                             dcc.Graph(
-                                id="energy-expanded-graph",
+                                id="stacked-area-expanded-graph",
                                 style={
                                     "height": "calc(100vh - 56px)",  # 56px = header height
                                     "width": "100vw",
@@ -358,7 +261,7 @@ def create_energy_projections_page(app, energy_projections_df):
                         style={"padding": "0", "margin": "0"},
                     ),
                 ],
-                id="energy-graph-modal",
+                id="stacked-area-graph-modal",
                 # size="xl",
                 fullscreen=True,
                 is_open=False,
@@ -375,4 +278,5 @@ def create_energy_projections_page(app, energy_projections_df):
         ]
     )
 
-    return create_base_layout(content)
+    # Return just the content, not the full layout (layout is handled by parent)
+    return content

@@ -253,7 +253,6 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
         [
             Output("pue-scatter-chart", "figure"),
             Output("wue-scatter-chart", "figure"),
-            # Output('summary', 'children')
         ],
         [
             Input("apply-filters-btn", "n_clicks"),
@@ -384,32 +383,7 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
             filters_applied=filters_applied,
         )
 
-        # # Create summary
-        # active_filters = []
-        # if filters_applied:
-        #     if company: active_filters.append(f"Companies: {', '.join(company)}")
-        #     if time_period_category: active_filters.append(f"Time Period: {', '.join(time_period_category)}")
-        #     if measurement_category: active_filters.append(f"Measurement: {', '.join(measurement_category)}")
-        #     if metric_type: active_filters.append(f"PUE/WUE Type: {', '.join(metric_type)}")
-        #     if facility_scope: active_filters.append(f"Facility Scope: {', '.join(facility_scope)}")
-        #     if region: active_filters.append(f"Region: {', '.join(region)}")
-        #     if country: active_filters.append(f"Country: {', '.join(country)}")
-        #     if state: active_filters.append(f"State: {', '.join(state)}")
-        #     if county: active_filters.append(f"County: {', '.join(county)}")
-        #     if city: active_filters.append(f"City: {', '.join(city)}")
-        #     if assigned_climate_zones: active_filters.append(f"Climate Zone: {', '.join(assigned_climate_zones)}")
-        #     if default_climate_zones: active_filters.append(f"Default Zone: {', '.join(default_climate_zones)}")
-        #     if cooling_technologies: active_filters.append(f"Cooling Tech: {', '.join(cooling_technologies)}")
-
-        # #status_text = f"Showing {len(filtered_df)} filtered records" if filters_applied else f"Showing all {len(filtered_df)} records"
-
-        # summary = [
-        #     html.H6("Active Filters:"),
-        #     html.Ul([html.Li(f) for f in active_filters]) if active_filters else html.P("No filters applied"),
-        #     #html.P(f"📊 {status_text}")
-        # ]
-
-        return pue_fig, wue_fig  # summary
+        return pue_fig, wue_fig
 
     # PUE vs WUE chart callback (company filter only)
     @app.callback(
@@ -462,7 +436,7 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                     pue_wue_filtered_df["wue_value"].notna()
                 ]
 
-                # Apply company filter to SECOND dataframe
+                # Apply company filter to second dataframe
                 if company:
                     trends_filtered_df = pue_wue_companies_df[
                         pue_wue_companies_df["company_name"].isin(company)
@@ -602,7 +576,6 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
 
         return is_open, "", {}
 
-    # Add these callbacks to your page or callbacks file
     @app.callback(
         Output("download-pue-scatter-chart", "data"),
         Input("download-btn-pue-scatter-chart", "n_clicks"),
@@ -625,7 +598,31 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                 "Read Me",
             ],
             internal_prefix="_internal_",
-            # skip_rows=1,
+            new_column_names = {
+                "company_name":"Company name",
+                "pue_value":"PUE value",
+                "time_period_category":"Time period category",
+                "time_period_value":"Time period value",
+                "measurement_category":"Measurement category",
+                "pue_type":"PUE type",
+                "facility_scope_evident":"Facility scope evident?",
+                "facility_scope":"Facility scope",
+                "fleet_wide_reporting_basis":"Fleet-wide reporting basis",
+                "geographical_scope_stated":"Geographical scope stated?",
+                "verbatim_geographical_scope":"Verbatim geographical scope",
+                "city":"City",
+                "county":"County",
+                "state_province":"State/Province",
+                "country":"Country",
+                "region":"Region",
+                "assigned_climate_zones":"Assigned climate zone(s)",
+                "default_climate_zones":"Default climate zone(s)",
+                "assigned_cooling_technologies":"Assigned cooling technologies",
+                "pue_self_reported":"Is PUE self-reported?",
+                "source_type":"Source type",
+                "url":"URL"
+            },
+            skip_rows=1,
             n_clicks=n_clicks,
         )
 
@@ -663,8 +660,34 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                 "WUE",
                 "Read Me",
             ],
+            new_column_names={
+                "company_name":"Company name",
+                "wue_value":"WUE value",
+                "wue_pue_matching":"WUE & PUE Matching? ",
+                "time_period_category":"Time period category",
+                "time_period_value":"Time period value",
+                "measurement_category":"Measurement category",
+                "category_1_water_inputs":"Category 1 water input(s)",
+                "wue_type":"WUE type",
+                "facility_scope_evident":"Facility scope evident?",
+                "facility_scope":"Facility scope",
+                "geographical_scope_stated":"Geographical scope stated?",
+                "verbatim_geographical_scope":"Verbatim geographical scope",
+                "city":"City",
+                "county":"County",
+                "state_province":"State/Province",
+                "country":"Country",
+                "region":"Region",
+                "assigned_climate_zones":"Assigned climate zone(s)",
+                "default_climate_zones":"Default climate zone(s)",
+                "assigned_cooling_technologies":"Assigned cooling technologies",
+                "wue_self_reported":"Is WUE self-reported?",
+                "source_type":"Source type",
+                "apa_citation":"APA citation",
+                "url":"URL"
+            },
             internal_prefix="_internal_",
-            # skip_rows=1,
+            skip_rows=1,
             n_clicks=n_clicks,
         )
 
@@ -690,7 +713,31 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                 "Read Me",
             ],
             internal_prefix="_internal_",
-            # skip_rows=1,
+            new_column_names = {
+                "company_name":"Company name",
+                "pue_value":"PUE value",
+                "time_period_category":"Time period category",
+                "time_period_value":"Time period value",
+                "measurement_category":"Measurement category",
+                "pue_type":"PUE type",
+                "facility_scope_evident":"Facility scope evident?",
+                "facility_scope":"Facility scope",
+                "fleet_wide_reporting_basis":"Fleet-wide reporting basis",
+                "geographical_scope_stated":"Geographical scope stated?",
+                "verbatim_geographical_scope":"Verbatim geographical scope",
+                "city":"City",
+                "county":"County",
+                "state_province":"State/Province",
+                "country":"Country",
+                "region":"Region",
+                "assigned_climate_zones":"Assigned climate zone(s)",
+                "default_climate_zones":"Default climate zone(s)",
+                "assigned_cooling_technologies":"Assigned cooling technologies",
+                "pue_self_reported":"Is PUE self-reported?",
+                "source_type":"Source type",
+                "url":"URL"
+            },
+            skip_rows=1,
             n_clicks=n_clicks,
         )
 
