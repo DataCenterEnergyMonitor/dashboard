@@ -1,8 +1,6 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.global_policies.gp_area_tab_filters import (
-    create_global_policies_area_tab_filters,
-)
+from components.filters.global_policies.gp_tab2_filters import create_gp_tab2_filters
 
 # define bookmark sections
 sections = []
@@ -187,14 +185,13 @@ def create_chart_row(
     )
 
 
-def create_stacked_area_tab(app, globalpolicies_df):
+def create_gp_tab2(app, globalpolicies_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_global_policies_area_tab_filters(globalpolicies_df),
+            create_gp_tab2_filters(globalpolicies_df),
             html.Div(
                 [
-                    # Note: Bookmark bar removed - tabs are now handled at page level
                     # Mobile navigation kept for mobile devices
                     html.Div(
                         [
@@ -203,7 +200,7 @@ def create_stacked_area_tab(app, globalpolicies_df):
                                 [
                                     dbc.NavLink(
                                         "Global Policies",
-                                        href="#global-policies-cumulative-trends-section",
+                                        href="#global-policies-jurisdictional-distribution-section",
                                         className="px-2",
                                     ),
                                 ],
@@ -229,7 +226,9 @@ def create_stacked_area_tab(app, globalpolicies_df):
                     dbc.Container(
                         [
                             # Single chart container is updated by callback
-                            html.Div(id="gp-chart-container"),
+                            html.Div(id="gp-treemap-chart-container"),
+                            # Store for treemap state (clicked node, data, etc.)
+                            dcc.Store(id="gp-treemap-store", data={}),
                         ],
                         fluid=True,
                     ),
@@ -245,11 +244,11 @@ def create_stacked_area_tab(app, globalpolicies_df):
             # Modal for expanded view
             dbc.Modal(
                 [
-                    dbc.ModalHeader(dbc.ModalTitle(id="stacked-area-modal-title")),
+                    dbc.ModalHeader(dbc.ModalTitle(id="treemap-modal-title")),
                     dbc.ModalBody(
                         [
                             dcc.Graph(
-                                id="stacked-area-expanded-graph",
+                                id="treemap-expanded-graph",
                                 style={
                                     "height": "calc(100vh - 56px)",  # 56px = header height
                                     "width": "100vw",
@@ -261,8 +260,7 @@ def create_stacked_area_tab(app, globalpolicies_df):
                         style={"padding": "0", "margin": "0"},
                     ),
                 ],
-                id="stacked-area-graph-modal",
-                # size="xl",
+                id="treemap-graph-modal",
                 fullscreen=True,
                 is_open=False,
                 style={
@@ -278,5 +276,4 @@ def create_stacked_area_tab(app, globalpolicies_df):
         ]
     )
 
-    # Return just the content, not the full layout (layout is handled by parent)
     return content
