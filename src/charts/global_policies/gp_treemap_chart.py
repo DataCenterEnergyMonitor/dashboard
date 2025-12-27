@@ -300,7 +300,7 @@ def create_treemap_fig(
         )
     )
     fig.update_layout(
-        margin=dict(t=20, l=10, r=10, b=10), uniformtext=dict(minsize=10, mode="show")
+        margin=dict(t=35, l=10, r=10, b=10), uniformtext=dict(minsize=10, mode="show")
     )
     return fig
 

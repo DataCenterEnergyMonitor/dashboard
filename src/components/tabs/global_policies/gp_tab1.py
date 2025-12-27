@@ -236,8 +236,8 @@ def create_gp_tab1(app, globalpolicies_df):
                 ],
                 style={
                     "marginLeft": "320px",  # Sidebar width (300px) + padding (20px)
-                    "marginTop": "20px",
-                    "padding": "20px",
+                    "marginTop": "0px",
+                    "padding": "0px",
                     "minHeight": "calc(100vh - 90px)",
                     "backgroundColor": "white",
                 },
