@@ -3,8 +3,8 @@ import textwrap
 import pandas as pd
 
 
-def abbreviate(text, max_len=22):
-    """Abbreviate long labels."""
+def get_abbreviation(text):
+    """Get abbreviation from dictionary if available, otherwise return original text."""
     if not text:
         return ""
     text = str(text)
@@ -18,18 +18,16 @@ def abbreviate(text, max_len=22):
         "Procurement standard": "Procurement Std.",
         "Performance standard": "Performance Std.",
     }
-    if text in abbrevs:
-        return abbrevs[text]
-    if len(text) > max_len:
-        return text[: max_len - 2] + ".."
-    return text
+    return abbrevs.get(text, text)
 
 
-def wrap_label(text, width=16):
-    """Wrap text without breaking words."""
+def wrap_label(text, width=20):
+    """Wrap text without breaking words. Only uses dictionary abbreviations, no truncation."""
     if not text:
         return ""
-    text = abbreviate(text)
+    # Only use dictionary abbreviations, don't truncate
+    text = get_abbreviation(text)
+    # Wrap text without breaking words
     wrapped = textwrap.wrap(
         str(text), width=width, break_long_words=False, break_on_hyphens=False
     )
@@ -84,8 +82,11 @@ def build_treemap_data(df, path_cols, policy_col):
         if count == 0:
             continue
         ids.append(nid)
-        label_txt = wrap_label(info["label"])
-        labels.append(f"{label_txt}<br>{count}")
+        # Use wrap_label to wrap text without breaking words
+        # Only abbreviates if in dictionary, otherwise uses full label
+        label_txt = wrap_label(info["label"], width=20)
+        # Put count on new line to allow better wrapping
+        labels.append(f"{label_txt}<br>({count})")
         parents.append(info["parent"])
         values.append(count)
         # Store policy IDs for all nodes (useful for callbacks)
@@ -259,6 +260,8 @@ def create_treemap_fig(
             if len(policy_ids) > 10:
                 policy_details.append(f"... and {len(policy_ids) - 10} more")
 
+            # Extract original label (remove count if present)
+            # Format is now: "{label}<br>({count})" so split by <br> and take first part
             original_label = labels[idx].split("<br>")[0]  # Get just the label part
             labels[idx] = (
                 f"{original_label}<br>{len(policy_ids)} policies<br><br>"
@@ -267,6 +270,7 @@ def create_treemap_fig(
         elif node_depth >= 4:
             # For state_province and below (but not attr_value), show policy count
             policy_list = data["policy_ids_map"].get(root_id, [])
+            # Extract original label (format is "{label}<br>({count})")
             original_label = labels[idx].split("<br>")[0]
             if len(policy_list) <= 5:
                 labels[idx] = (
@@ -290,6 +294,7 @@ def create_treemap_fig(
             hovertemplate="<b>%{label}</b><br>%{percentRoot:.1%} of "
             + (root_id.split("/")[-1] if root_id != "world" else "Global")
             + "<extra></extra>",
+            textfont_size=16,
             marker=dict(
                 colors=values,
                 colorscale="Teal",  # "RdBu_r",
@@ -300,7 +305,7 @@ def create_treemap_fig(
         )
     )
     fig.update_layout(
-        margin=dict(t=35, l=10, r=10, b=10), uniformtext=dict(minsize=10, mode="show")
+        margin=dict(t=35, l=10, r=10, b=10),
     )
     return fig
 
