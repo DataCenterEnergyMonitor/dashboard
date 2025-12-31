@@ -545,6 +545,7 @@ def register_gp_tab2_callbacks(app, df):
             "ids": treemap_data.get("ids", []),
             "parents": treemap_data.get("parents", []),
             "node_levels": treemap_data.get("node_levels", {}),
+            "current_root": "world",  # Track current root for modal logic
         }
 
         return (
@@ -637,8 +638,8 @@ def register_gp_tab2_callbacks(app, df):
     ):
         """
         Handle clicks on treemap nodes.
-        If a final (leaf) node is clicked, open a modal with policy details.
-        Otherwise, let the treemap handle navigation.
+        Only open modal when user clicks on a final attr_value leaf node
+        that is already the current root (zoomed in state).
         """
         # Only process if we're on tab-2
         if active_tab is not None and active_tab != "tab-2":
@@ -668,7 +669,18 @@ def register_gp_tab2_callbacks(app, df):
             # A node is a leaf if no other node has it as a parent
             is_leaf = clicked_node_id not in parents
 
-            if is_leaf and clicked_node_id in policy_ids_map:
+            # Check if this is a final attr_value node by looking at the path structure
+            # attr_type is always "Objective" or "Instrument", and attr_value follows it
+            node_parts = clicked_node_id.split("/")
+            is_attr_value_level = len(node_parts) >= 3 and node_parts[-2] in [
+                "Objective",
+                "Instrument",
+            ]
+
+            # Only open modal if:
+            # 1. It's a leaf node (no children)
+            # 2. It's at the final attr_value level (parent is Objective or Instrument)
+            if is_leaf and clicked_node_id in policy_ids_map and is_attr_value_level:
                 # This is a final node - show policy details modal
                 policy_ids = policy_ids_map.get(clicked_node_id, [])
 

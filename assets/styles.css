@@ -1055,7 +1055,7 @@ a[id$="-section"] {
 
 /* Keep backdrop visible but allow treemap to show through */
 .policy-details-modal-overlay + .modal-backdrop {
-    opacity: 0.4 !important;
+    opacity: 0.3 !important;
 }
 
 /* Responsive adjustments for smaller screens */

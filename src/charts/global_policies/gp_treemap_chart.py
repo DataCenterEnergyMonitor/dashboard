@@ -102,19 +102,9 @@ def build_treemap_data(df, path_cols, policy_col):
     parent_set = set(parents)
     is_leaf = [nid not in parent_set for nid in ids]
 
-    # Add visual indicator to leaf node labels
-    enhanced_labels = []
-    for i, label in enumerate(labels):
-        if is_leaf[i]:
-            # Add clickable indicator for leaf nodes with simple eye icon
-            # Add extra line break for spacing between count and view link
-            enhanced_labels.append(f"{label}<br><br>⦿ View policies")
-        else:
-            enhanced_labels.append(label)
-
     return {
         "ids": ids,
-        "labels": enhanced_labels,
+        "labels": labels,  # Clean labels without view indicator
         "original_labels": original_labels,  # Full labels for hover
         "parents": parents,
         "values": values,
@@ -251,6 +241,9 @@ def create_treemap_fig(
         else:
             maxdepth = 3
 
+    # Check if root_id is a leaf node (no children in the current view)
+    is_root_leaf = root_id not in parents
+
     # Only update labels for the root node (the one we're drilling into)
     # When root is "world", don't modify labels (show normal view)
     # When root is a clicked node, show enhanced info for that root node
@@ -258,8 +251,22 @@ def create_treemap_fig(
         idx = ids.index(root_id)
         node_depth = get_node_depth(root_id)
 
+        # Check if this is a final attr_value node by looking at the path structure
+        # attr_type is always "Objective" or "Instrument", and attr_value follows it
+        node_parts = root_id.split("/")
+        is_attr_value_level = len(node_parts) >= 3 and node_parts[-2] in [
+            "Objective",
+            "Instrument",
+        ]
+
+        # If this is a leaf node at final attr_value level, add "View policies" indicator
+        if is_root_leaf and is_attr_value_level:
+            original_label = labels[idx].split("<br>")[0]
+            count_part = labels[idx].split("<br>")[1] if "<br>" in labels[idx] else ""
+            labels[idx] = f"{original_label}<br>{count_part}<br><br>⦿ View policies"
+
         # For deep nodes (attr_value level, depth >= 6), show policy list with metadata
-        if node_depth >= 6 and policy_metadata_df is not None:
+        elif node_depth >= 6 and policy_metadata_df is not None:
             # Get policy_ids_map from original data
             policy_ids = data["policy_ids_map"].get(root_id, [])
             policy_details = []

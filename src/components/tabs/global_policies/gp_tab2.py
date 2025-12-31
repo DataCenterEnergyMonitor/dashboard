@@ -212,7 +212,7 @@ def create_gp_tab2(app, globalpolicies_df):
                         className="d-block d-lg-none",  # Show on <992px, hide on ≥992px
                         style={
                             "position": "fixed",
-                            "top": "80px",
+                            "top": "100px",
                             "left": "0",
                             "right": "0",
                             "zIndex": "1000",
