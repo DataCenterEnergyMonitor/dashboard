@@ -992,3 +992,85 @@ a[id$="-section"] {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* Policy details modal table styles */
+.policy-details-table {
+    table-layout: auto;
+}
+
+.policy-details-table tbody tr {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.policy-details-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.policy-details-table td,
+.policy-details-table th {
+    padding: 10px 12px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.policy-details-table tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+.policy-details-table tbody tr:nth-child(even):hover {
+    background-color: #f0f2f4;
+}
+
+/* Policy details modal - positioned over treemap */
+.policy-details-modal-overlay .modal-dialog {
+    position: fixed;
+    top: 28%;
+    left: 50%;
+    right: auto;
+    margin: 0;
+    max-width: 680px;
+    width: 90%;
+    transform: translateX(-30%) !important;
+}
+
+.policy-details-modal-overlay .modal-content {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    margin-left: 120px;
+    margin-top: 400px;
+    padding: 0px;
+}
+
+.policy-details-modal-overlay .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 12px 12px 0 0;
+}
+
+.policy-details-modal-overlay .modal-footer {
+    background-color: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Keep backdrop visible but allow treemap to show through */
+.policy-details-modal-overlay + .modal-backdrop {
+    opacity: 0.4 !important;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1200px) {
+    .policy-details-modal-overlay .modal-dialog {
+        max-width: 75%;
+        transform: translateX(-40%) !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .policy-details-modal-overlay .modal-dialog {
+        max-width: 90%;
+        top: 15%;
+        left: 50%;
+        transform: translateX(-50%) !important;
+    }
+}

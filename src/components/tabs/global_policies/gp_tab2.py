@@ -273,6 +273,77 @@ def create_gp_tab2(app, globalpolicies_df):
                     "left": "0",
                 },
             ),
+            # Modal for policy details (final node click) - positioned over treemap
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(
+                        html.Div(
+                            [
+                                # Main title: Attr_type: Attr_value
+                                html.H4(
+                                    id="policy-details-modal-title",
+                                    style={
+                                        "marginBottom": "8px",
+                                        "color": "#2c3e50",
+                                        "fontWeight": "600",
+                                    },
+                                ),
+                                # Navigation path below title
+                                html.Div(
+                                    [
+                                        html.I(
+                                            className="fas fa-map-marker-alt",
+                                            style={
+                                                "marginRight": "8px",
+                                                "color": "#6c757d",
+                                                "fontSize": "0.85rem",
+                                            },
+                                        ),
+                                        html.Span(
+                                            id="policy-details-modal-subtitle",
+                                            style={
+                                                "fontSize": "0.9rem",
+                                                "color": "#6c757d",
+                                            },
+                                        ),
+                                    ],
+                                    style={"display": "flex", "alignItems": "center"},
+                                ),
+                            ],
+                            style={"width": "100%"},
+                        ),
+                        close_button=True,
+                        style={"padding": "16px 20px"},
+                    ),
+                    dbc.ModalBody(
+                        [
+                            html.Div(id="policy-details-modal-content"),
+                        ],
+                        style={"maxHeight": "50vh", "overflowY": "auto", "padding": "16px 20px"},
+                    ),
+                    dbc.ModalFooter(
+                        dbc.Button(
+                            [
+                                html.I(className="fas fa-times", style={"marginRight": "6px"}),
+                                "Close",
+                            ],
+                            id="policy-details-modal-close",
+                            className="ms-auto",
+                            color="secondary",
+                            size="sm",
+                            n_clicks=0,
+                        ),
+                        style={"borderTop": "1px solid #dee2e6", "padding": "12px 20px"},
+                    ),
+                ],
+                id="policy-details-modal",
+                is_open=False,
+                size="lg",
+                scrollable=True,
+                centered=False,
+                className="policy-details-modal-overlay",
+                backdrop="static",
+            ),
         ]
     )
 

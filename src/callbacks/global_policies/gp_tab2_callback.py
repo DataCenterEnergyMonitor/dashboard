@@ -410,7 +410,10 @@ def register_gp_tab2_callbacks(app, df):
 
     # Update chart
     @app.callback(
-        Output("gp-treemap-chart-container", "children"),
+        [
+            Output("gp-treemap-chart-container", "children"),
+            Output("gp-treemap-store", "data"),
+        ],
         [
             Input("gp_tab2_apply-filters-btn", "n_clicks"),
             Input("gp_tab2_clear-filters-btn", "n_clicks"),
@@ -536,18 +539,29 @@ def register_gp_tab2_callbacks(app, df):
         expand_id = "expand-gp-treemap"
         filename = "global_policies_treemap"
 
-        return html.Div(
-            [
-                html.A(id="global-policies-jurisdictional-distribution-section"),
-                create_chart_row(
-                    chart_id=chart_id,
-                    title=title,
-                    expand_id=expand_id,
-                    filename=filename,
-                    figure=gp_treemap_fig,
-                ),
-            ],
-            style={"margin": "35px 0"},
+        # Store treemap data for policy modal callback
+        store_data = {
+            "policy_ids_map": treemap_data.get("policy_ids_map", {}),
+            "ids": treemap_data.get("ids", []),
+            "parents": treemap_data.get("parents", []),
+            "node_levels": treemap_data.get("node_levels", {}),
+        }
+
+        return (
+            html.Div(
+                [
+                    html.A(id="global-policies-jurisdictional-distribution-section"),
+                    create_chart_row(
+                        chart_id=chart_id,
+                        title=title,
+                        expand_id=expand_id,
+                        filename=filename,
+                        figure=gp_treemap_fig,
+                    ),
+                ],
+                style={"margin": "35px 0"},
+            ),
+            store_data,
         )
 
     # Modal callback
@@ -598,6 +612,203 @@ def register_gp_tab2_callbacks(app, df):
             modal_title,
             gp_treemap_fig or {},
         )
+
+    # Policy details modal callback - opens when clicking on final (leaf) nodes
+    @app.callback(
+        [
+            Output("policy-details-modal", "is_open"),
+            Output("policy-details-modal-title", "children"),
+            Output("policy-details-modal-subtitle", "children"),
+            Output("policy-details-modal-content", "children"),
+        ],
+        [
+            Input("gp-treemap-fig", "clickData"),
+            Input("policy-details-modal-close", "n_clicks"),
+        ],
+        [
+            State("gp-treemap-store", "data"),
+            State("policy-details-modal", "is_open"),
+            State("active-tab-store", "data"),
+        ],
+        prevent_initial_call=True,
+    )
+    def toggle_policy_details_modal(
+        click_data, close_clicks, treemap_store, is_open, active_tab
+    ):
+        """
+        Handle clicks on treemap nodes.
+        If a final (leaf) node is clicked, open a modal with policy details.
+        Otherwise, let the treemap handle navigation.
+        """
+        # Only process if we're on tab-2
+        if active_tab is not None and active_tab != "tab-2":
+            raise dash.exceptions.PreventUpdate
+
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            raise dash.exceptions.PreventUpdate
+
+        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+        # Handle close button click
+        if trigger_id == "policy-details-modal-close":
+            return False, "", "", ""
+
+        # Handle treemap click
+        if trigger_id == "gp-treemap-fig" and click_data:
+            clicked_node_id = click_data.get("points", [{}])[0].get("id", "")
+
+            if not clicked_node_id or not treemap_store:
+                raise dash.exceptions.PreventUpdate
+
+            # Check if this is a leaf node (no children)
+            parents = treemap_store.get("parents", [])
+            policy_ids_map = treemap_store.get("policy_ids_map", {})
+
+            # A node is a leaf if no other node has it as a parent
+            is_leaf = clicked_node_id not in parents
+
+            if is_leaf and clicked_node_id in policy_ids_map:
+                # This is a final node - show policy details modal
+                policy_ids = policy_ids_map.get(clicked_node_id, [])
+
+                # Extract node path components from the ID
+                # Format: world/region/country/jurisdiction_level/state_province/city/attr_type/attr_value
+                node_parts = clicked_node_id.split("/")
+
+                # Get attr_value (last segment) and attr_type (second to last)
+                attr_value = node_parts[-1] if len(node_parts) > 0 else ""
+                attr_type = node_parts[-2] if len(node_parts) > 1 else ""
+
+                # Create title in format: "Attr_type: Attr_value"
+                if attr_type and attr_value:
+                    modal_title = f"{attr_type}: {attr_value}"
+                else:
+                    modal_title = attr_value or clicked_node_id
+
+                # Build navigation path (excluding world, attr_type, attr_value)
+                # Show: Region > Country > Jurisdiction > State/Province > City
+                path_parts = node_parts[1:-2] if len(node_parts) > 3 else []
+                navigation_path = " › ".join(path_parts) if path_parts else ""
+
+                # Build policy table content
+                policy_rows = []
+                for policy_id in policy_ids:
+                    # Get policy metadata from the original dataframe
+                    policy_data = df[df["policy_id"] == policy_id]
+                    if not policy_data.empty:
+                        row = policy_data.iloc[0]
+                        order_type = (
+                            row.get("order_type", "N/A")
+                            if pd.notna(row.get("order_type"))
+                            else "N/A"
+                        )
+                        status = (
+                            row.get("status", "N/A")
+                            if pd.notna(row.get("status"))
+                            else "N/A"
+                        )
+                        jurisdiction = (
+                            row.get("jurisdiction_level", "N/A")
+                            if pd.notna(row.get("jurisdiction_level"))
+                            else "N/A"
+                        )
+                        country = (
+                            row.get("country", "N/A")
+                            if pd.notna(row.get("country"))
+                            else "N/A"
+                        )
+
+                        policy_rows.append(
+                            html.Tr(
+                                [
+                                    html.Td(policy_id, style={"fontWeight": "500"}),
+                                    html.Td(order_type),
+                                    html.Td(status),
+                                    html.Td(jurisdiction),
+                                    html.Td(country),
+                                ]
+                            )
+                        )
+                    else:
+                        policy_rows.append(
+                            html.Tr(
+                                [
+                                    html.Td(policy_id, style={"fontWeight": "500"}),
+                                    html.Td("N/A"),
+                                    html.Td("N/A"),
+                                    html.Td("N/A"),
+                                    html.Td("N/A"),
+                                ]
+                            )
+                        )
+
+                # Create table header style
+                th_style = {
+                    "textAlign": "left",
+                    "padding": "10px 12px",
+                    "borderBottom": "2px solid #dee2e6",
+                    "backgroundColor": "#f8f9fa",
+                    "fontWeight": "600",
+                    "fontSize": "0.85rem",
+                    "color": "#495057",
+                }
+
+                # Create table content
+                content = html.Div(
+                    [
+                        # Policy count badge
+                        html.Div(
+                            [
+                                html.Span(
+                                    f"{len(policy_ids)} ",
+                                    style={
+                                        "fontWeight": "600",
+                                        "fontSize": "1.1rem",
+                                        "color": "#2c7a7b",
+                                    },
+                                ),
+                                html.Span(
+                                    "policies found",
+                                    style={"color": "#666", "fontSize": "0.95rem"},
+                                ),
+                            ],
+                            style={"marginBottom": "20px"},
+                        ),
+                        # Policy table
+                        html.Table(
+                            [
+                                html.Thead(
+                                    html.Tr(
+                                        [
+                                            html.Th("Policy ID", style=th_style),
+                                            html.Th("Order Type", style=th_style),
+                                            html.Th("Status", style=th_style),
+                                            html.Th("Jurisdiction", style=th_style),
+                                            html.Th("Country", style=th_style),
+                                        ]
+                                    )
+                                ),
+                                html.Tbody(policy_rows, style={"fontSize": "0.9rem"}),
+                            ],
+                            style={
+                                "width": "100%",
+                                "borderCollapse": "collapse",
+                                "border": "1px solid #dee2e6",
+                                "borderRadius": "8px",
+                                "overflow": "hidden",
+                            },
+                            className="policy-details-table",
+                        ),
+                    ]
+                )
+
+                return True, modal_title, navigation_path, content
+            else:
+                # Not a leaf node - let treemap handle navigation
+                raise dash.exceptions.PreventUpdate
+
+        raise dash.exceptions.PreventUpdate
 
     @app.callback(
         Output("download-gp-treemap-fig", "data"),

@@ -11,12 +11,12 @@ def get_abbreviation(text):
     abbrevs = {
         "Research, demonstration, and development": "R&D",
         "Other Environmental": "Other Environ.",
-        "Development restrictions": "Dev. Restrictions",
+        # "Development restrictions": "Dev. Restrictions",
         "Measurement and Reporting": "Measure & Report",
-        "Development incentives": "Dev. Incentives",
+        # "Development incentives": "Dev. Incentives",
         "United Kingdom": "UK",
-        "Procurement standard": "Procurement Std.",
-        "Performance standard": "Performance Std.",
+        # "Procurement standard": "Procurement Std.",
+        # "Performance standard": "Performance Std.",
     }
     return abbrevs.get(text, text)
 
@@ -74,6 +74,7 @@ def build_treemap_data(df, path_cols, policy_col):
 
     # Build output arrays
     ids, labels, parents, values = [], [], [], []
+    original_labels = []  # Store full non-abbreviated labels for hover
     policy_ids_map = {}
     node_levels = {}  # Store depth level for each node
 
@@ -82,6 +83,8 @@ def build_treemap_data(df, path_cols, policy_col):
         if count == 0:
             continue
         ids.append(nid)
+        # Store original label for hover text
+        original_labels.append(info["label"])
         # Use wrap_label to wrap text without breaking words
         # Only abbreviates if in dictionary, otherwise uses full label
         label_txt = wrap_label(info["label"], width=20)
@@ -95,13 +98,29 @@ def build_treemap_data(df, path_cols, policy_col):
         # Store node depth level
         node_levels[nid] = get_node_depth(nid)
 
+    # Identify leaf nodes (nodes that are not parents of any other node)
+    parent_set = set(parents)
+    is_leaf = [nid not in parent_set for nid in ids]
+
+    # Add visual indicator to leaf node labels
+    enhanced_labels = []
+    for i, label in enumerate(labels):
+        if is_leaf[i]:
+            # Add clickable indicator for leaf nodes with simple eye icon
+            # Add extra line break for spacing between count and view link
+            enhanced_labels.append(f"{label}<br><br>⦿ View policies")
+        else:
+            enhanced_labels.append(label)
+
     return {
         "ids": ids,
-        "labels": labels,
+        "labels": enhanced_labels,
+        "original_labels": original_labels,  # Full labels for hover
         "parents": parents,
         "values": values,
         "policy_ids_map": policy_ids_map,
         "node_levels": node_levels,
+        "is_leaf": is_leaf,  # Flag for leaf nodes
     }
 
 
@@ -180,6 +199,9 @@ def create_treemap_fig(
         # Filter all data arrays
         filtered_ids = [data["ids"][i] for i in filtered_indices]
         filtered_labels = [data["labels"][i] for i in filtered_indices]
+        filtered_original_labels = [
+            data["original_labels"][i] for i in filtered_indices
+        ]
         filtered_parents = []
         filtered_values = [data["values"][i] for i in filtered_indices]
 
@@ -202,12 +224,14 @@ def create_treemap_fig(
 
         ids = filtered_ids
         labels = filtered_labels.copy()
+        original_labels = filtered_original_labels
         parents = filtered_parents
         values = filtered_values
     else:
         # Show full tree
         ids = data["ids"]
         labels = data["labels"].copy()
+        original_labels = data["original_labels"]
         parents = data["parents"]
         values = data["values"]
 
@@ -282,16 +306,20 @@ def create_treemap_fig(
                     f"{original_label}<br>{len(policy_list)}<br><br>{len(policy_list)} policies"
                 )
 
+    # Prepare customdata with original labels and counts for hover
+    customdata = [[orig_label, val] for orig_label, val in zip(original_labels, values)]
+
     fig = go.Figure(
         go.Treemap(
             ids=ids,
             labels=labels,
             parents=parents,
             values=values,
+            customdata=customdata,
             maxdepth=maxdepth,
             texttemplate="%{label}",
             textposition="middle center",
-            hovertemplate="<b>%{label}</b><br>%{percentRoot:.1%} of "
+            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]} policies<br>%{percentRoot:.1%} of "
             + (root_id.split("/")[-1] if root_id != "world" else "Global")
             + "<extra></extra>",
             textfont_size=16,

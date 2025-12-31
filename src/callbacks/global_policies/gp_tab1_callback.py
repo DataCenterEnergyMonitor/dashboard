@@ -271,7 +271,7 @@ def register_gp_tab1_callbacks(app, df):
             Input("gp_clear-filters-btn", "n_clicks"),  # Add clear button as input
         ],
         [State("active-tab-store", "data")],
-        prevent_initial_call=True,
+        prevent_initial_call=False,
     )
     def update_filters(
         gp_jurisdiction_level,
@@ -287,8 +287,8 @@ def register_gp_tab1_callbacks(app, df):
         clear_clicks,
         active_tab,
     ):
-        # Only process if we're on tab-1
-        if active_tab != "tab-1":
+        # Only process if we're on tab-1 (allow None for initial load)
+        if active_tab is not None and active_tab != "tab-1":
             raise dash.exceptions.PreventUpdate
 
         ctx = dash.callback_context
