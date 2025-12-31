@@ -628,8 +628,123 @@ def register_gp_tab2_callbacks(app, df):
             gp_treemap_fig or {},
         )
 
-    # Policy details are now shown in hover tooltip for final leaf nodes
-    # No click callback needed - labels stay clean, hover shows details
+    # Callback to show policy details when clicking into a final leaf node
+    # Tracks expanded leaf and toggles: click leaf = expand, click again = collapse
+    @app.callback(
+        [
+            Output("gp-treemap-fig", "figure"),
+            Output("gp-treemap-expanded-leaf", "data"),
+        ],
+        Input("gp-treemap-fig", "clickData"),
+        [
+            State("gp-treemap-store", "data"),
+            State("gp-treemap-fig", "figure"),
+            State("gp-treemap-expanded-leaf", "data"),
+            State("active-tab-store", "data"),
+        ],
+        prevent_initial_call=True,
+    )
+    def update_treemap_on_navigation(
+        click_data, treemap_store, current_figure, expanded_leaf, active_tab
+    ):
+        """
+        Handle treemap navigation with toggle behavior:
+        - Click on final leaf node: show policy details in cell, store leaf ID
+        - Click same leaf again OR click non-leaf: restore clean labels, clear stored ID
+        """
+        import copy
+
+        # Only process if we're on tab-2
+        if active_tab is not None and active_tab != "tab-2":
+            raise dash.exceptions.PreventUpdate
+
+        if not treemap_store or not current_figure:
+            raise dash.exceptions.PreventUpdate
+
+        # Handle clickData
+        if not click_data:
+            raise dash.exceptions.PreventUpdate
+
+        clicked_node_id = click_data.get("points", [{}])[0].get("id", "")
+        if not clicked_node_id:
+            raise dash.exceptions.PreventUpdate
+
+        # Get data from store
+        store_ids = treemap_store.get("ids", [])
+        parents = treemap_store.get("parents", [])
+        original_labels = treemap_store.get("labels", [])
+        policy_ids_map = treemap_store.get("policy_ids_map", {})
+        policy_metadata = treemap_store.get("policy_metadata", {})
+
+        print(f"\n=== TREEMAP CLICK ===")
+        print(f"Clicked: {clicked_node_id}")
+        print(f"Currently expanded: {expanded_leaf}")
+
+        # Make a copy of the figure to modify
+        new_figure = copy.deepcopy(current_figure)
+
+        # Always restore all labels to original first (clean slate)
+        if "data" in new_figure and len(new_figure["data"]) > 0:
+            new_figure["data"][0]["labels"] = list(original_labels)
+
+        # Check if this is a final leaf node (attr_value level)
+        node_parts = clicked_node_id.split("/")
+        is_leaf = clicked_node_id not in parents
+        is_final_leaf = (
+            is_leaf
+            and len(node_parts) >= 3
+            and node_parts[-2] in ["Objective", "Instrument"]
+        )
+
+        # Toggle logic: if clicking the same leaf that's already expanded, collapse it
+        if expanded_leaf and clicked_node_id == expanded_leaf:
+            print(f"DEBUG: Toggling OFF (same leaf clicked again)")
+            return new_figure, None
+
+        # If not a final leaf, return clean labels and clear any expanded state
+        if not is_final_leaf:
+            print(f"DEBUG: Not a final leaf, clearing expanded state")
+            return new_figure, None
+
+        # Final leaf node - build policy details and update label
+        policy_ids = policy_ids_map.get(clicked_node_id, [])
+        if not policy_ids:
+            return new_figure, None
+
+        # Build policy details text
+        policy_lines = []
+        for pid in policy_ids[:15]:
+            meta = policy_metadata.get(pid, {})
+            order_type = meta.get("order_type", "")
+            status = meta.get("status", "")
+            line = f"• {pid}"
+            if order_type:
+                line += f" ({order_type})"
+            if status:
+                line += f" - {status}"
+            policy_lines.append(line)
+
+        if len(policy_ids) > 15:
+            policy_lines.append(f"... +{len(policy_ids) - 15} more")
+
+        # Build the cell content
+        attr_type = node_parts[-2]
+        attr_value = node_parts[-1]
+        cell_content = (
+            f"<b>{attr_type}: {attr_value}</b><br>"
+            f"{len(policy_ids)} policies<br><br>" + "<br>".join(policy_lines)
+        )
+
+        # Update the label for the clicked node
+        if clicked_node_id in store_ids:
+            idx = store_ids.index(clicked_node_id)
+            labels = list(new_figure["data"][0]["labels"])
+            labels[idx] = cell_content
+            new_figure["data"][0]["labels"] = labels
+            print(f"DEBUG: Expanded leaf {clicked_node_id}")
+
+        # Return figure with policy details and store the expanded leaf ID
+        return new_figure, clicked_node_id
 
     @app.callback(
         Output("download-gp-treemap-fig", "data"),

@@ -246,6 +246,15 @@ def create_treemap_fig(
     customdata = []
     policy_ids_map = data.get("policy_ids_map", {})
 
+    # Check if we're currently zoomed into a final leaf node
+    root_parts = root_id.split("/")
+    is_root_final_leaf = (
+        root_id != "world"
+        and root_id not in parents
+        and len(root_parts) >= 3
+        and root_parts[-2] in ["Objective", "Instrument"]
+    )
+
     for i, node_id in enumerate(ids):
         orig_label = original_labels[i]
         count = values[i]
@@ -292,6 +301,16 @@ def create_treemap_fig(
                     lines.append(f"... +{len(policy_ids) - 10} more")
 
                 policy_details = "<br>".join(lines)
+
+        # If we're zoomed into this final leaf node, show policy details in the label
+        if is_root_final_leaf and node_id == root_id and policy_details:
+            attr_type = node_parts[-2]
+            attr_value = node_parts[-1]
+            labels[i] = (
+                f"<b>{attr_type}: {attr_value}</b><br>"
+                f"{count} policies<br><br>"
+                f"{policy_details}"
+            )
 
         customdata.append([orig_label, count, policy_details, is_final_leaf])
 

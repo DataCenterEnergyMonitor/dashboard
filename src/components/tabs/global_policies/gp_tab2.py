@@ -229,6 +229,8 @@ def create_gp_tab2(app, globalpolicies_df):
                             html.Div(id="gp-treemap-chart-container"),
                             # Store for treemap state (clicked node, data, etc.)
                             dcc.Store(id="gp-treemap-store", data={}),
+                            # Store to track currently expanded leaf node
+                            dcc.Store(id="gp-treemap-expanded-leaf", data=None),
                         ],
                         fluid=True,
                     ),
