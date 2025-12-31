@@ -241,80 +241,59 @@ def create_treemap_fig(
         else:
             maxdepth = 3
 
-    # Check if root_id is a leaf node (no children in the current view)
-    is_root_leaf = root_id not in parents
+    # Build customdata with policy details for hover (especially for leaf nodes)
+    # customdata format: [original_label, count, policy_details_text, is_final_leaf]
+    customdata = []
+    policy_ids_map = data.get("policy_ids_map", {})
 
-    # Only update labels for the root node (the one we're drilling into)
-    # When root is "world", don't modify labels (show normal view)
-    # When root is a clicked node, show enhanced info for that root node
-    if root_id != "world" and root_id in ids:
-        idx = ids.index(root_id)
-        node_depth = get_node_depth(root_id)
-
-        # Check if this is a final attr_value node by looking at the path structure
-        # attr_type is always "Objective" or "Instrument", and attr_value follows it
-        node_parts = root_id.split("/")
-        is_attr_value_level = len(node_parts) >= 3 and node_parts[-2] in [
-            "Objective",
-            "Instrument",
-        ]
-
-        # If this is a leaf node at final attr_value level, add "View policies" indicator
-        if is_root_leaf and is_attr_value_level:
-            original_label = labels[idx].split("<br>")[0]
-            count_part = labels[idx].split("<br>")[1] if "<br>" in labels[idx] else ""
-            labels[idx] = f"{original_label}<br>{count_part}<br><br>⦿ View policies"
-
-        # For deep nodes (attr_value level, depth >= 6), show policy list with metadata
-        elif node_depth >= 6 and policy_metadata_df is not None:
-            # Get policy_ids_map from original data
-            policy_ids = data["policy_ids_map"].get(root_id, [])
-            policy_details = []
-
-            # Get metadata for these policies
-            policy_rows = policy_metadata_df[
-                policy_metadata_df["policy_id"].isin(policy_ids)
+    for i, node_id in enumerate(ids):
+        orig_label = original_labels[i]
+        count = values[i]
+        node_parts = node_id.split("/")
+        is_leaf = node_id not in parents
+        is_final_leaf = (
+            is_leaf
+            and len(node_parts) >= 3
+            and node_parts[-2]
+            in [
+                "Objective",
+                "Instrument",
             ]
+        )
 
-            for _, policy_row in policy_rows.head(
-                10
-            ).iterrows():  # Limit to 10 for display
-                policy_id = policy_row["policy_id"]
-                # Format policy info (customize based on available columns)
-                policy_info = f"{policy_id}"
-                if "order_type" in policy_row and pd.notna(policy_row["order_type"]):
-                    policy_info += f" ({policy_row['order_type']})"
-                if "status" in policy_row and pd.notna(policy_row["status"]):
-                    policy_info += f" - {policy_row['status']}"
-                policy_details.append(policy_info)
+        # Build policy details for final leaf nodes
+        policy_details = ""
+        if is_final_leaf and policy_metadata_df is not None:
+            policy_ids = policy_ids_map.get(node_id, [])
+            if policy_ids:
+                policy_rows = policy_metadata_df[
+                    policy_metadata_df["policy_id"].isin(policy_ids)
+                ].drop_duplicates(subset=["policy_id"])
 
-            if len(policy_ids) > 10:
-                policy_details.append(f"... and {len(policy_ids) - 10} more")
+                lines = []
+                for _, row in policy_rows.head(10).iterrows():
+                    pid = row["policy_id"]
+                    status = (
+                        row.get("status", "") if pd.notna(row.get("status")) else ""
+                    )
+                    order_type = (
+                        row.get("order_type", "")
+                        if pd.notna(row.get("order_type"))
+                        else ""
+                    )
+                    line = f"• {pid}"
+                    if order_type:
+                        line += f" ({order_type})"
+                    if status:
+                        line += f" - {status}"
+                    lines.append(line)
 
-            # Extract original label (remove count if present)
-            # Format is now: "{label}<br>({count})" so split by <br> and take first part
-            original_label = labels[idx].split("<br>")[0]  # Get just the label part
-            labels[idx] = (
-                f"{original_label}<br>{len(policy_ids)} policies<br><br>"
-                + "<br>".join(policy_details)
-            )
-        elif node_depth >= 4:
-            # For state_province and below (but not attr_value), show policy count
-            policy_list = data["policy_ids_map"].get(root_id, [])
-            # Extract original label (format is "{label}<br>({count})")
-            original_label = labels[idx].split("<br>")[0]
-            if len(policy_list) <= 5:
-                labels[idx] = (
-                    f"{original_label}<br>{len(policy_list)}<br><br>Policies:<br>"
-                    + "<br>".join(policy_list)
-                )
-            else:
-                labels[idx] = (
-                    f"{original_label}<br>{len(policy_list)}<br><br>{len(policy_list)} policies"
-                )
+                if len(policy_ids) > 10:
+                    lines.append(f"... +{len(policy_ids) - 10} more")
 
-    # Prepare customdata with original labels and counts for hover
-    customdata = [[orig_label, val] for orig_label, val in zip(original_labels, values)]
+                policy_details = "<br>".join(lines)
+
+        customdata.append([orig_label, count, policy_details, is_final_leaf])
 
     fig = go.Figure(
         go.Treemap(
@@ -326,9 +305,10 @@ def create_treemap_fig(
             maxdepth=maxdepth,
             texttemplate="%{label}",
             textposition="middle center",
+            # Enhanced hover: show policy details for final leaf nodes
             hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]} policies<br>%{percentRoot:.1%} of "
             + (root_id.split("/")[-1] if root_id != "world" else "Global")
-            + "<extra></extra>",
+            + "<br><br>%{customdata[2]}<extra></extra>",
             textfont_size=16,
             marker=dict(
                 colors=values,
