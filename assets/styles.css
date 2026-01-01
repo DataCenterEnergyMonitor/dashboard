@@ -135,22 +135,24 @@ a:hover {
     font-size: clamp(14px, 2vw, 16px);
 }
 
-/* Desktop: Create space between left and right menus */
+/* Navbar container */
+.navbar .container-fluid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+}
+
+/* Force wrapper inside collapse to take remaining space */
 @media (min-width: 992px) {
-    /* Make collapse a flexbox container */
-    .navbar-expand-lg .navbar-collapse {
-        display: flex !important;
-        flex-grow: 1;
+    /* Calculate width: viewport - logo (~100px) - container margins (60px) */
+    #navbar-collapse > div {
+        width: calc(100vw - 160px) !important;
     }
     
-    /* Left nav stays on left */
-    .navbar-expand-lg .navbar-collapse .navbar-nav.me-auto {
-        margin-right: 0;
-    }
-    
-    /* Right nav gets pushed to the right with calculated margin */
-    .navbar-expand-lg .navbar-collapse .navbar-nav.ms-auto {
-        margin-left: auto;
+    /* Ensure right nav is pushed to the right and aligns with content edge */
+    #navbar-collapse > div > .navbar-nav:last-child {
+        margin-left: auto !important;
+        padding-right: 110px !important;
     }
 }
 
