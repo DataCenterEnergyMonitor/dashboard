@@ -28,6 +28,28 @@
     color: white !important;
 }
 
+/* Bookmark navigation - ensure horizontal layout */
+.bookmark-navigation {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+}
+
+/* Force bookmark-bar collapse to display nav horizontally */
+.bookmark-navigation .navbar-collapse,
+.bookmark-navigation .collapse {
+    display: flex !important;
+    flex-direction: row !important;
+}
+
+.bookmark-navigation .navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+}
+
 .bookmark-navigation .nav-link {    
     color: #495057 !important;
     font-family: 'Inter', sans-serif !important;
@@ -142,15 +164,15 @@ a:hover {
     align-items: center !important;
 }
 
-/* Force wrapper inside collapse to take remaining space */
+/* Force wrapper inside collapse to take remaining space - ONLY for main navbar */
 @media (min-width: 992px) {
-    /* Calculate width: viewport - logo (~100px) - container margins (60px) */
-    #navbar-collapse > div {
+    /* Target only the main navbar collapse, not bookmark-bar */
+    .navbar:not(.bookmark-bar) #navbar-collapse > div {
         width: calc(100vw - 160px) !important;
     }
     
-    /* Ensure right nav is pushed to the right and aligns with content edge */
-    #navbar-collapse > div > .navbar-nav:last-child {
+    /* Ensure right nav is pushed to the right and aligns with content edge - ONLY for main navbar */
+    .navbar:not(.bookmark-bar) #navbar-collapse > div > .navbar-nav:last-child {
         margin-left: auto !important;
         padding-right: 110px !important;
     }
@@ -338,7 +360,7 @@ color: rgba(0, 0, 0, 0.8);} */
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); /* Restored subtle gradient */
     border: 1px solid #e9ecef;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-right: 0.15rem solid #395970 /*#00bf63; */
+    /*border-right: 0.15rem solid #395970 /*#00bf63; */
     /* No hover effects - static cards */
 }
 
