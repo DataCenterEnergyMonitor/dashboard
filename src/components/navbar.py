@@ -26,45 +26,45 @@ def create_navbar():
     nav_left_links = generate_nav_links(navbar_left_items)
     nav_right_links = generate_nav_links(navbar_right_items)
 
-    return html.Nav(
-        className="navbar navbar-expand-lg navbar-light",
-        children=[
-            html.Div(
-                className="container-fluid",
-                style={"marginLeft": "30px"},
-                children=[
-                    # Logo and hamburger group
+    return dbc.Navbar(
+        dbc.Container(
+            [
+                # Logo (navbar-brand)
+                dbc.NavbarBrand(
+                    html.Img(
+                        src=site_config.get("navbar_logo", "assets/isalab-logo.png"),
+                        className="img-fluid",
+                        style={"maxHeight": "70px"},
+                    ),
+                    href="/",
+                ),
+                # Hamburger toggler
+                dbc.NavbarToggler(id="navbar-toggler"),
+                # Collapsible content - both navs in a flex wrapper
+                dbc.Collapse(
                     html.Div(
-                        className="d-flex align-items-center",
-                        children=[
-                            html.A(
-                                html.Img(
-                                    src=site_config.get(
-                                        "navbar_logo", "assets/isalab-logo.png"
-                                    ),
-                                    className="img-fluid",
-                                    style={"maxHeight": "70px"},
-                                ),
-                                className="navbar-brand me-2",
-                                href="/",
-                            ),
-                            # Hamburger
-                            dbc.NavbarToggler(id="navbar-toggler"),
+                        [
+                            dbc.Nav(nav_left_links, navbar=True),
+                            dbc.Nav(nav_right_links, navbar=True),
                         ],
+                        style={
+                            "display": "flex",
+                            "justifyContent": "space-between",
+                            "width": "100%",
+                        },
                     ),
-                    # Single collapse with both left and right navs
-                    dbc.Collapse(
-                        id="navbar-collapse",
-                        is_open=False,
-                        navbar=True,
-                        children=[
-                            dbc.Nav(nav_left_links, navbar=True, className="me-auto"),
-                            dbc.Nav(nav_right_links, navbar=True, className="ms-auto"),
-                        ],
-                    ),
-                ],
-            )
-        ],
+                    id="navbar-collapse",
+                    is_open=False,
+                    navbar=True,
+                    style={"flex": "1 1 auto"},
+                ),
+            ],
+            fluid=True,
+            style={"marginLeft": "30px", "marginRight": "30px", "position": "relative"},
+        ),
+        color="light",
+        light=True,
+        expand="lg",
     )
 
 

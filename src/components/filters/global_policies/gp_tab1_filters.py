@@ -3,7 +3,7 @@ from dash import Input, Output, dcc, html
 import dash_bootstrap_components as dbc
 
 
-def create_global_policies_area_tab_filters(df):
+def create_gp_tab1_filters(df):
     return html.Div(
         [
             # Sidebar container

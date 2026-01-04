@@ -3,7 +3,7 @@ from layouts.base_layout import create_base_layout
 from components.bookmark_tabs import create_bookmark_tabs
 
 
-def create_global_policies_page(app, globalpolicies_df):
+def create_gp_page(app, globalpolicies_df):
     """
     Creates the main policies page layout
     """
@@ -11,7 +11,7 @@ def create_global_policies_page(app, globalpolicies_df):
     # Define tabs configuration
     tabs_config = [
         {"label": "Cumulative Trends", "value": "tab-1"},
-        {"label": "Policy Matrix", "value": "tab-2"},
+        {"label": "Jurisdictional Distribution", "value": "tab-2"},
         {"label": "Geographic Distribution", "value": "tab-3"},
     ]
 
@@ -26,7 +26,7 @@ def create_global_policies_page(app, globalpolicies_df):
     content_container = html.Div(id="tabs-content-container")
 
     # Wrap tabs in a sticky container (similar to pue_wue_page)
-    # Note: Tabs start after sidebar (320px) since tab content has sidebar
+    # Tabs start after sidebar (320px) since tab content has sidebar
     sticky_tabs = html.Div(
         [tabs_component],
         className="d-none d-lg-block",  # Hide on mobile, show on desktop
@@ -51,10 +51,6 @@ def create_global_policies_page(app, globalpolicies_df):
     tabs_spacer = html.Div(style={"height": "80px"})
 
     content = html.Div([sticky_tabs, tabs_spacer, content_container])
-
-    # Note: Callbacks are registered in app.py to avoid validation issues
-    # register_global_policies_page_callbacks(app, globalpolicies_df)
-    # register_global_policies_area_callbacks()
 
     # Return the full layout
     return create_base_layout(content)

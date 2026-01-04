@@ -1,7 +1,7 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.global_policies.gp_area_tab_filters import (
-    create_global_policies_area_tab_filters,
+from components.filters.global_policies.gp_tab1_filters import (
+    create_gp_tab1_filters,
 )
 
 # define bookmark sections
@@ -187,11 +187,11 @@ def create_chart_row(
     )
 
 
-def create_stacked_area_tab(app, globalpolicies_df):
+def create_gp_tab1(app, globalpolicies_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_global_policies_area_tab_filters(globalpolicies_df),
+            create_gp_tab1_filters(globalpolicies_df),
             html.Div(
                 [
                     # Note: Bookmark bar removed - tabs are now handled at page level
@@ -236,8 +236,8 @@ def create_stacked_area_tab(app, globalpolicies_df):
                 ],
                 style={
                     "marginLeft": "320px",  # Sidebar width (300px) + padding (20px)
-                    "marginTop": "20px",
-                    "padding": "20px",
+                    "marginTop": "0px",
+                    "padding": "0px",
                     "minHeight": "calc(100vh - 90px)",
                     "backgroundColor": "white",
                 },

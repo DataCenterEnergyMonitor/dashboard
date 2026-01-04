@@ -5,10 +5,10 @@ import pandas as pd
 import json
 from datetime import datetime
 from charts.global_policies.gp_stacked_area_chart import (
-    create_global_policies_stacked_area_plot,
+    create_gp_stacked_area_plot,
 )
 from components.excel_export import create_filtered_excel_download
-from components.tabs.global_policies.stacked_area_tab import create_chart_row
+from components.tabs.global_policies.gp_tab1 import create_chart_row
 
 
 def apply_multi_value_filter(df, column, selected_values):
@@ -31,7 +31,7 @@ def get_multi_value_options(df, column):
     return [{"label": val, "value": val} for val in sorted(all_values) if val]
 
 
-def get_global_policies_last_modified_date():
+def get_gp_last_modified_date():
     """Get the last modified date for DCEWM-GlobalPolicies.xlsx from metadata.json"""
     try:
         # Get the project root directory
@@ -230,7 +230,7 @@ def filter_data(
     return filtered_df
 
 
-def register_global_policies_area_callbacks(app, df):
+def register_gp_tab1_callbacks(app, df):
     # Update all filters and handle clearing
     @app.callback(
         [
@@ -270,6 +270,8 @@ def register_global_policies_area_callbacks(app, df):
             Input("gp_objective", "value"),
             Input("gp_clear-filters-btn", "n_clicks"),  # Add clear button as input
         ],
+        [State("active-tab-store", "data")],
+        prevent_initial_call=False,
     )
     def update_filters(
         gp_jurisdiction_level,
@@ -283,7 +285,12 @@ def register_global_policies_area_callbacks(app, df):
         gp_instrument,
         gp_objective,
         clear_clicks,
+        active_tab,
     ):
+        # Only process if we're on tab-1 (allow None for initial load)
+        if active_tab is not None and active_tab != "tab-1":
+            raise dash.exceptions.PreventUpdate
+
         ctx = dash.callback_context
 
         # Handle clear button click
@@ -560,6 +567,7 @@ def register_global_policies_area_callbacks(app, df):
             State("gp_status", "value"),
             State("gp_instrument", "value"),
             State("gp_objective", "value"),
+            State("active-tab-store", "data"),
         ],
         prevent_initial_call=False,
     )
@@ -576,7 +584,12 @@ def register_global_policies_area_callbacks(app, df):
         gp_status,
         gp_instrument,
         gp_objective,
+        active_tab,
     ):
+        # Only process if we're on tab-1
+        if active_tab != "tab-1":
+            raise dash.exceptions.PreventUpdate
+
         ctx = dash.callback_context
 
         if ctx.triggered:
@@ -626,7 +639,7 @@ def register_global_policies_area_callbacks(app, df):
             filters_applied = False
 
         # Create the chart figure
-        gp_stacked_area_fig = create_global_policies_stacked_area_plot(
+        gp_stacked_area_fig = create_gp_stacked_area_plot(
             filtered_df=filtered_df,
             full_df=df,
             filters_applied=filters_applied,
@@ -636,7 +649,7 @@ def register_global_policies_area_callbacks(app, df):
         chart_id = "gp-stacked-area-chart"
 
         # Get last modified date and add to title with styling
-        last_modified_date = get_global_policies_last_modified_date()
+        last_modified_date = get_gp_last_modified_date()
         if last_modified_date:
             # Create HTML title with date on new line and smaller font
             title = html.Div(
@@ -694,7 +707,7 @@ def register_global_policies_area_callbacks(app, df):
             raise dash.exceptions.PreventUpdate
 
         # Get last modified date for modal title
-        last_modified_date = get_global_policies_last_modified_date()
+        last_modified_date = get_gp_last_modified_date()
         if last_modified_date:
             # Create HTML modal title with date on new line and smaller font
             modal_title = html.Div(

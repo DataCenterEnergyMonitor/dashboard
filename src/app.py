@@ -17,7 +17,7 @@ from data_loader import (
     create_pue_wue_data,
     load_pue_wue_companies_data,
     load_energyprojections_data,
-    load_global_policies_data,
+    load_gp_data,
     load_energyforecast_data,
     load_reporting_data,
     load_energy_use_data,
@@ -37,7 +37,7 @@ from pages.energy_projections_methods_page import (
     create_energy_projections_methodology_page,
 )
 from pages.energy_projections_data_page import create_energy_projections_data_page
-from pages.global_policies_page import create_global_policies_page
+from pages.global_policies_page import create_gp_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -73,12 +73,14 @@ from callbacks.energy_projections_page_callback import (
     register_energy_projections_callbacks,
 )
 
-# from callbacks.global_policies.area_tab_callback import register_global_policies_area_callbacks
-from callbacks.global_policies.global_policies_page_callback import (
-    register_global_policies_page_callbacks,
+from callbacks.global_policies.gp_page_callback import (
+    register_gp_page_callbacks,
 )
-from callbacks.global_policies.gp_area_tab_callback import (
-    register_global_policies_area_callbacks
+from callbacks.global_policies.gp_tab1_callback import (
+    register_gp_tab1_callbacks
+)
+from callbacks.global_policies.gp_tab2_callback import (
+    register_gp_tab2_callbacks
 )
 from components.kpi_data_cards import create_kpi_cards
 
@@ -114,7 +116,7 @@ def create_app():
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
     pue_wue_companies_df = load_pue_wue_companies_data()
     energyprojections_df = load_energyprojections_data()
-    globalpolicies_df = load_global_policies_data()
+    globalpolicies_df = load_gp_data()
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
@@ -223,8 +225,9 @@ def create_app():
     # Initialize callbacks
     register_pue_wue_callbacks(app, pue_wue_df, pue_wue_companies_df)
     register_energy_projections_callbacks(app, energyprojections_df)
-    register_global_policies_page_callbacks(app, globalpolicies_df)
-    register_global_policies_area_callbacks(app, globalpolicies_df)
+    register_gp_page_callbacks(app, globalpolicies_df)
+    register_gp_tab1_callbacks(app, globalpolicies_df)
+    register_gp_tab2_callbacks(app, globalpolicies_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -278,7 +281,7 @@ def create_app():
         elif pathname == "/energy-projections-data":
             return create_energy_projections_data_page()
         elif pathname == "/global-policies":
-            return create_global_policies_page(app, globalpolicies_df)
+            return create_gp_page(app, globalpolicies_df)
         elif pathname == "/forecast":
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)

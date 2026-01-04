@@ -1,7 +1,7 @@
 from dash import html
 
 
-def create_choropleth_map_tab(app, globalpolicies_df):
+def create_gp_tab3(app, globalpolicies_df):
     # Return just the content, not the full layout (layout is handled by parent)
     return html.H4(
         "Coming soon...",

@@ -6,7 +6,7 @@ import plotly.colors as pc
 from datetime import datetime
 
 
-def create_global_policies_stacked_area_plot(
+def create_gp_stacked_area_plot(
     filtered_df, full_df=None, filters_applied=False
 ):
     """

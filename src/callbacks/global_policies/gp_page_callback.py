@@ -1,22 +1,22 @@
 from dash import Input, Output, State, callback_context, html
 
 # import the tab creation functions
-from components.tabs.global_policies.stacked_area_tab import create_stacked_area_tab
-from components.tabs.global_policies.policy_matrix_tab import create_heatmap_tab
-from components.tabs.global_policies.choropleth_map_tab import create_choropleth_map_tab
+from components.tabs.global_policies.gp_tab1 import create_gp_tab1
+from components.tabs.global_policies.gp_tab2 import create_gp_tab2
+from components.tabs.global_policies.gp_tab3 import create_gp_tab3
 
 # Track if callbacks have been registered to prevent duplicates
-_global_policies_callbacks_registered = False
+_gp_callbacks_registered = False
 
 
-def register_global_policies_page_callbacks(app, globalpolicies_df):
+def register_gp_page_callbacks(app, globalpolicies_df):
     """Registers all callbacks related to the Global Policies page."""
-    global _global_policies_callbacks_registered
+    global _gp_callbacks_registered
 
-    if _global_policies_callbacks_registered:
+    if _gp_callbacks_registered:
         return  # Already registered, skip to prevent duplicates
 
-    _global_policies_callbacks_registered = True
+    _gp_callbacks_registered = True
 
     @app.callback(
         [
@@ -50,11 +50,11 @@ def register_global_policies_page_callbacks(app, globalpolicies_df):
 
         # Render content based on active tab
         if active_tab == "tab-1":
-            content = create_stacked_area_tab(app, globalpolicies_df)
+            content = create_gp_tab1(app, globalpolicies_df)
         elif active_tab == "tab-2":
-            content = create_heatmap_tab(app, globalpolicies_df)
+            content = create_gp_tab2(app, globalpolicies_df)
         elif active_tab == "tab-3":
-            content = create_choropleth_map_tab(app, globalpolicies_df)
+            content = create_gp_tab3(app, globalpolicies_df)
         else:
             content = html.Div("Select a tab to view the data visualization.")
 

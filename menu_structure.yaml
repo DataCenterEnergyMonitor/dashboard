@@ -94,7 +94,7 @@ landing_page_cards:
     description: Comparative company performance metrics
   Energy Demand Estimates and Projections:
     route: /energy-projections
-    preview: assets/previews/energy_forecast_preview.png
+    preview: assets/previews/energy_projections_preview.png
     description: Estimates and projections from 100+ studies
   Water Demand Estimates and Projections:
     route: /forecast

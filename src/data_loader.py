@@ -461,7 +461,7 @@ def load_energyprojections_data():
 
     return df
 
-def load_global_policies_data():
+def load_gp_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
     # Go up one level and into data directory
