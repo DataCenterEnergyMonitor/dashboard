@@ -6,9 +6,7 @@ import plotly.colors as pc
 from datetime import datetime
 
 
-def create_gp_stacked_area_plot(
-    filtered_df, full_df=None, filters_applied=False
-):
+def create_gp_stacked_area_plot(filtered_df, full_df=None, filters_applied=False):
     """
     Create stacked area plot
 
@@ -54,7 +52,7 @@ def create_gp_stacked_area_plot(
     )
 
     # Remove rows with NaN year_introduced for cleaner plot
-    df_yearly = df_yearly[df_yearly["year_introduced"].notna()]
+    # df_yearly = df_yearly[df_yearly["year_introduced"].notna()]
 
     # Convert year_introduced to numeric and then to int to ensure consistent type
     df_yearly["year_introduced"] = pd.to_numeric(
@@ -194,7 +192,10 @@ def create_gp_stacked_area_plot(
     #     print(
     #         f"Missing countries (no valid year_introduced data): {sorted(missing_countries)}"
     #     )
-
+    # cols = df_yearly.columns
+    # print(df_yearly['area_group'].unique())
+    # usa = df_yearly[df_yearly["area_group"] == 'United States - Country']
+    # print(usa)
     # Create color mapping: same base color for country, different shades for jurisdiction levels
     # Get unique countries and assign base colors using Plotly palettes
     unique_countries = sorted(df_yearly["area_group"].str.split(" - ").str[0].unique())
@@ -287,7 +288,7 @@ def create_gp_stacked_area_plot(
         labels={
             "cumulative_policies": "Number of Policies",
             "year_introduced": "Year Introduced",
-            "area_group_label": "Geographic Scope - Jurisdiction Level (Policy Count)"
+            "area_group_label": "Geographic Scope - Jurisdiction Level (Policy Count)",
         },
         # facet_col="jurisdiction_level",  # optional — separate panels for national/city
         # title="Cumulative Number of Policies Over Time",
@@ -326,7 +327,10 @@ def create_gp_stacked_area_plot(
     # Adjust x-axis to start from min year - 1 for better readability
     min_year = df_yearly["year_introduced"].min()
     max_year = df_yearly["year_introduced"].max()
-    fig.update_xaxes(range=[min_year - 1, max_year + 0.5])
+    fig.update_xaxes(
+        range=[min_year - 1, max_year + 1],
+        tickformat="d",  # Format as integer (no decimals)
+    )
 
     # Calculate y-axis limits based on full dataset
     # Get max cumulative policies from filtered data (sum across all groups per year, then max)

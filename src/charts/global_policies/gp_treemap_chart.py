@@ -41,7 +41,7 @@ def build_treemap_data(df, path_cols, policy_col):
     Args:
         df: Preprocessed DataFrame with attr_type and attr_value columns (from preprocess_treemap_data)
         path_cols: List of columns defining hierarchy
-                   e.g. ['region', 'country', 'jurisdiction_level', 'state_province', 'city', 'attr_type', 'attr_value']
+        e.g. ['region', 'country', 'jurisdiction_level', 'state_province', 'city', 'attr_type', 'attr_value']
         policy_col: Column containing policy IDs
 
     Returns: dict with ids, labels, parents, values, policy_ids_map, node_levels
@@ -241,8 +241,18 @@ def create_treemap_fig(
         else:
             maxdepth = 3
 
+    # Get the root node's value for percentage calculation
+    # The root is always "world" in the original data, regardless of current root_id
+    root_value = None
+    if "world" in data["ids"]:
+        world_idx = data["ids"].index("world")
+        root_value = data["values"][world_idx]
+    else:
+        # If world is not in ids (shouldn't happen), use the sum of all values as fallback
+        root_value = sum(data["values"]) if data["values"] else 1
+
     # Build customdata with policy details for hover (especially for leaf nodes)
-    # customdata format: [original_label, count, policy_details_text, is_final_leaf]
+    # customdata format: [original_label, count, policy_details_text, is_final_leaf, percent_of_global]
     customdata = []
     policy_ids_map = data.get("policy_ids_map", {})
 
@@ -312,7 +322,12 @@ def create_treemap_fig(
                 f"{policy_details}"
             )
 
-        customdata.append([orig_label, count, policy_details, is_final_leaf])
+        # Calculate percentage of global (root_value)
+        percent_of_global = (count / root_value * 100) if root_value > 0 else 0
+
+        customdata.append(
+            [orig_label, count, policy_details, is_final_leaf, percent_of_global]
+        )
 
     fig = go.Figure(
         go.Treemap(
@@ -325,7 +340,8 @@ def create_treemap_fig(
             texttemplate="%{label}",
             textposition="middle center",
             # Enhanced hover: show policy details for final leaf nodes
-            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]} policies<br>%{percentRoot:.1%} of "
+            # Use calculated percentage from customdata[4] instead of percentRoot
+            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]} policies<br>%{customdata[4]:.1f}% of "
             + (root_id.split("/")[-1] if root_id != "world" else "Global")
             + "<br><br>%{customdata[2]}<extra></extra>",
             textfont_size=16,
@@ -342,44 +358,3 @@ def create_treemap_fig(
         margin=dict(t=35, l=10, r=10, b=10),
     )
     return fig
-
-
-# ============================================================
-# USAGE IN DASH CALLBACK:
-# ============================================================
-# The treemap chart functions should be called from a callback that receives
-# a filtered dataframe. Example:
-#
-# @app.callback(
-#     Output('treemap', 'figure'),
-#     [Input('apply-filters-btn', 'n_clicks')],
-#     [State('filter-dropdown', 'value'), ...],
-# )
-# def update_treemap(n_clicks, filter_value, ...):
-#     # Filter the dataframe based on filter inputs
-#     filtered_df = filter_data(df, filter_value, ...)
-#
-#     # Define path columns for hierarchy
-#     path_cols = [
-#         "region",
-#         "country",
-#         "jurisdiction_level",
-#         "state_province",
-#         "city",
-#         "attr_type",
-#         "attr_value",
-#     ]
-#
-#     # Build treemap data from filtered dataframe
-#     treemap_data = build_treemap_data(df=filtered_df, path_cols=path_cols, policy_col="policy_id")
-#
-#     # Create and return the chart
-#     fig = create_treemap_fig(treemap_data)
-#     return fig
-#
-# For interactive click handling:
-# @callback(Output('treemap', 'figure'), Input('treemap', 'clickData'), State('store', 'data'))
-# def on_click(click_data, data):
-#     if click_data and click_data['points'][0]['id'] in data['policy_ids_map']:
-#         return create_treemap_fig(data, show_policies_for=click_data['points'][0]['id'])
-#     return create_treemap_fig(data)

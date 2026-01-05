@@ -569,15 +569,17 @@ def load_gp_data():
         return year_dates.where(year_mask).fillna(dt_dates)
 
 
-    # Extract year with fallback: date_introduced -> date_enacted -> date_in_effect
+    # Extract year with fallback: date_introduced -> date_enacted -> date_in_effect -> date_killed
     clean_df["year_introduced"] = extract_year(clean_df["date_introduced"])
     clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_enacted"]))
     clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_in_effect"]))
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_killed"]))
 
     # Convert date_introduced to datetime with same fallback logic
     clean_df["date_introduced"] = to_datetime(clean_df["date_introduced"])
     clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_enacted"]))
     clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_in_effect"]))
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_killed"]))
 
     return clean_df
 
