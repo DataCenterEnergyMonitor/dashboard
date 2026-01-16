@@ -32,10 +32,11 @@ def create_gp_tab3_filters(df):
                                             "marginTop": "20px",
                                         },
                                     ),
-                                    html.Label("Jurisdiction Level:", className="filter-label"
+                                    html.Label(
+                                        "Jurisdiction Level:", className="filter-label"
                                     ),
                                     dcc.Dropdown(
-                                        id="gp_jurisdiction_level",
+                                        id="gp_tab3_jurisdiction_level",
                                         options=[],
                                         multi=True,
                                         placeholder="Select jurisdiction level",
@@ -45,7 +46,7 @@ def create_gp_tab3_filters(df):
                                     ),
                                     html.Label("Order Type:", className="filter-label"),
                                     dcc.Dropdown(
-                                        id="gp_tab2_order_type",
+                                        id="gp_tab3_order_type",
                                         options=[],
                                         multi=True,
                                         placeholder="Select order type",
@@ -55,7 +56,7 @@ def create_gp_tab3_filters(df):
                                     ),
                                     html.Label("Status:", className="filter-label"),
                                     dcc.Dropdown(
-                                        id="gp_tab2_status",
+                                        id="gp_tab3_status",
                                         options=[],
                                         multi=True,
                                         placeholder="Select status",
@@ -67,7 +68,7 @@ def create_gp_tab3_filters(df):
                                         "Instruments:", className="filter-label"
                                     ),
                                     dcc.Checklist(
-                                        id="gp_tab2_instrument",
+                                        id="gp_tab3_instrument",
                                         options=[
                                             {"label": str(val), "value": val}
                                             for val in sorted(
@@ -83,7 +84,7 @@ def create_gp_tab3_filters(df):
                                     ),
                                     html.Label("Objectives:", className="filter-label"),
                                     dcc.Checklist(
-                                        id="gp_tab2_objective",
+                                        id="gp_tab3_objective",
                                         options=[
                                             {"label": str(val), "value": val}
                                             for val in sorted(
@@ -114,7 +115,7 @@ def create_gp_tab3_filters(df):
                                 [
                                     dbc.Button(
                                         "Apply Filters",
-                                        id="gp_tab2_apply-filters-btn",
+                                        id="gp_tab3_apply-filters-btn",
                                         color="primary",
                                         size="sm",
                                         n_clicks=0,
@@ -126,7 +127,7 @@ def create_gp_tab3_filters(df):
                                     ),
                                     dbc.Button(
                                         "Clear All",
-                                        id="gp_tab2_clear-filters-btn",
+                                        id="gp_tab3_clear-filters-btn",
                                         color="outline-secondary",
                                         size="sm",
                                         n_clicks=0,

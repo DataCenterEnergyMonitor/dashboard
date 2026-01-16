@@ -486,6 +486,7 @@ def load_gp_data():
             "state_province",
             "country",
             "country_iso_code",
+            "state_iso_code",
             "supranational_policy_area",
             "region",
             "order_type",
@@ -582,6 +583,98 @@ def load_gp_data():
     clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_killed"]))
 
     return clean_df
+
+# transpose global policies data so that we get a DataFrame with one row per objective/instrument
+def transpose_gp_data(df):
+    """
+    Preprocess dataframe for a treemap and choropleth map visualizations.
+
+    Args:
+        df: Raw DataFrame with policy data
+
+    Returns:
+        transposed_df: Processed DataFrame with one row per objective/instrument
+    """
+    # identify the latest amendment name for each policy
+    latest_metadata = df.groupby("policy_id")["version"].last().reset_index()
+
+    # filter original DF to only include rows matching that Policy + Amendment combo
+    amendment_df = pd.merge(df, latest_metadata, on=["policy_id", "version"], how="inner")
+
+    # create a clean Objective DataFrame
+    obj_long = amendment_df[amendment_df["has_objective"] == "Yes"].copy()
+    obj_long = obj_long.drop_duplicates(
+        subset=[
+            "policy_id",
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "state_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "objective",
+        ]
+    )
+    obj_long["attr_type"] = "Objective"
+    obj_long["attr_value"] = obj_long["objective"]
+
+    # create a clean Instrument DataFrame
+    inst_long = amendment_df[amendment_df["has_instrument"] == "Yes"].copy()
+    inst_long = inst_long.drop_duplicates(
+        subset=[
+            "policy_id",
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "state_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "instrument",
+        ]
+    )
+    inst_long["attr_type"] = "Instrument"
+    inst_long["attr_value"] = inst_long["instrument"]
+
+    # stack instrument and objective dataframes to ensure 1 row per Objective and 1 row per Instrument
+    transposed_df = pd.concat([obj_long, inst_long], ignore_index=True)
+
+    # calculate counts on the stacked data
+    transposed_df["unique_per_attr"] = transposed_df.groupby(
+        [
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "state_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "objective",
+            "attr_value",
+        ],
+        dropna=False,
+    )["policy_id"].transform("nunique")
+    transposed_df = transposed_df.drop(
+        ["instrument", "has_instrument", "objective", "has_objective"], axis=1
+    )
+    transposed_df["deduped_policy_count"] = (~transposed_df["policy_id"].duplicated()).astype(
+        int
+    )
+
+    return transposed_df
 
 def load_energyforecast_data():
     # Get the current file's directory (src folder)

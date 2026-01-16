@@ -185,11 +185,11 @@ def create_chart_row(
     )
 
 
-def create_gp_tab3(app, globalpolicies_df):
+def create_gp_tab3(app, gp_transposed_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_gp_tab3_filters(globalpolicies_df),
+            create_gp_tab3_filters(gp_transposed_df),
             html.Div(
                 [
                     # Mobile navigation kept for mobile devices

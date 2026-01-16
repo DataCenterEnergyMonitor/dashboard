@@ -771,39 +771,3 @@ def register_gp_tab2_callbacks(app, df):
             # skip_rows=1,
             n_clicks=n_clicks,
         )
-
-
-# def register_gp_tab2_callbacks(app, df):
-#     @app.callback(
-#     Output('treemap', 'figure'),
-#     [Input('apply-filters-btn', 'n_clicks')],
-#     [State('filter-dropdown', 'value'), ...],
-# )
-
-#     def update_treemap(n_clicks, filter_value):
-#             # Filter the dataframe based on filter inputs
-#         filtered_df = filtered_df.copy()
-
-#             # Define path columns for hierarchy
-#         path_cols = [
-#                 "region",
-#                 "country",
-#                 "jurisdiction_level",
-#                 "state_province",
-#                 "city",
-#                 "attr_type",
-#                 "attr_value",
-#             ]
-#         # Build treemap data from filtered dataframe
-#         treemap_data = build_treemap_data(df=filtered_df, path_cols=path_cols, policy_col="policy_id")
-
-#         # Create and return the chart
-#         fig = create_treemap_fig(treemap_data)
-#         return fig
-#     #
-#     # For interactive click handling:
-#     @callback(Output('treemap', 'figure'), Input('treemap', 'clickData'), State('store', 'data'))
-#     def on_click(click_data, data):
-#         if click_data and click_data['points'][0]['id'] in data['policy_ids_map']:
-#             return create_treemap_fig(data, show_policies_for=click_data['points'][0]['id'])
-#         return create_treemap_fig(data)
