@@ -14,3 +14,11 @@ register kernel
 ```
 python -m ipykernel install --user --name dcmonitor --display-name "dcmonitor"
 ```
+
+Build steps:
+
+1. Update cache file with coordinates of the global policy locations when global_policies dataset is updated.
+
+```
+python scripts/update_geocoding_cache.py
+```

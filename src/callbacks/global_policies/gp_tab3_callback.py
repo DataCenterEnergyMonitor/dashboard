@@ -1,4 +1,3 @@
-import os
 import dash
 from pathlib import Path
 from dash import Input, Output, State, html
@@ -10,115 +9,8 @@ from charts.global_policies.gp_choropleth_map import (
 )
 from components.excel_export import create_filtered_excel_download
 from components.tabs.global_policies.gp_tab3 import create_chart_row
-from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
+from helpers.geojson_cache import get_geojson
 import numpy as np
-
-CACHE_FILE = "location_coords_cache3.csv"
-geojson_url = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_1_states_provinces.geojson"
-
-# Initialize geocoder once outside the function to avoid repeated overhead
-geolocator = Nominatim(user_agent="dcewm_v0")
-geocode_service = RateLimiter(geolocator.geocode, min_delay_seconds=1)
-
-
-def geocode_with_level(
-    df, level="city", city_col="city", state_col="state_province", country_col="country"
-):
-    df_clean = df.copy()
-
-    if level == "state":
-        geo_cols = [state_col, country_col]
-        lat_name, lon_name = "state_lat", "state_lon"
-    else:
-        geo_cols = [city_col, state_col, country_col]
-        lat_name, lon_name = "lat", "lon"
-
-    available_cols = [c for c in geo_cols if c in df_clean.columns]
-
-    # standardize data types and handle "empty" strings
-    for col in available_cols:
-        df_clean[col] = (
-            df_clean[col]
-            .astype(str)
-            .replace(["nan", "None", "", "<NA>", "NONE", "nan", "null"], pd.NA)
-        )
-
-    # only process rows where the level-specific primary column is NOT NA
-    # level='state' -> check state_col | level='city' -> check city_col
-    mask = df_clean[available_cols[0]].notna()
-    process_df = df_clean[mask].copy()
-    other_df = df_clean[~mask].copy()
-
-    if process_df.empty:
-        # ensure columns exist even if we skip processing
-        for col in [lat_name, lon_name]:
-            if col not in df_clean.columns:
-                df_clean[col] = pd.NA
-        return df_clean
-
-    unique_locs = process_df[available_cols].drop_duplicates()
-
-    # load cache
-    if os.path.exists(CACHE_FILE):
-        cache = pd.read_csv(CACHE_FILE, dtype=str)
-    else:
-        cache = pd.DataFrame(
-            columns=[city_col, state_col, country_col, "lat", "lon", "geo_level"]
-        )
-
-    level_cache = cache[cache["geo_level"] == level].copy()
-
-    # identify locations with missing coords
-    merged = unique_locs.merge(
-        level_cache, on=available_cols, how="left", indicator=True
-    )
-    to_geocode = merged[merged["_merge"] == "left_only"][available_cols]
-
-    if not to_geocode.empty:
-        print(f"Geocoding {len(to_geocode)} new {level} locations...")
-        new_results = []
-        for _, row in to_geocode.iterrows():
-            # Filter out NA parts for the query string
-            address_parts = [str(row[c]) for c in available_cols if pd.notna(row[c])]
-            address = ", ".join(address_parts)
-
-            try:
-                location = geocode_service(address)
-                if location:
-                    res = {col: row[col] for col in available_cols}
-                    res.update(
-                        {
-                            "lat": str(location.latitude),
-                            "lon": str(location.longitude),
-                            "geo_level": level,
-                        }
-                    )
-                    new_results.append(res)
-            except Exception as e:
-                print(f"    Error on {address}: {e}")
-
-        if new_results:
-            new_df = pd.DataFrame(new_results)
-            cache = pd.concat([cache, new_df], ignore_index=True)
-            cache.to_csv(CACHE_FILE, index=False)
-
-    # refresh level_cache from updated cache
-    updated_level_cache = cache[cache["geo_level"] == level][
-        available_cols + ["lat", "lon"]
-    ].copy()
-    updated_level_cache = updated_level_cache.rename(
-        columns={"lat": lat_name, "lon": lon_name}
-    )
-
-    # drop target columns from process_df if they exist to prevent merge duplicates
-    process_df = process_df.drop(columns=[lat_name, lon_name], errors="ignore")
-
-    # merge and recombine
-    process_df = process_df.merge(updated_level_cache, on=available_cols, how="left")
-    result_df = pd.concat([process_df, other_df], ignore_index=True)
-
-    return result_df
 
 
 def apply_multi_value_filter(df, column, selected_values):
@@ -130,10 +22,6 @@ def apply_multi_value_filter(df, column, selected_values):
     for value in selected_values:
         mask = mask | df[column].str.contains(value, case=False, na=False, regex=False)
     return df[mask]
-
-
-# Note: filter_data function removed - filtering now happens inside build_treemap_data
-# on the stacked_df which has a cleaner structure with attr_type and attr_value columns
 
 
 def get_options(df, column):
@@ -152,7 +40,7 @@ def get_gp_last_modified_date():
     """Get the last modified date for DCEWM-GlobalPolicies.xlsx from metadata.json"""
     try:
         root_dir = Path(__file__).parent.parent.parent.parent
-        json_path = root_dir / "data" / "metadata.json"
+        json_path = root_dir / "data" / "dependencies" / "metadata.json"
 
         if not json_path.exists():
             print(f"Warning: Metadata file not found at {json_path.absolute()}")
@@ -553,37 +441,27 @@ def register_gp_tab3_callbacks(app, df):
                 filtered_map_df["status"].isin(gp_tab3_status)
             ]
         if gp_tab3_instrument:
-            # Filter for rows where attr_type is Instrument and attr_value matches
-            instrument_mask = (
-                filtered_map_df["attr_type"] == "Instrument"
-            ) & filtered_map_df["attr_value"].isin(gp_tab3_instrument)
-            filtered_map_df = filtered_map_df[instrument_mask]
+            # Find all policy_ids that have the selected instruments
+            # Keep ALL rows (both Instrument and Objective) for those policies
+            instrument_policy_ids = filtered_map_df[
+                (filtered_map_df["attr_type"] == "Instrument")
+                & filtered_map_df["attr_value"].isin(gp_tab3_instrument)
+            ]["policy_id"].unique()
+            filtered_map_df = filtered_map_df[
+                filtered_map_df["policy_id"].isin(instrument_policy_ids)
+            ]
         if gp_tab3_objective:
-            # Filter for rows where attr_type is Objective and attr_value matches
-            objective_mask = (
-                filtered_map_df["attr_type"] == "Objective"
-            ) & filtered_map_df["attr_value"].isin(gp_tab3_objective)
-            filtered_map_df = filtered_map_df[objective_mask]
+            # Find all policy_ids that have the selected objectives
+            # Keep ALL rows (both Instrument and Objective) for those policies
+            objective_policy_ids = filtered_map_df[
+                (filtered_map_df["attr_type"] == "Objective")
+                & filtered_map_df["attr_value"].isin(gp_tab3_objective)
+            ]["policy_id"].unique()
+            filtered_map_df = filtered_map_df[
+                filtered_map_df["policy_id"].isin(objective_policy_ids)
+            ]
 
         map_geo_df = filtered_map_df.copy()
-        map_geo_df["lat"] = np.nan
-        map_geo_df["lon"] = np.nan
-        map_geo_df["state_lat"] = np.nan
-        map_geo_df["state_lon"] = np.nan
-
-        # get state centroids
-        map_geo_df = geocode_with_level(
-            map_geo_df, level="state", state_col="state_province", country_col="country"
-        )
-
-        # get city coordinates
-        map_geo_df = geocode_with_level(
-            map_geo_df,
-            level="city",
-            city_col="city",
-            state_col="state_province",
-            country_col="country",
-        )
 
         # Calculate unique policy counts per geographic level for filtered data
         # This needs to be done on both dataframes before passing to chart
@@ -634,11 +512,14 @@ def register_gp_tab3_callbacks(app, df):
             np.nan,
         )
 
+        # Get GeoJSON (from cache if available, otherwise URL)
+        geojson_data = get_geojson()
+
         # Create the chart figure (pass filtered_df for policy metadata display)
         gp_choropleth_map_fig = create_gp_choropleth_map(
             filtered_df=filtered_map_df,
             filtered_geo_df=map_geo_df,
-            geojson_url=geojson_url,
+            geojson=geojson_data,
         )
 
         # Create chart component using create_chart_row
@@ -667,6 +548,28 @@ def register_gp_tab3_callbacks(app, df):
         expand_id = "expand-gp-choropleth-map"
         filename = "global_policies_map"
 
+        # Custom config for geo plot - use geo-specific modebar buttons
+        # For geo plots, use zoomInGeo/zoomOutGeo instead of zoomIn2d/zoomOut2d
+        geo_chart_config = {
+            "responsive": True,
+            "displayModeBar": True,
+            "modeBarButtons": [
+                ["toImage"],  # Download image
+                ["zoomInGeo"],  # Zoom in (geo-specific)
+                ["zoomOutGeo"],  # Zoom out (geo-specific)
+                ["resetGeo"],  # Autoscale/reset (geo-specific)
+                # Note: Panning is done by dragging on geo plots, no separate pan button
+            ],
+            "displaylogo": False,
+            "toImageButtonOptions": {
+                "format": "png",
+                "filename": filename,
+                "height": 700,
+                "width": 1200,
+                "scale": 1,
+            },
+        }
+
         return (
             html.Div(
                 [
@@ -677,6 +580,7 @@ def register_gp_tab3_callbacks(app, df):
                         expand_id=expand_id,
                         filename=filename,
                         figure=gp_choropleth_map_fig,
+                        custom_config=geo_chart_config,
                     ),
                 ],
                 style={"margin": "35px 0"},

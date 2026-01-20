@@ -19,6 +19,7 @@ def create_chart_row(
     accordion_title=None,
     filename="chart",
     figure=None,
+    custom_config=None,
 ):
     """
     Create a standardized chart row with consistent styling
@@ -29,6 +30,7 @@ def create_chart_row(
         expand_id: ID for expand button
         description_md: Markdown description for right column
         filename: Filename for image download
+        custom_config: Optional custom config dict to override default config
     """
 
     # Chart config
@@ -51,6 +53,10 @@ def create_chart_row(
             "scale": 1,
         },
     }
+
+    # Override with custom config if provided
+    if custom_config:
+        chart_config.update(custom_config)
 
     # Page layout styles
     card_header_style = {
@@ -200,7 +206,7 @@ def create_gp_tab3(app, gp_transposed_df):
                                 [
                                     dbc.NavLink(
                                         "Global Policies",
-                                        href="#global-policies-geo-distribution-section", 
+                                        href="#global-policies-geo-distribution-section",
                                         className="px-2",
                                     ),
                                 ],

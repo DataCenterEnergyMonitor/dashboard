@@ -77,15 +77,9 @@ from callbacks.energy_projections_page_callback import (
 from callbacks.global_policies.gp_page_callback import (
     register_gp_page_callbacks,
 )
-from callbacks.global_policies.gp_tab1_callback import (
-    register_gp_tab1_callbacks
-)
-from callbacks.global_policies.gp_tab2_callback import (
-    register_gp_tab2_callbacks
-)
-from callbacks.global_policies.gp_tab3_callback import (
-    register_gp_tab3_callbacks
-)
+from callbacks.global_policies.gp_tab1_callback import register_gp_tab1_callbacks
+from callbacks.global_policies.gp_tab2_callback import register_gp_tab2_callbacks
+from callbacks.global_policies.gp_tab3_callback import register_gp_tab3_callbacks
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -140,7 +134,7 @@ def create_app():
     import json
     from pathlib import Path
 
-    json_path = Path("data") / "metadata.json"
+    json_path = Path("data") / "dependencies" / "metadata.json"
 
     with open(json_path, "r") as f:
         metadata = json.load(f)

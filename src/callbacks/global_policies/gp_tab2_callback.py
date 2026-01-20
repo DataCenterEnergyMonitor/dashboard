@@ -134,7 +134,7 @@ def get_gp_last_modified_date():
     """Get the last modified date for DCEWM-GlobalPolicies.xlsx from metadata.json"""
     try:
         root_dir = Path(__file__).parent.parent.parent.parent
-        json_path = root_dir / "data" / "metadata.json"
+        json_path = root_dir / "data" / "dependencies" / "metadata.json"
 
         if not json_path.exists():
             print(f"Warning: Metadata file not found at {json_path.absolute()}")
