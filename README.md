@@ -7,7 +7,7 @@ conda env create -f environment.yml
 
 activate environment
 ```
-condat activate dcmonitor
+conda activate dcmonitor
 ```
 
 register kernel
