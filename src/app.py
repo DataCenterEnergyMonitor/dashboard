@@ -69,8 +69,8 @@ from callbacks.company_profile_callbacks import (
     create_company_profile_callback,
     create_company_profile_download_callback,
 )
-from callbacks.pue_wue_page_callback import register_pue_wue_callbacks
-from callbacks.energy_projections_page_callback import (
+from callbacks.pue_wue_page_callbacks import register_pue_wue_callbacks
+from callbacks.energy_projections_page_callbacks import (
     register_energy_projections_callbacks,
 )
 

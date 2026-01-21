@@ -75,9 +75,10 @@ def filter_data(
     filtered_df = apply_multi_value_filter(
         filtered_df, "assigned_climate_zones", assigned_climate_zones
     )
-    filtered_df = apply_multi_value_filter(
-        filtered_df, "default_climate_zones", default_climate_zones
-    )
+    # TODO: Temporarily disabled - enable when default climate zones are finalized
+    # filtered_df = apply_multi_value_filter(
+    #     filtered_df, "default_climate_zones", default_climate_zones
+    # )
     # TODO: Temporarily disabled - enable when cooling technology options are finalized
     # filtered_df = apply_multi_value_filter(filtered_df, 'assigned_cooling_technologies', cooling_technologies)
 

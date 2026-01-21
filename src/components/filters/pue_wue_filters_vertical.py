@@ -183,8 +183,8 @@ def create_pue_wue_filters(df1, df2):
                         persistence_type="session",
                         className="filter-box mb-2"
                     ),
-                    
-                    html.Label("Default Climate Zone:", className="filter-label"),
+                    # temporarily hidden
+                    html.Label("Default Climate Zone:", className="filter-label_disabled"),
                     dcc.Dropdown(
                         id='default_climate_zones', 
                         options=[], 
@@ -192,10 +192,10 @@ def create_pue_wue_filters(df1, df2):
                         placeholder="Select climate zones", 
                         persistence=True,
                         persistence_type="session",
-                        className="filter-box mb-2"
+                        className="filter-box-disabled mb-2"
                     ),
-                    
-                    html.Label("Cooling Technology (coming soon):", className="filter-label_disabled"),
+                    # temporarily hidden
+                    html.Label("Cooling Technology (hidden):", className="filter-label_disabled"),
                     dcc.Dropdown(
                         id='cooling_technologies', 
                         options=[], 
