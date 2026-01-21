@@ -18,6 +18,7 @@ from data_loader import (
     load_pue_wue_companies_data,
     load_energyprojections_data,
     load_gp_data,
+    transpose_gp_data,
     load_energyforecast_data,
     load_reporting_data,
     load_energy_use_data,
@@ -76,12 +77,9 @@ from callbacks.energy_projections_page_callback import (
 from callbacks.global_policies.gp_page_callback import (
     register_gp_page_callbacks,
 )
-from callbacks.global_policies.gp_tab1_callback import (
-    register_gp_tab1_callbacks
-)
-from callbacks.global_policies.gp_tab2_callback import (
-    register_gp_tab2_callbacks
-)
+from callbacks.global_policies.gp_tab1_callback import register_gp_tab1_callbacks
+from callbacks.global_policies.gp_tab2_callback import register_gp_tab2_callbacks
+from callbacks.global_policies.gp_tab3_callback import register_gp_tab3_callbacks
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -117,6 +115,9 @@ def create_app():
     pue_wue_companies_df = load_pue_wue_companies_data()
     energyprojections_df = load_energyprojections_data()
     globalpolicies_df = load_gp_data()
+    gp_transposed_df = transpose_gp_data(globalpolicies_df)
+    print("TEST-TEST: transposed_df columns")
+    print(gp_transposed_df.columns)
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     energy_use_df = load_energy_use_data()
@@ -133,7 +134,7 @@ def create_app():
     import json
     from pathlib import Path
 
-    json_path = Path("data") / "metadata.json"
+    json_path = Path("data") / "dependencies" / "metadata.json"
 
     with open(json_path, "r") as f:
         metadata = json.load(f)
@@ -227,7 +228,9 @@ def create_app():
     register_energy_projections_callbacks(app, energyprojections_df)
     register_gp_page_callbacks(app, globalpolicies_df)
     register_gp_tab1_callbacks(app, globalpolicies_df)
-    register_gp_tab2_callbacks(app, globalpolicies_df)
+    # Use the transposed dataframe (with attr_type/attr_value) for Tab 2 callbacks
+    register_gp_tab2_callbacks(app, gp_transposed_df)
+    register_gp_tab3_callbacks(app, gp_transposed_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )

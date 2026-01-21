@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
-#import janitor
+
+# import janitor
 from janitor import clean_names
 import re
 import os
@@ -11,15 +12,18 @@ import numpy as np
 import sys
 import time
 
+# load support functions
+from helpers.geocode_locations import add_coordinates_from_cache
+
 # def update_metadata(excel_path, json_path="data/metadata.json"):
 
 #     mtime = os.path.getmtime(excel_path)
 #     last_modified = datetime.fromtimestamp(mtime).isoformat()
-    
+
 #     # Get the current file's directory (src folder)
 #     current_dir = Path(__file__).parent
 #     json_path=current_dir.parent / "data" / "metadata.json"
-    
+
 #     # read existing JSON or initialize
 #     try:
 #         with open(json_path, "r") as f:
@@ -34,6 +38,7 @@ import time
 
 #     with open(json_path, "w") as f:
 #         json.dump(data, f, indent=2)
+
 
 def load_pue_data():
     # Get the current file's directory (src folder)
@@ -105,7 +110,7 @@ def load_wue_data():
             # "default_climate_zone_s_": "default_climate_zones",
             # "is_wue_self_reported_": "self_reported",
             "wue_type": "metric_type",
-            "wue_value": "metric_value"
+            "wue_value": "metric_value",
         },
         inplace=True,
     )
@@ -127,10 +132,9 @@ def create_pue_wue_data(pue_df, wue_df):
     # # DEBUG: list of columns
     # print("PUE columns:", pue_df.columns.tolist())
     # print("\nWUE columns:", wue_df.columns.tolist())
-    
+
     # print("\nClimate zones in PUE:", "assigned_climate_zones" in pue_df.columns)
     # print("Climate zones in WUE:", "assigned_climate_zones" in wue_df.columns)
-    
 
     wue_selected = wue_df[
         [
@@ -194,47 +198,50 @@ def create_pue_wue_data(pue_df, wue_df):
 
     return pue_wue_df
 
+
 def fill_inactive_company_years(df):
     """
     For companies marked as 'company Inactive', fill all subsequent years
     """
-    all_years = sorted(df['year'].unique())
+    all_years = sorted(df["year"].unique())
     filled_rows = []
-    
-    for company, company_data in df.groupby('company'):
-        
+
+    for company, company_data in df.groupby("company"):
         # find the rows where a company became inactive
-        inactive_rows = company_data[company_data['reports_pue'] == 'company Inactive']
-        
+        inactive_rows = company_data[company_data["reports_pue"] == "company Inactive"]
+
         if not inactive_rows.empty:
             # extract the metadata from the first recorded inactive year
-            first_row = inactive_rows.sort_values('year').iloc[0]
-            first_inactive_year = first_row['year']
-            
-            successor = first_row.get('successor_entity', "")
-            status_date = first_row.get('status_effective_date', "")
-            if status_date and hasattr(status_date, 'strftime'):
-                status_date = status_date.strftime('%Y-%m-%d')
-            
+            first_row = inactive_rows.sort_values("year").iloc[0]
+            first_inactive_year = first_row["year"]
+
+            successor = first_row.get("successor_entity", "")
+            status_date = first_row.get("status_effective_date", "")
+            if status_date and hasattr(status_date, "strftime"):
+                status_date = status_date.strftime("%Y-%m-%d")
+
             # create a set of years that already have data for this company
-            existing_years = set(company_data['year'])
-            
+            existing_years = set(company_data["year"])
+
             # append the rows with inactive company details following the row with the first inactive year
             for year in all_years:
                 if year > first_inactive_year and year not in existing_years:
-                    filled_rows.append({
-                        'company': company,
-                        'year': year,
-                        'reports_pue': 'company Inactive',
-                        'reports_wue': 'company Inactive',
-                        'successor_entity': successor,
-                        'status_effective_date': status_date,
-                    })
-    
+                    filled_rows.append(
+                        {
+                            "company": company,
+                            "year": year,
+                            "reports_pue": "company Inactive",
+                            "reports_wue": "company Inactive",
+                            "successor_entity": successor,
+                            "status_effective_date": status_date,
+                        }
+                    )
+
     if filled_rows:
         return pd.concat([df, pd.DataFrame(filled_rows)], ignore_index=True)
-    
+
     return df
+
 
 # load companies list data for pue and wue reporting
 def load_pue_wue_companies_data():
@@ -243,24 +250,23 @@ def load_pue_wue_companies_data():
     # Go up one level and into data directory
     data_path = current_dir.parent / "data" / "Companies_list.xlsx"
 
-    companies_df = pd.read_excel(data_path, sheet_name="summary", index_col=None, skiprows=1)
+    companies_df = pd.read_excel(
+        data_path, sheet_name="summary", index_col=None, skiprows=1
+    )
     companies_df = companies_df.clean_names()
 
     # Clean string columns
-    string_columns = [
-        "company",
-        "entity_status",
-        "successor_entity",
-        "year_founded"
-    ]
+    string_columns = ["company", "entity_status", "successor_entity", "year_founded"]
     for col in string_columns:
         if col in companies_df.columns:
             companies_df[col] = companies_df[col].str.strip()
 
     # Set NaN values in year_founded to 2000
-    companies_df['year_founded'] = pd.to_numeric(companies_df['year_founded'], errors='coerce')
-    companies_df['year_founded'].fillna(2000, inplace=True)
-    companies_df['year_founded'] = companies_df['year_founded'].astype(int)
+    companies_df["year_founded"] = pd.to_numeric(
+        companies_df["year_founded"], errors="coerce"
+    )
+    companies_df["year_founded"].fillna(2000, inplace=True)
+    companies_df["year_founded"] = companies_df["year_founded"].astype(int)
 
     # Go up one level and into data directory
     data_path = current_dir.parent / "data" / "Companies_list.xlsx"
@@ -269,44 +275,42 @@ def load_pue_wue_companies_data():
     df = df.clean_names()
 
     # Clean string columns
-    string_columns = [
-        "company",
-        "reports_pue",
-        "reports_wue"
-    ]
+    string_columns = ["company", "reports_pue", "reports_wue"]
     for col in string_columns:
         if col in df.columns:
             df[col] = df[col].str.strip()
 
     # Merge the two dataframes
-    pue_wue_reporting_df = pd.merge(
-        df,
-        companies_df,
-        on="company",
-        how="left"
-    )
+    pue_wue_reporting_df = pd.merge(df, companies_df, on="company", how="left")
 
     # Keep only relevant fields
     pue_wue_reporting_df = pue_wue_reporting_df[
-            [
-                "company",
-                "year",
-                "reports_pue",
-                "reports_wue",
-                "year_founded",
-                "entity_status",
-                "successor_entity",
-                "status_effective_date",
-            ]
+        [
+            "company",
+            "year",
+            "reports_pue",
+            "reports_wue",
+            "year_founded",
+            "entity_status",
+            "successor_entity",
+            "status_effective_date",
         ]
+    ]
 
     # Set NaN values in year_founded to 2000
-    pue_wue_reporting_df['year_founded'] = pd.to_numeric(pue_wue_reporting_df['year_founded'], errors='coerce')
-    pue_wue_reporting_df['year_founded'].fillna(2000, inplace=True)
-    pue_wue_reporting_df['year_founded'] = pue_wue_reporting_df['year_founded'].astype(int)
+    pue_wue_reporting_df["year_founded"] = pd.to_numeric(
+        pue_wue_reporting_df["year_founded"], errors="coerce"
+    )
+    pue_wue_reporting_df["year_founded"].fillna(2000, inplace=True)
+    pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df["year_founded"].astype(
+        int
+    )
 
-    # Set reporting status to Company not established if year_founded > reporting year 
-    pue_wue_reporting_df.loc[pue_wue_reporting_df['year'] < pue_wue_reporting_df['year_founded'], ['reports_pue', 'reports_wue']] = 'company not established'
+    # Set reporting status to Company not established if year_founded > reporting year
+    pue_wue_reporting_df.loc[
+        pue_wue_reporting_df["year"] < pue_wue_reporting_df["year_founded"],
+        ["reports_pue", "reports_wue"],
+    ] = "company not established"
 
     # handle Pending Data status
     # current_date = datetime.today()
@@ -315,24 +319,21 @@ def load_pue_wue_companies_data():
     #     (pue_wue_reporting_df['year'] == current_year) &
     #     (pue_wue_reporting_df[['entity_status']].eq(
     #         'no reporting evident').all(axis=1)), ['reports_pue', 'reports_wue']] = 'not yet released'
-    cols_to_check = ['reports_pue', 'reports_wue']
+    cols_to_check = ["reports_pue", "reports_wue"]
     current_year = datetime.today().year
 
     # iterate and update each column separately
     for col in cols_to_check:
-        mask = (
-            (pue_wue_reporting_df['year'] == current_year) & 
-            (
-                pue_wue_reporting_df[col].isna() | 
-                pue_wue_reporting_df[col].eq('') | 
-                pue_wue_reporting_df[col].eq('no reporting evident') |
-                pue_wue_reporting_df[col].eq('not yet released')
-            )
+        mask = (pue_wue_reporting_df["year"] == current_year) & (
+            pue_wue_reporting_df[col].isna()
+            | pue_wue_reporting_df[col].eq("")
+            | pue_wue_reporting_df[col].eq("no reporting evident")
+            | pue_wue_reporting_df[col].eq("not yet released")
         )
-        
+
         # Apply update to this column only
-        pue_wue_reporting_df.loc[mask, col] = 'pending'
-    
+        pue_wue_reporting_df.loc[mask, col] = "pending"
+
     pue_wue_reporting_df = fill_inactive_company_years(pue_wue_reporting_df)
     pue_wue_reporting_df.rename(columns={"company": "company_name"}, inplace=True)
 
@@ -461,6 +462,7 @@ def load_energyprojections_data():
 
     return df
 
+
 def load_gp_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
@@ -486,6 +488,7 @@ def load_gp_data():
             "state_province",
             "country",
             "country_iso_code",
+            "state_iso_code",
             "supranational_policy_area",
             "region",
             "order_type",
@@ -514,15 +517,15 @@ def load_gp_data():
 
     # pivot longer all instrument and objective columns
     instrument_columns = [
-            "Measurement and Reporting",
-            "Procurement standard",
-            "Performance standard",
-            "Research, demonstration, and development",
-            "Capacity building",
-            "Rate structuring",
-            "Development incentives",
-            "Development restrictions",
-            "Other",
+        "Measurement and Reporting",
+        "Procurement standard",
+        "Performance standard",
+        "Research, demonstration, and development",
+        "Capacity building",
+        "Rate structuring",
+        "Development incentives",
+        "Development restrictions",
+        "Other",
     ]
     transposed_df = df.melt(
         id_vars=[col for col in df.columns if col not in instrument_columns],
@@ -532,15 +535,15 @@ def load_gp_data():
     )
 
     objective_columns = [
-            "Energy",
-            "Power",
-            "Water",
-            "Emissions",
-            "Other Environemental",
-            "Taxes",
-            "Permits",
-            "Employement",
-            "Communities",
+        "Energy",
+        "Power",
+        "Water",
+        "Emissions",
+        "Other Environemental",
+        "Taxes",
+        "Permits",
+        "Employement",
+        "Communities",
     ]
     transposed_df = transposed_df.melt(
         id_vars=[col for col in transposed_df.columns if col not in objective_columns],
@@ -559,7 +562,6 @@ def load_gp_data():
         dt_years = pd.to_datetime(date_col, errors="coerce").dt.year
         return result.fillna(dt_years)
 
-
     # Convert to datetime: handle numeric years (1900-2100) or parse as datetime
     def to_datetime(date_col):
         numeric = pd.to_numeric(date_col, errors="coerce")
@@ -568,20 +570,142 @@ def load_gp_data():
         dt_dates = pd.to_datetime(date_col, errors="coerce")
         return year_dates.where(year_mask).fillna(dt_dates)
 
-
     # Extract year with fallback: date_introduced -> date_enacted -> date_in_effect -> date_killed
     clean_df["year_introduced"] = extract_year(clean_df["date_introduced"])
-    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_enacted"]))
-    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_in_effect"]))
-    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(extract_year(clean_df["date_killed"]))
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(
+        extract_year(clean_df["date_enacted"])
+    )
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(
+        extract_year(clean_df["date_in_effect"])
+    )
+    clean_df["year_introduced"] = clean_df["year_introduced"].fillna(
+        extract_year(clean_df["date_killed"])
+    )
 
     # Convert date_introduced to datetime with same fallback logic
     clean_df["date_introduced"] = to_datetime(clean_df["date_introduced"])
-    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_enacted"]))
-    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_in_effect"]))
-    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(to_datetime(clean_df["date_killed"]))
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(
+        to_datetime(clean_df["date_enacted"])
+    )
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(
+        to_datetime(clean_df["date_in_effect"])
+    )
+    clean_df["date_introduced"] = clean_df["date_introduced"].fillna(
+        to_datetime(clean_df["date_killed"])
+    )
 
     return clean_df
+
+
+# transpose global policies data so that we get a DataFrame with one row per objective/instrument
+def transpose_gp_data(df):
+    """
+    Preprocess dataframe for a treemap and choropleth map visualizations.
+
+    Args:
+        df: Raw DataFrame with policy data
+
+    Returns:
+        transposed_df: Processed DataFrame with one row per objective/instrument
+    """
+    # identify the latest amendment name for each policy
+    latest_metadata = df.groupby("policy_id")["version"].last().reset_index()
+
+    # filter original DF to only include rows matching that Policy + Amendment combo
+    amendment_df = pd.merge(
+        df, latest_metadata, on=["policy_id", "version"], how="inner"
+    )
+
+    # create a clean Objective DataFrame
+    obj_long = amendment_df[amendment_df["has_objective"] == "Yes"].copy()
+    obj_long = obj_long.drop_duplicates(
+        subset=[
+            "policy_id",
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "state_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "objective",
+        ]
+    )
+    obj_long["attr_type"] = "Objective"
+    obj_long["attr_value"] = obj_long["objective"]
+
+    # create a clean Instrument DataFrame
+    inst_long = amendment_df[amendment_df["has_instrument"] == "Yes"].copy()
+    inst_long = inst_long.drop_duplicates(
+        subset=[
+            "policy_id",
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "state_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "instrument",
+        ]
+    )
+    inst_long["attr_type"] = "Instrument"
+    inst_long["attr_value"] = inst_long["instrument"]
+
+    # stack instrument and objective dataframes to ensure 1 row per Objective and 1 row per Instrument
+    transposed_df = pd.concat([obj_long, inst_long], ignore_index=True)
+
+    # calculate counts on the stacked data
+    transposed_df["unique_per_attr"] = transposed_df.groupby(
+        [
+            "jurisdiction_level",
+            "city",
+            "county",
+            "state_province",
+            "country",
+            "country_iso_code",
+            "state_iso_code",
+            "supranational_policy_area",
+            "region",
+            "order_type",
+            "status",
+            "objective",
+            "attr_value",
+        ],
+        dropna=False,
+    )["policy_id"].transform("nunique")
+    transposed_df = transposed_df.drop(
+        ["instrument", "has_instrument", "objective", "has_objective"], axis=1
+    )
+    transposed_df["deduped_policy_count"] = (
+        ~transposed_df["policy_id"].duplicated()
+    ).astype(int)
+
+    # Add coordinates from location cache file
+    # Add state coordinates
+    transposed_df = add_coordinates_from_cache(
+        transposed_df, level="state", state_col="state_province", country_col="country"
+    )
+
+    # Add city coordinates
+    transposed_df = add_coordinates_from_cache(
+        transposed_df,
+        level="city",
+        city_col="city",
+        state_col="state_province",
+        country_col="country",
+    )
+
+    return transposed_df
+
 
 def load_energyforecast_data():
     # Get the current file's directory (src folder)
@@ -941,17 +1065,19 @@ def load_company_profile_data():
 
     return company_profile_df
 
+
 def update_metadata():
     """Locate excel files and update metadata.json."""
 
     project_root = Path(__file__).resolve().parents[1]
     data_dir = project_root / "data"
-    json_path = data_dir / "metadata.json"
+    dependencies_dir = data_dir / "dependencies"
+    json_path = dependencies_dir / "metadata.json"
 
-    # Ensure the data folder exists
-    data_dir.mkdir(exist_ok=True)
+    # Ensure the data/dependencies folder exists
+    dependencies_dir.mkdir(parents=True, exist_ok=True)
 
-        # load existing metadata or initialize if missing
+    # load existing metadata or initialize if missing
     try:
         with open(json_path, "r") as f:
             metadata = json.load(f)

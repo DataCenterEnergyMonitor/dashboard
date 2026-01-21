@@ -41,7 +41,7 @@ def get_gp_last_modified_date():
         # .parent = src/
         # .parent = dashboard/ (project root)
         root_dir = Path(__file__).parent.parent.parent.parent
-        json_path = root_dir / "data" / "metadata.json"
+        json_path = root_dir / "data" / "dependencies" / "metadata.json"
 
         if not json_path.exists():
             print(f"Warning: Metadata file not found at {json_path.absolute()}")
