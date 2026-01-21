@@ -116,7 +116,7 @@ def create_app():
     energyprojections_df = load_energyprojections_data()
     globalpolicies_df = load_gp_data()
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
-    print("TEST-TEST")
+    print("TEST-TEST: transposed_df columns")
     print(gp_transposed_df.columns)
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
@@ -228,7 +228,8 @@ def create_app():
     register_energy_projections_callbacks(app, energyprojections_df)
     register_gp_page_callbacks(app, globalpolicies_df)
     register_gp_tab1_callbacks(app, globalpolicies_df)
-    register_gp_tab2_callbacks(app, globalpolicies_df)
+    # Use the transposed dataframe (with attr_type/attr_value) for Tab 2 callbacks
+    register_gp_tab2_callbacks(app, gp_transposed_df)
     register_gp_tab3_callbacks(app, gp_transposed_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]

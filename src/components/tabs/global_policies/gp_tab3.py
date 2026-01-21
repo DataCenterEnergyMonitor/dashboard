@@ -68,6 +68,8 @@ def create_chart_row(
     card_body_style = {
         "border": "none",
         "paddingTop": "0px",
+        "paddingLeft": "0px",
+        "paddingRight": "0px",
         "backgroundColor": "#ffffff",
         "minHeight": "65vh",
     }
@@ -77,6 +79,7 @@ def create_chart_row(
         "width": "100%",
         "marginTop": "0px",
         "paddingTop": "0px",
+        "paddingRight": "15px",
         "border": "none",
     }
     graph_layout = {

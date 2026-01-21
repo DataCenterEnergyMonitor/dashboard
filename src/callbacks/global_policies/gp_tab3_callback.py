@@ -69,66 +69,6 @@ def get_gp_last_modified_date():
         return None
 
 
-def _get_instrument_options_with_disabled(full_df, filtered_df):
-    """Get all instrument options with disabled state for items not in filtered data"""
-    # Get all possible instrument values from full dataset (where has_instrument is True)
-    full_has_instrument_true = (
-        (full_df["has_instrument"] == True)
-        | (full_df["has_instrument"] == 1)
-        | (full_df["has_instrument"].astype(str).str.upper().isin(["YES", "TRUE", "1"]))
-    )
-    all_instruments = set(
-        full_df[full_has_instrument_true]["instrument"].dropna().unique()
-    )
-
-    # Get available instrument values from filtered dataset
-    available_instruments = set(filtered_df["instrument"].dropna().unique())
-
-    # Create options with disabled state
-    options = []
-    for val in sorted(all_instruments):
-        if val and str(val).strip():
-            options.append(
-                {
-                    "label": str(val),
-                    "value": val,
-                    "disabled": val
-                    not in available_instruments,  # Disable if not available
-                }
-            )
-    return options
-
-
-def _get_objective_options_with_disabled(full_df, filtered_df):
-    """Get all objective options with disabled state for items not in filtered data"""
-    # Get all possible objective values from full dataset (where has_objective is True)
-    full_has_objective_true = (
-        (full_df["has_objective"] == True)
-        | (full_df["has_objective"] == 1)
-        | (full_df["has_objective"].astype(str).str.upper().isin(["YES", "TRUE", "1"]))
-    )
-    all_objectives = set(
-        full_df[full_has_objective_true]["objective"].dropna().unique()
-    )
-
-    # Get available objective values from filtered dataset
-    available_objectives = set(filtered_df["objective"].dropna().unique())
-
-    # Create options with disabled state
-    options = []
-    for val in sorted(all_objectives):
-        if val and str(val).strip():
-            options.append(
-                {
-                    "label": str(val),
-                    "value": val,
-                    "disabled": val
-                    not in available_objectives,  # Disable if not available
-                }
-            )
-    return options
-
-
 def register_gp_tab3_callbacks(app, df):
     # Update all filters and handle clearing
     @app.callback(
@@ -392,7 +332,7 @@ def register_gp_tab3_callbacks(app, df):
         gp_tab3_objective,
         active_tab,
     ):
-        # Only process if we're on tab-3 (allow None for initial load)
+        # only process if we're on tab-3 (allow None for initial load)
         if active_tab is not None and active_tab != "tab-3":
             raise dash.exceptions.PreventUpdate
 
@@ -402,11 +342,11 @@ def register_gp_tab3_callbacks(app, df):
             trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
             if trigger_id == "gp_tab3_clear-filters-btn":
-                # Show all data when cleared - no filters applied
+                # show all data when cleared - no filters applied
                 filters_applied = False
 
             elif trigger_id == "gp_tab3_apply-filters-btn":
-                # Apply current filter states - filters will be applied inside build_treemap_data
+                # apply current filter states
                 filters_applied = any(
                     [
                         gp_tab3_jurisdiction_level,
@@ -557,8 +497,10 @@ def register_gp_tab3_callbacks(app, df):
                 ["toImage"],  # Download image
                 ["zoomInGeo"],  # Zoom in (geo-specific)
                 ["zoomOutGeo"],  # Zoom out (geo-specific)
+                [
+                    "pan2d"
+                ],  # Note: Panning is done by dragging on geo plots, no separate pan button
                 ["resetGeo"],  # Autoscale/reset (geo-specific)
-                # Note: Panning is done by dragging on geo plots, no separate pan button
             ],
             "displaylogo": False,
             "toImageButtonOptions": {

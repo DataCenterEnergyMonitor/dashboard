@@ -109,14 +109,14 @@ def create_gp_choropleth_map(
     )
 
     fig.update_layout(
-        # --- POLICIES COLOR BAR (Moved higher) ---
+        # --- POLICIES COLOR BAR (Bottom Right) ---
         coloraxis_colorbar=dict(
             title="Policy Count",
             tickvals=np.log10(tick_vals),
             ticktext=tick_text,
             len=0.4,
             yanchor="top",
-            y=0.75,  # Adjusted to sit just below Jurisdiction
+            y=0.75,
             x=1.02,
             thickness=15,
         ),
@@ -125,17 +125,16 @@ def create_gp_choropleth_map(
             title_text="Jurisdiction",
             itemsizing="constant",
             yanchor="top",
-            y=0.9,  # Kept near the top
+            y=0.9,
             xanchor="left",
             x=1.02,
             bgcolor="rgba(255,255,255,0)",
         ),
         paper_bgcolor="white",
         plot_bgcolor="white",
-        margin={"r": 150, "t": 50, "l": 20, "b": 20},
+        margin={"t": 35, "l": 10, "r": 10, "b": 10},
+        # width=None,
         height=800,
-        # Enable both zoom and pan for geo plots (users can drag to pan, use buttons to zoom)
         dragmode="pan",  # Allow panning by dragging
     )
-
     return fig

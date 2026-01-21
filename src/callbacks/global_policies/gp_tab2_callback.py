@@ -11,98 +11,6 @@ from charts.global_policies.gp_treemap_chart import (
 from components.excel_export import create_filtered_excel_download
 from components.tabs.global_policies.gp_tab1 import create_chart_row
 
-
-def preprocess_treemap_data(df):
-    """
-    Preprocess dataframe for treemap visualization.
-    Creates stacked_df with attr_type and attr_value columns.
-
-    Args:
-        df: Raw DataFrame with policy data
-
-    Returns:
-        stacked_df: Processed DataFrame with one row per objective/instrument
-    """
-    # Identify the latest amendment name for each policy
-    latest_metadata = df.groupby("policy_id")["version"].last().reset_index()
-
-    # Filter original DF to only include rows matching that Policy + Amendment combo
-    # This ensures we get ALL objective/instrument combinations for only the final version
-    treemap_df = pd.merge(df, latest_metadata, on=["policy_id", "version"], how="inner")
-
-    # Create a clean Objective DataFrame
-    obj_long = treemap_df[treemap_df["has_objective"] == "Yes"].copy()
-    obj_long = obj_long.drop_duplicates(
-        subset=[
-            "policy_id",
-            "jurisdiction_level",
-            "city",
-            "county",
-            "state_province",
-            "country",
-            "country_iso_code",
-            "supranational_policy_area",
-            "region",
-            "order_type",
-            "status",
-            "objective",
-        ]
-    )
-    obj_long["attr_type"] = "Objective"
-    obj_long["attr_value"] = obj_long["objective"]
-
-    # Create a clean Instrument DataFrame
-    inst_long = treemap_df[treemap_df["has_instrument"] == "Yes"].copy()
-    inst_long = inst_long.drop_duplicates(
-        subset=[
-            "policy_id",
-            "jurisdiction_level",
-            "city",
-            "county",
-            "state_province",
-            "country",
-            "country_iso_code",
-            "supranational_policy_area",
-            "region",
-            "order_type",
-            "status",
-            "instrument",
-        ]
-    )
-    inst_long["attr_type"] = "Instrument"
-    inst_long["attr_value"] = inst_long["instrument"]
-
-    # Stack instrument and objective dataframes to ensure 1 row per Objective and 1 row per Instrument
-    stacked_df = pd.concat([obj_long, inst_long], ignore_index=True)
-
-    # Calculate counts on the stacked data
-    stacked_df["unique_per_attr"] = stacked_df.groupby(
-        [
-            "jurisdiction_level",
-            "city",
-            "county",
-            "state_province",
-            "country",
-            "country_iso_code",
-            "supranational_policy_area",
-            "region",
-            "order_type",
-            "status",
-            "objective",
-            "attr_value",
-        ],
-        dropna=False,
-    )["policy_id"].transform("nunique")
-    stacked_df = stacked_df.drop(
-        ["instrument", "has_instrument", "objective", "has_objective"], axis=1
-    )
-    stacked_df["deduped_policy_count"] = (~stacked_df["policy_id"].duplicated()).astype(
-        int
-    )
-
-    return stacked_df
-
-
 def apply_multi_value_filter(df, column, selected_values):
     """Helper function to apply multi-value string matching filter"""
     if not selected_values:
@@ -112,11 +20,6 @@ def apply_multi_value_filter(df, column, selected_values):
     for value in selected_values:
         mask = mask | df[column].str.contains(value, case=False, na=False, regex=False)
     return df[mask]
-
-
-# Note: filter_data function removed - filtering now happens inside build_treemap_data
-# on the stacked_df which has a cleaner structure with attr_type and attr_value columns
-
 
 def get_options(df, column):
     """Get unique values from a dataframe column as dropdown options"""
@@ -128,7 +31,6 @@ def get_options(df, column):
         for val in sorted(unique_values)
         if val is not None and str(val).strip()
     ]
-
 
 def get_gp_last_modified_date():
     """Get the last modified date for DCEWM-GlobalPolicies.xlsx from metadata.json"""
@@ -162,67 +64,6 @@ def get_gp_last_modified_date():
         traceback.print_exc()
         return None
 
-
-def _get_instrument_options_with_disabled(full_df, filtered_df):
-    """Get all instrument options with disabled state for items not in filtered data"""
-    # Get all possible instrument values from full dataset (where has_instrument is True)
-    full_has_instrument_true = (
-        (full_df["has_instrument"] == True)
-        | (full_df["has_instrument"] == 1)
-        | (full_df["has_instrument"].astype(str).str.upper().isin(["YES", "TRUE", "1"]))
-    )
-    all_instruments = set(
-        full_df[full_has_instrument_true]["instrument"].dropna().unique()
-    )
-
-    # Get available instrument values from filtered dataset
-    available_instruments = set(filtered_df["instrument"].dropna().unique())
-
-    # Create options with disabled state
-    options = []
-    for val in sorted(all_instruments):
-        if val and str(val).strip():
-            options.append(
-                {
-                    "label": str(val),
-                    "value": val,
-                    "disabled": val
-                    not in available_instruments,  # Disable if not available
-                }
-            )
-    return options
-
-
-def _get_objective_options_with_disabled(full_df, filtered_df):
-    """Get all objective options with disabled state for items not in filtered data"""
-    # Get all possible objective values from full dataset (where has_objective is True)
-    full_has_objective_true = (
-        (full_df["has_objective"] == True)
-        | (full_df["has_objective"] == 1)
-        | (full_df["has_objective"].astype(str).str.upper().isin(["YES", "TRUE", "1"]))
-    )
-    all_objectives = set(
-        full_df[full_has_objective_true]["objective"].dropna().unique()
-    )
-
-    # Get available objective values from filtered dataset
-    available_objectives = set(filtered_df["objective"].dropna().unique())
-
-    # Create options with disabled state
-    options = []
-    for val in sorted(all_objectives):
-        if val and str(val).strip():
-            options.append(
-                {
-                    "label": str(val),
-                    "value": val,
-                    "disabled": val
-                    not in available_objectives,  # Disable if not available
-                }
-            )
-    return options
-
-
 def register_gp_tab2_callbacks(app, df):
     # Update all filters and handle clearing
     @app.callback(
@@ -233,10 +74,10 @@ def register_gp_tab2_callbacks(app, df):
             Output("gp_tab2_objective", "style"),
             Output(
                 "gp_tab2_instrument", "options"
-            ),  # Change to options to support disabled
+            ), 
             Output(
                 "gp_tab2_objective", "options"
-            ),  # Change to options to support disabled
+            ), 
             Output("gp_tab2_instrument", "value"),  # Clear incompatible values
             Output("gp_tab2_objective", "value"),  # Clear incompatible values
             Output("gp_tab2_order_type", "value"),  # For clear button
@@ -270,7 +111,8 @@ def register_gp_tab2_callbacks(app, df):
             trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
             if trigger_id == "gp_tab2_clear-filters-btn":
                 # Return all options and cleared values using stacked_df
-                stacked_df = preprocess_treemap_data(df)
+                #stacked_df = preprocess_treemap_data(df)
+                stacked_df = df.copy()
                 # Get all instrument and objective options (all enabled when cleared)
                 all_instruments = set(
                     stacked_df[stacked_df["attr_type"] == "Instrument"]["attr_value"]
@@ -306,7 +148,8 @@ def register_gp_tab2_callbacks(app, df):
                 )
 
         # Preprocess data once to get stacked_df structure
-        stacked_df = preprocess_treemap_data(df)
+        # stacked_df = preprocess_treemap_data(df)
+        stacked_df = df.copy()
 
         # Order type filter: depend on previously selected filters
         order_type_df = stacked_df.copy()
@@ -467,8 +310,8 @@ def register_gp_tab2_callbacks(app, df):
             filters_applied = False
 
         # Preprocess data once - creates stacked_df with attr_type and attr_value
-        stacked_df = preprocess_treemap_data(df)
-
+        # stacked_df = preprocess_treemap_data(df)
+        stacked_df = df.copy()
         # Apply filters on stacked_df (much simpler than filtering raw dataframe)
         filtered_stacked_df = stacked_df.copy()
         if gp_tab2_order_type:
@@ -503,23 +346,22 @@ def register_gp_tab2_callbacks(app, df):
             "attr_value",
         ]
 
-        # Build treemap data from filtered stacked_df
+        # build treemap data from filtered stacked_df
         treemap_data = build_treemap_data(
             df=filtered_stacked_df,
             path_cols=path_cols,
             policy_col="policy_id",
         )
 
-        # Create the chart figure (pass df for policy metadata display)
+        # create the chart figure
         gp_treemap_fig = create_treemap_fig(treemap_data, policy_metadata_df=df)
 
-        # Create chart component using create_chart_row
+        # create chart component
         chart_id = "gp-treemap-fig"
 
-        # Get last modified date and add to title with styling
+        # get last modified date and add to title with styling
         last_modified_date = get_gp_last_modified_date()
         if last_modified_date:
-            # Create HTML title with date on new line and smaller font
             title = html.Div(
                 [
                     html.Div("Data Center Policies Distribution Across Jurisdictions"),
@@ -595,17 +437,17 @@ def register_gp_tab2_callbacks(app, df):
         prevent_initial_call=True,
     )
     def toggle_modal(expand_clicks, is_open, gp_treemap_fig, active_tab):
-        # Only process if we're on tab-2 (allow None for initial load)
+        # only process if on tab-2 (allow None for initial load)
         if active_tab is not None and active_tab != "tab-2":
             raise dash.exceptions.PreventUpdate
-        # Only open modal when button is clicked
+        # only open modal when button is clicked
         if not expand_clicks:
             raise dash.exceptions.PreventUpdate
 
-        # Get last modified date for modal title
+        # get last modified date for modal title
         last_modified_date = get_gp_last_modified_date()
         if last_modified_date:
-            # Create HTML modal title with date on new line and smaller font
+            # create HTML modal title with date on new line and smaller font
             modal_title = html.Div(
                 [
                     html.Div("Data Center Policies Distribution Across Jurisdictions"),
@@ -628,8 +470,8 @@ def register_gp_tab2_callbacks(app, df):
             gp_treemap_fig or {},
         )
 
-    # Callback to show policy details when clicking into a final leaf node
-    # Tracks expanded leaf and toggles: click leaf = expand, click again = collapse
+    # callback to show policy details when clicking into a final leaf node
+    # tracks expanded leaf and toggles: click leaf = expand, click again = collapse
     @app.callback(
         [
             Output("gp-treemap-fig", "figure"),
