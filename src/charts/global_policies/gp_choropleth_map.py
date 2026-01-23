@@ -8,7 +8,7 @@ def create_gp_choropleth_map(
 ):
     # 1. Background Layer
     country_geo_df = (
-        filtered_df.groupby("country_iso_code")[["unique_per_country", "country"]]
+        filtered_df.groupby("country_iso_code")[["unique_per_country", "country", "jurisdiction_level"]]
         .max()
         .reset_index()
     )
@@ -25,15 +25,16 @@ def create_gp_choropleth_map(
         color="log_val",
         color_continuous_scale=custom_blues,
         # hover_data={"unique_per_country": True, "log_val": False},
-        custom_data=["country", "unique_per_country"],
+        custom_data=["jurisdiction_level","country", "unique_per_country"],
     )
 
     # Update colored country borders to separate NLD/DEU
     fig.update_traces(
         marker_line_color="#a5b8c7",
         marker_line_width=0.6,
-        hovertemplate="<b>%{customdata[0]}</b><br>"
-        + "<b>Total Policies Count: %{customdata[1]:,.0f}</b>"
+        hovertemplate="Jurisdiction: %{customdata[0]}<br>"
+        + "Country: %{customdata[1]}</br>"
+        + "Total Policies Count: %{customdata[2]:,.0f}"
         + "<extra></extra>",
     )
 
@@ -94,8 +95,8 @@ def create_gp_choropleth_map(
             customdata=state_bubbles[
                 ["jurisdiction_level", "location", "unique_per_state"]
             ].values,
-            hovertemplate="<b>Jurisdiction: %{customdata[0]}</b><br>"
-            + "<b>%{customdata[1]}</b><br>"
+            hovertemplate="Jurisdiction: %{customdata[0]}<br>"
+            + "%{customdata[1]}<br>"
             + "Total Policies Count: %{customdata[2]:,.0f}"
             + "<extra></extra>",
             marker=dict(
@@ -121,8 +122,8 @@ def create_gp_choropleth_map(
             customdata=city_bubbles[
                 ["jurisdiction_level", "location", "unique_per_city"]
             ].values,
-            hovertemplate="<b>Jurisdiction: %{customdata[0]}</b><br>"
-            + "<b>%{customdata[1]}</b><br>"
+            hovertemplate="Jurisdiction: %{customdata[0]}<br>"
+            + "%{customdata[1]}<br>"
             + "Total Policies Count: %{customdata[2]:,.0f}"
             + "<extra></extra>",
             marker=dict(
