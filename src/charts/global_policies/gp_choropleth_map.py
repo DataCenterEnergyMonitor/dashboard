@@ -8,7 +8,7 @@ def create_gp_choropleth_map(
 ):
     # 1. Background Layer
     country_geo_df = (
-        filtered_df.groupby("country_iso_code")["unique_per_country"]
+        filtered_df.groupby("country_iso_code")[["unique_per_country", "country"]]
         .max()
         .reset_index()
     )
@@ -24,11 +24,18 @@ def create_gp_choropleth_map(
         locationmode="ISO-3",
         color="log_val",
         color_continuous_scale=custom_blues,
-        hover_data={"unique_per_country": True, "log_val": False},
+        # hover_data={"unique_per_country": True, "log_val": False},
+        custom_data=["country", "unique_per_country"],
     )
 
     # Update colored country borders to separate NLD/DEU
-    fig.update_traces(marker_line_color="#a5b8c7", marker_line_width=0.6)
+    fig.update_traces(
+        marker_line_color="#a5b8c7",
+        marker_line_width=0.6,
+        hovertemplate="<b>%{customdata[0]}</b><br>"
+        + "<b>Total Policies Count: %{customdata[1]:,.0f}</b>"
+        + "<extra></extra>",
+    )
 
     # 2. State Outlines
     state_geo_df = filtered_df.dropna(subset=["state_iso_code"]).drop_duplicates(
@@ -53,18 +60,44 @@ def create_gp_choropleth_map(
 
     # 3. Bubbles (Ensuring visibility and legend presence)
     state_bubbles = filtered_geo_df.dropna(
-        subset=["state_lat", "state_lon", "unique_per_state"]
+        subset=[
+            "state_lat",
+            "state_lon",
+            "jurisdiction_level",
+            "state_province",
+            "country",
+            "unique_per_state",
+        ]
     ).drop_duplicates("state_iso_code")
     city_bubbles = filtered_geo_df.dropna(
-        subset=["lat", "lon", "unique_per_city"]
+        subset=[
+            "lat",
+            "lon",
+            "jurisdiction_level",
+            "city",
+            "country",
+            "unique_per_city",
+        ]
     ).drop_duplicates(["lat", "lon"])
 
     if not state_bubbles.empty:
+        # Create combined location string: "State, Country"
+        state_bubbles = state_bubbles.copy()
+        state_bubbles["location"] = (
+            state_bubbles["state_province"] + ", " + state_bubbles["country"]
+        )
         fig.add_scattergeo(
             lat=state_bubbles["state_lat"],
             lon=state_bubbles["state_lon"],
             text=state_bubbles["state_province"],
             name="State",
+            customdata=state_bubbles[
+                ["jurisdiction_level", "location", "unique_per_state"]
+            ].values,
+            hovertemplate="<b>Jurisdiction: %{customdata[0]}</b><br>"
+            + "<b>%{customdata[1]}</b><br>"
+            + "Total Policies Count: %{customdata[2]:,.0f}"
+            + "<extra></extra>",
             marker=dict(
                 size=state_bubbles["unique_per_state"],
                 color="rgba(255, 165, 0, 0.75)",
@@ -77,11 +110,21 @@ def create_gp_choropleth_map(
         )
 
     if not city_bubbles.empty:
+        # Create combined location string: "City, Country"
+        city_bubbles = city_bubbles.copy()
+        city_bubbles["location"] = city_bubbles["city"] + ", " + city_bubbles["country"]
         fig.add_scattergeo(
             lat=city_bubbles["lat"],
             lon=city_bubbles["lon"],
             text=city_bubbles["city"],
             name="City",
+            customdata=city_bubbles[
+                ["jurisdiction_level", "location", "unique_per_city"]
+            ].values,
+            hovertemplate="<b>Jurisdiction: %{customdata[0]}</b><br>"
+            + "<b>%{customdata[1]}</b><br>"
+            + "Total Policies Count: %{customdata[2]:,.0f}"
+            + "<extra></extra>",
             marker=dict(
                 size=city_bubbles["unique_per_city"],
                 color="rgba(230, 0, 0, 0.85)",
