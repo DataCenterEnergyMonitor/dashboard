@@ -3,15 +3,15 @@ import plotly.graph_objects as go
 import pandas as pd
 
 
-def create_energy_projections_line_plot(
+def create_water_projections_line_plot(
     filtered_df,
     full_df=None,
     filters_applied=False,
-    yaxis_title="Energy Demand (TWh)",
-    y_label="Energy Demand (TWh)"
+    yaxis_title="Water Demand (L/kWh)",
+    y_label="Water Demand (L/kWh)"
 ):
     """
-    Create Energy projections line plot with dual legend system
+    Create Water projections line plot with dual legend system
 
     Args:
         filtered_df: DataFrame to display
@@ -105,7 +105,7 @@ def create_energy_projections_line_plot(
     }
 
     # Create the line plot with the full dataset (PRESERVE ORIGINAL LOGIC)
-    energy_projections_fig = px.line(
+    water_projections_fig = px.line(
         plot_df,
         x="year",
         y="energy_demand",
@@ -140,7 +140,7 @@ def create_energy_projections_line_plot(
                     filtered_trace_keys.add((citation, label))
 
         # Update trace styling based on whether they match the filter (PRESERVE ORIGINAL LOGIC)
-        for i, trace in enumerate(energy_projections_fig.data):
+        for i, trace in enumerate(water_projections_fig.data):
             # Extract citation and label from trace
             trace_citation = None
             trace_label = None
@@ -161,7 +161,7 @@ def create_energy_projections_line_plot(
 
             if is_filtered:
                 # This trace matches the filter - show in color with full hover
-                energy_projections_fig.data[i].update(
+                water_projections_fig.data[i].update(
                     marker=dict(
                         size=6, opacity=0.7, line=dict(width=0.5, color="grey")
                     ),
@@ -180,7 +180,7 @@ def create_energy_projections_line_plot(
                 )
             else:
                 # This trace doesn't match the filter - show in gray with minimal hover
-                energy_projections_fig.data[i].update(
+                water_projections_fig.data[i].update(
                     line=dict(color="lightgray", width=2),
                     opacity=0.4,
                     marker=dict(size=5, opacity=0.6),
@@ -194,7 +194,7 @@ def create_energy_projections_line_plot(
                 )
     else:
         # No filters applied - show all traces in gray (PRESERVE ORIGINAL LOGIC)
-        energy_projections_fig.update_traces(
+        water_projections_fig.update_traces(
             line=dict(color="lightgray", width=2),
             opacity=0.6,
             marker=dict(size=5, opacity=0.7),
@@ -208,7 +208,7 @@ def create_energy_projections_line_plot(
         )
 
     # Apply line dash styles (PRESERVE ORIGINAL LOGIC)
-    for trace in energy_projections_fig.data:
+    for trace in water_projections_fig.data:
         # Extract label from custom data if available
         if (
             hasattr(trace, "customdata")
@@ -237,7 +237,7 @@ def create_energy_projections_line_plot(
                 label_clean = label.replace("Scenario: ", "").replace("<br>", "")
                 dash_style = line_style_map.get(label_clean, "solid")
                 
-                energy_projections_fig.add_trace(go.Scatter(
+                water_projections_fig.add_trace(go.Scatter(
                     x=[None], y=[None],  # Empty trace just for legend
                     mode='lines',
                     line=dict(
@@ -252,7 +252,7 @@ def create_energy_projections_line_plot(
                 ))
         
         # Add separator (invisible trace with blank name)
-        energy_projections_fig.add_trace(go.Scatter(
+        water_projections_fig.add_trace(go.Scatter(
             x=[None], y=[None],
             mode='lines',
             line=dict(color="rgba(0,0,0,0)", width=0),
@@ -264,7 +264,7 @@ def create_energy_projections_line_plot(
         
         # Add citation legend entries
         for citation in sorted(citations):
-            energy_projections_fig.add_trace(go.Scatter(
+            water_projections_fig.add_trace(go.Scatter(
                 x=[None], y=[None],  # Empty trace just for legend
                 mode='lines',
                 line=dict(
@@ -277,7 +277,7 @@ def create_energy_projections_line_plot(
                 hovertemplate="<extra></extra>",  # Hide hover
             ))
 
-    energy_projections_fig.update_xaxes(
+    water_projections_fig.update_xaxes(
         range=[xmin, xmax],
         showgrid=False,
         showline=True,
@@ -286,7 +286,7 @@ def create_energy_projections_line_plot(
         title_font=dict(size=14),
     )
 
-    energy_projections_fig.update_layout(
+    water_projections_fig.update_layout(
         font_family="Inter",
         plot_bgcolor="white",
         margin=dict(r=300),  # Increased right margin for dual legend
@@ -322,4 +322,4 @@ def create_energy_projections_line_plot(
         template="simple_white",
     )
 
-    return energy_projections_fig
+    return water_projections_fig

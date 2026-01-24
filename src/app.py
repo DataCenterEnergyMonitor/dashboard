@@ -38,6 +38,12 @@ from pages.energy_projections_methods_page import (
     create_energy_projections_methodology_page,
 )
 from pages.energy_projections_data_page import create_energy_projections_data_page
+
+from pages.water_projections_page import create_water_projections_page
+from pages.water_projections_methods_page import (
+    create_water_projections_methodology_page,
+)
+from pages.water_projections_data_page import create_water_projections_data_page
 from pages.global_policies_page import create_gp_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
@@ -73,7 +79,9 @@ from callbacks.pue_wue_page_callbacks import register_pue_wue_callbacks
 from callbacks.energy_projections_page_callbacks import (
     register_energy_projections_callbacks,
 )
-
+from callbacks.water_projections_page_callbacks import (
+    register_water_projections_callbacks,
+)
 from callbacks.global_policies.gp_page_callback import (
     register_gp_page_callbacks,
 )
@@ -114,6 +122,7 @@ def create_app():
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
     pue_wue_companies_df = load_pue_wue_companies_data()
     energyprojections_df = load_energyprojections_data()
+    waterprojections_df = load_energyprojections_data() # TO DO: replace with the function to load water projections dataset
     globalpolicies_df = load_gp_data()
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
     print("TEST-TEST: transposed_df columns")
@@ -226,6 +235,7 @@ def create_app():
     # Initialize callbacks
     register_pue_wue_callbacks(app, pue_wue_df, pue_wue_companies_df)
     register_energy_projections_callbacks(app, energyprojections_df)
+    register_water_projections_callbacks(app, waterprojections_df)
     register_gp_page_callbacks(app, globalpolicies_df)
     register_gp_tab1_callbacks(app, globalpolicies_df)
     # Use the transposed dataframe (with attr_type/attr_value) for Tab 2 callbacks
@@ -257,7 +267,7 @@ def create_app():
         "pue": pue_df,
         "wue": wue_df,
         "company_name": pue_wue_df,
-        "energy_projections_studies": energyprojections_df,
+        "energy_projections_studies": energyprojections_df, # TO DO: add water projections studies to the KPIs count
     }
 
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
@@ -283,6 +293,12 @@ def create_app():
             return create_energy_projections_methodology_page()
         elif pathname == "/energy-projections-data":
             return create_energy_projections_data_page()
+        elif pathname == "/water-projections":
+            return create_water_projections_page(app, waterprojections_df)
+        elif pathname == "/water-projections-methodology":
+            return create_water_projections_methodology_page()
+        elif pathname == "/water-projections-data":
+            return create_water_projections_data_page()
         elif pathname == "/global-policies":
             return create_gp_page(app, globalpolicies_df)
         elif pathname == "/forecast":

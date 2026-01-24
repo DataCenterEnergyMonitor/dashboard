@@ -17,7 +17,7 @@ navbar:
         Energy Demand Estimates and Projections:
           route: /energy-projections
         Water Demand Estimates and Projections:
-          route: /forecast
+          route: /water-projections
         Global policies:
           route: /global-policies
         # Data Center Energy Use:
@@ -97,8 +97,8 @@ landing_page_cards:
     preview: assets/previews/energy_projections_preview.png
     description: Estimates and projections from 100+ studies
   Water Demand Estimates and Projections:
-    route: /forecast
-    preview: assets/previews/energy_forecast_preview.png
+    route: /water-projections
+    preview: assets/previews/energy_projections_preview.png
     description: Estimates and projections from 10+ studies
   Global policies:
     route: /global-policies

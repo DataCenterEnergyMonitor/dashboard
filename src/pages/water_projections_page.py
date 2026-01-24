@@ -3,14 +3,14 @@ from dash import Input, Output, dcc, html
 import dash_bootstrap_components as dbc
 from layouts.base_layout import create_base_layout
 from components.bookmark_bar import create_bookmark_bar
-from components.filters.energy_projections_filters import (
-    create_energy_projections_filters,
+from components.filters.water_projections_filters import (
+    create_water_projections_filters,
 )
 
 
 # define bookmark sections
 sections = [
-    # {"id": "energy-projections", "title": "Energy Projections"},
+    # {"id": "water-projections", "title": "Energy Projections"},
     # {"id": "power-projections", "title": "Power Projections"},
 ]
 
@@ -176,7 +176,9 @@ def create_chart_row(
                                         id=chart_id,
                                         config=chart_config,
                                         style=graph_style,
-                                        figure=figure if figure is not None else {"layout": graph_layout},
+                                        figure=figure
+                                        if figure is not None
+                                        else {"layout": graph_layout},
                                     )
                                 ],
                                 style=card_body_style,
@@ -196,11 +198,11 @@ def create_chart_row(
     )
 
 
-def create_energy_projections_page(app, energy_projections_df):
+def create_water_projections_page(app, water_projections_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_energy_projections_filters(energy_projections_df),
+            create_water_projections_filters(water_projections_df),
             html.Div(
                 [
                     # Sticky bookmark bar
@@ -209,7 +211,7 @@ def create_energy_projections_page(app, energy_projections_df):
                         [
                             create_bookmark_bar(
                                 sections,
-                                data_page_parent="energy_projections",
+                                data_page_parent="water_projections",
                                 subnav_items=None,
                             )
                         ],
@@ -232,13 +234,8 @@ def create_energy_projections_page(app, energy_projections_df):
                             dbc.Nav(
                                 [
                                     dbc.NavLink(
-                                        "Energy Projections",
-                                        href="#energy-projections-section",
-                                        className="px-2",
-                                    ),
-                                    dbc.NavLink(
-                                        "Power Projections",
-                                        href="#power-projections-section",
+                                        "Water Projections",
+                                        href="#water-projections-section",
                                         className="px-2",
                                     ),
                                 ],
@@ -261,9 +258,10 @@ def create_energy_projections_page(app, energy_projections_df):
                             "overflow": "hidden",
                         },
                     ),
-                    dbc.Container(                                            [
+                    dbc.Container(
+                        [
                             # Single chart container is updated by callback
-                            html.Div(id="chart-container"),
+                            html.Div(id="wp-chart-container"),
                         ],
                         fluid=True,
                     ),
@@ -279,11 +277,11 @@ def create_energy_projections_page(app, energy_projections_df):
             # Modal for expanded view
             dbc.Modal(
                 [
-                    dbc.ModalHeader(dbc.ModalTitle(id="energy-modal-title")),
+                    dbc.ModalHeader(dbc.ModalTitle(id="water-modal-title")),
                     dbc.ModalBody(
                         [
                             dcc.Graph(
-                                id="energy-expanded-graph",
+                                id="water-expanded-graph",
                                 style={
                                     "height": "calc(100vh - 56px)",  # 56px = header height
                                     "width": "100vw",
@@ -295,7 +293,7 @@ def create_energy_projections_page(app, energy_projections_df):
                         style={"padding": "0", "margin": "0"},
                     ),
                 ],
-                id="energy-graph-modal",
+                id="water-graph-modal",
                 # size="xl",
                 fullscreen=True,
                 is_open=False,

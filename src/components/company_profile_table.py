@@ -18,7 +18,7 @@ def create_category_section(title, data):
                 id=f"collapse-button-{title.lower().replace(' ', '-')}",
                 className="category-button d-flex align-items-center",
                 style={
-                    "backgroundColor": "#00588D",
+                    "backgroundColor": "#395970",
                     "color": "white",
                     "border": "none",
                     "width": "100%",
