@@ -1,83 +1,98 @@
-from dash import html, dcc
+from dash import dcc, html
+import dash_bootstrap_components as dbc
+from components.filters.company_reporting_trends.rt_filters import create_rt_filters
 
 
-def create_rt_tab4():
+def create_rt_tab4(app, reporting_df):
     """
-    Create tab 4 content (Methodology page - static HTML).
-    Note: This is tab content, not a full page, so no base_layout wrapper.
+    Create tab 4 content (PUE Reporting heatmap).
+    Filters are inside the tab and sync via rt-filter-store.
     """
     content = html.Div(
         [
-            # Back navigation button
+            # Sticky sidebar wrapper with filters
+            create_rt_filters(reporting_df),
             html.Div(
                 [
-                    dcc.Link(
-                        html.Div(
-                            [
-                                html.I(
-                                    className="fas fa-arrow-left",
-                                    style={"marginRight": "8px"},
-                                ),
-                                "Explore Company Reporting Data",
-                            ],
-                            style={
-                                "display": "flex",
-                                "alignItems": "center",
-                                "padding": "8px 16px",
-                                "color": "#6c757d",
-                                "textDecoration": "none",
-                                "fontSize": "0.9rem",
-                                "transition": "all 0.2s ease",
-                            },
-                        ),
-                        href="/reporting",
-                        style={"textDecoration": "none"},
-                    )
-                ],
-                style={
-                    "position": "fixed",
-                    "top": "90px",
-                    "left": "120px",
-                    "zIndex": "1001",
-                    "backgroundColor": "white",
-                    "padding": "10px",
-                    "borderRadius": "8px",
-                },
-            ),
-            html.Div(
-                [
-                    html.Iframe(
-                        src="assets/static_pages/company_reporting/rt_methodology.html",
+                    # Mobile navigation
+                    html.Div(
+                        [
+                            dbc.Nav(
+                                [
+                                    dbc.NavLink(
+                                        "PUE Reporting by Company Over Time",
+                                        href="#rt-tab4-nav",
+                                        className="px-2",
+                                    ),
+                                ],
+                                horizontal=True,
+                                pills=True,
+                                className="justify-content-center",
+                            )
+                        ],
+                        className="d-block d-lg-none",  # show on <992px, hide on ≥992px
                         style={
-                            "width": "100vw",
-                            "height": "calc(100vh - 170px)",
-                            "border": "none",
-                            "borderRadius": "0",
-                            "backgroundColor": "#ffffff",
-                            "position": "relative",
+                            "position": "fixed",
+                            "top": "80px",
                             "left": "0",
                             "right": "0",
+                            "zIndex": "1000",
+                            "backgroundColor": "white",
+                            "padding": "8px 10px",
+                            "height": "60px",
+                            "borderBottom": "1px solid #dee2e6",
+                            "overflow": "hidden",
                         },
-                    )
+                    ),
+                    dbc.Container(
+                        [
+                            # Figure container (updated by callback)
+                            html.Div(id="rt-fig4-container"),
+                        ],
+                        fluid=True,
+                    ),
                 ],
                 style={
-                    "width": "100vw",
-                    "height": "calc(100vh - 120px)",
-                    "margin": "0",
-                    "padding": "50px 0 0 0",
-                    "backgroundColor": "#ffffff",
-                    "borderRadius": "0",
+                    "marginLeft": "320px",  # sidebar width (300px) + padding (20px)
+                    "marginTop": "0px",
+                    "padding": "0px",
+                    "minHeight": "calc(100vh - 90px)",
+                    "backgroundColor": "white",
                 },
             ),
-        ],
-        style={
-            "padding": "0",
-            "backgroundColor": "#ffffff",
-            "minHeight": "calc(100vh - 100px)",
-            "width": "100vw",
-            "margin": "0",
-            "position": "relative",
-        },
+            # Modal for expanded view
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(dbc.ModalTitle(id="rt-fig4-modal-title")),
+                    dbc.ModalBody(
+                        [
+                            dcc.Graph(
+                                id="rt-fig4-expanded",
+                                style={
+                                    "height": "calc(100vh - 56px)",  # 56px = header height
+                                    "width": "100vw",
+                                    "margin": "0",
+                                    "padding": "0",
+                                },
+                            )
+                        ],
+                        style={"padding": "0", "margin": "0"},
+                    ),
+                ],
+                id="rt-fig4-modal",
+                fullscreen=True,
+                is_open=False,
+                style={
+                    "maxWidth": "100vw",
+                    "width": "100vw",
+                    "height": "100vh",
+                    "margin": "0",
+                    "padding": "0",
+                    "top": "0",
+                    "left": "0",
+                },
+            ),
+        ]
     )
 
     return content

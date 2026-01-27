@@ -9,6 +9,7 @@ def create_figure_card(
     accordion_title=None,
     filename="figure",
     figure=None,
+    show_modebar=True,
 ):
     """
     Create a standardized figure row with consistent styling
@@ -17,14 +18,17 @@ def create_figure_card(
         fig_id: ID for the figure component
         title: Chart title for header
         expand_id: ID for expand button
-        description_md: Markdown description for right column
+        accordion_children: Optional accordion content
+        accordion_title: Optional accordion title
         filename: Filename for image download
+        figure: Plotly figure object
+        show_modebar: If False, hides the modebar (default True)
     """
 
     # Chart config
     fig_config = {
         "responsive": True,
-        "displayModeBar": True,
+        "displayModeBar": show_modebar,
         "modeBarButtons": [
             ["toImage"],
             ["zoomIn2d"],

@@ -3,14 +3,14 @@ import dash_bootstrap_components as dbc
 from components.filters.company_reporting_trends.rt_filters import create_rt_filters
 
 
-def create_rt_tab3(app, reporting_df):
+def create_rt_tab5(app, reporting_df):
     """
-    Create tab 3 content (Water Reporting heatmap).
+    Create tab 5 content (WUE Reporting heatmap).
     Filters are inside the tab and sync via rt-filter-store.
     """
     content = html.Div(
         [
-            # Sticky sidebar wrapper with filters
+            # sticky sidebar wrapper with filters
             create_rt_filters(reporting_df),
             html.Div(
                 [
@@ -20,8 +20,8 @@ def create_rt_tab3(app, reporting_df):
                             dbc.Nav(
                                 [
                                     dbc.NavLink(
-                                        "Water Reporting by Company Over Time",
-                                        href="#rt-tab3-nav",
+                                        "WUE Reporting by Company Over Time",
+                                        href="#rt-tab5-nav",
                                         className="px-2",
                                     ),
                                 ],
@@ -47,7 +47,7 @@ def create_rt_tab3(app, reporting_df):
                     dbc.Container(
                         [
                             # Figure container (updated by callback)
-                            html.Div(id="rt-fig3-container"),
+                            html.Div(id="rt-fig5-container"),
                         ],
                         fluid=True,
                     ),
@@ -63,11 +63,11 @@ def create_rt_tab3(app, reporting_df):
             # Modal for expanded view
             dbc.Modal(
                 [
-                    dbc.ModalHeader(dbc.ModalTitle(id="rt-fig3-modal-title")),
+                    dbc.ModalHeader(dbc.ModalTitle(id="rt-fig5-modal-title")),
                     dbc.ModalBody(
                         [
                             dcc.Graph(
-                                id="rt-fig3-expanded",
+                                id="rt-fig5-expanded",
                                 style={
                                     "height": "calc(100vh - 56px)",  # 56px = header height
                                     "width": "100vw",
@@ -79,7 +79,7 @@ def create_rt_tab3(app, reporting_df):
                         style={"padding": "0", "margin": "0"},
                     ),
                 ],
-                id="rt-fig3-modal",
+                id="rt-fig5-modal",
                 fullscreen=True,
                 is_open=False,
                 style={

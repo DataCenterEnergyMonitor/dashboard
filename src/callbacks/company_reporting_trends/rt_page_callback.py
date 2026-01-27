@@ -5,6 +5,7 @@ from pages.company_reporting_trends.rt_tab1 import create_rt_tab1
 from pages.company_reporting_trends.rt_tab2 import create_rt_tab2
 from pages.company_reporting_trends.rt_tab3 import create_rt_tab3
 from pages.company_reporting_trends.rt_tab4 import create_rt_tab4
+from pages.company_reporting_trends.rt_tab5 import create_rt_tab5
 from components.bookmark_tabs import get_tab_styles
 
 # track if callbacks have been registered to prevent duplicates
@@ -63,9 +64,11 @@ def register_rt_page_callbacks(app, reporting_df):
         elif active_tab == "tab-2":
             content = create_rt_tab2(app, reporting_df)
         elif active_tab == "tab-3":
-            content = create_rt_tab3()
+            content = create_rt_tab3(app, reporting_df)
         elif active_tab == "tab-4":
             content = create_rt_tab4()
+        elif active_tab == "tab-5":
+            content = create_rt_tab5()
         else:
             content = html.Div("Select a tab to explore or learn about data.")
 
