@@ -9,7 +9,7 @@ from charts.global_policies.gp_treemap_chart import (
     create_treemap_fig,
 )
 from components.excel_export import create_filtered_excel_download
-from components.tabs.global_policies.gp_tab1 import create_chart_row
+from pages.global_policies.gp_tab1 import create_chart_row
 
 def apply_multi_value_filter(df, column, selected_values):
     """Helper function to apply multi-value string matching filter"""

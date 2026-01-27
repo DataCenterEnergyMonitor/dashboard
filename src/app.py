@@ -44,8 +44,8 @@ from pages.water_projections_methods_page import (
     create_water_projections_methodology_page,
 )
 from pages.water_projections_data_page import create_water_projections_data_page
-from pages.global_policies_page import create_gp_page
-from pages.company_reporting_trends_page import create_rt_page
+from pages.global_policies.gp_main_page import create_gp_page
+from pages.company_reporting_trends.rt_main_page import create_rt_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -94,6 +94,9 @@ from callbacks.company_reporting_trends.rt_page_callback import (
 )
 from callbacks.company_reporting_trends.rt_tab1_callback import (
     register_rt_tab1_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab2_callback import (
+    register_rt_tab2_callbacks,
 )
 from components.kpi_data_cards import create_kpi_cards
 
@@ -178,28 +181,6 @@ def create_app():
 
     # Define chart configurations
     chart_configs = {
-        # "pue-scatter": {
-        #     "base_id": "pue",
-        #     "chart_id": "pue-scatter-chart",
-        #     "chart_creator": create_pue_scatter_plot,
-        #     "filename": "pue-data.csv",
-        #     "filters": [
-        #         "facility_scope",
-        #         "company",
-        #         "iea_region",
-        #         "iecc_climate_zone_s_",
-        #         "pue_measurement_level",
-        #     ],
-        #     "download_id": "download-pue-data",  # Add download button ID
-        # },
-        # "wue-scatter": {
-        #     "base_id": "wue",
-        #     "chart_id": "wue-scatter-chart",
-        #     "chart_creator": create_wue_scatter_plot,
-        #     "filename": "wue-data.csv",
-        #     "filters": ["facility_scope", "company"],
-        #     "download_id": "download-wue-data",  # Add download button ID
-        # },
         "forecast-scatter": {
             "base_id": "forecast",
             "chart_id": "forecast-scatter-chart",
@@ -253,6 +234,7 @@ def create_app():
     # Company Reporting Trends page callbacks
     register_rt_page_callbacks(app, reporting_df)
     register_rt_tab1_callbacks(app, reporting_df)
+    register_rt_tab2_callbacks(app, reporting_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -285,10 +267,6 @@ def create_app():
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
     def display_page(pathname):
         print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
-        # if pathname == "/pue":
-        #     return create_pue_page(app, pue_df)
-        # elif pathname == "/wue":
-        #     return create_wue_page(app, wue_df)
         if pathname == "/pue_wue":
             return create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df)
         elif pathname == "/pue-methodology":
@@ -316,9 +294,10 @@ def create_app():
         elif pathname == "/forecast":
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)
+        # TO DO: delete after refactoring company reporting trends
+        # elif pathname == "/reporting":
+        #     return create_reporting_page(app, reporting_df, data_dict, chart_configs)
         elif pathname == "/reporting":
-            return create_reporting_page(app, reporting_df, data_dict, chart_configs)
-        elif pathname == "/reporting_test":
             return create_rt_page(app, reporting_df)
         elif pathname == "/energy-use":
             return create_energy_use_page(app, energy_use_df)

@@ -1,9 +1,9 @@
 from dash import Input, Output, State, callback_context, html
 
 # import the tab creation functions
-from components.tabs.global_policies.gp_tab1 import create_gp_tab1
-from components.tabs.global_policies.gp_tab2 import create_gp_tab2
-from components.tabs.global_policies.gp_tab3 import create_gp_tab3
+from pages.global_policies.gp_tab1 import create_gp_tab1
+from pages.global_policies.gp_tab2 import create_gp_tab2
+from pages.global_policies.gp_tab3 import create_gp_tab3
 from components.bookmark_tabs import get_tab_styles
 
 # Track if callbacks have been registered to prevent duplicates

@@ -321,12 +321,19 @@ def create_gp_tab2(app, gp_transposed_df):
                         [
                             html.Div(id="policy-details-modal-content"),
                         ],
-                        style={"maxHeight": "50vh", "overflowY": "auto", "padding": "16px 20px"},
+                        style={
+                            "maxHeight": "50vh",
+                            "overflowY": "auto",
+                            "padding": "16px 20px",
+                        },
                     ),
                     dbc.ModalFooter(
                         dbc.Button(
                             [
-                                html.I(className="fas fa-times", style={"marginRight": "6px"}),
+                                html.I(
+                                    className="fas fa-times",
+                                    style={"marginRight": "6px"},
+                                ),
                                 "Close",
                             ],
                             id="policy-details-modal-close",
@@ -335,7 +342,10 @@ def create_gp_tab2(app, gp_transposed_df):
                             size="sm",
                             n_clicks=0,
                         ),
-                        style={"borderTop": "1px solid #dee2e6", "padding": "12px 20px"},
+                        style={
+                            "borderTop": "1px solid #dee2e6",
+                            "padding": "12px 20px",
+                        },
                     ),
                 ],
                 id="policy-details-modal",

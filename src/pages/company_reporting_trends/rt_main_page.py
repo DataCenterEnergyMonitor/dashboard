@@ -16,9 +16,10 @@ def create_rt_page(app, reporting_df):
     # Define tabs configuration - use simple values, prefix is added by component
     tabs_config = [
         {"label": "Reporting Adoption", "value": "tab-1"},
-        {"label": "Electricity Usage", "value": "tab-2"},
-        {"label": "Data", "value": "tab-3"},
-        {"label": "Methodology", "value": "tab-4"},
+        {"label": "Energy", "value": "tab-2"},
+        {"label": "Water", "value": "tab-3"},
+        {"label": "PUE", "value": "tab-4"},
+        {"label": "WUE", "value": "tab-5"},
     ]
 
     # Create bookmark-styled tabs component with "rt-" prefix for ID namespacing

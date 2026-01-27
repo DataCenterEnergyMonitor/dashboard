@@ -1,10 +1,10 @@
 from dash import Input, Output, State, callback_context, html
 
 # import the tab creation functions
-from components.tabs.company_reporting_trends.rt_tab1 import create_rt_tab1
-from components.tabs.company_reporting_trends.rt_tab2 import create_rt_tab2
-from components.tabs.company_reporting_trends.rt_tab3 import create_rt_tab3
-from components.tabs.company_reporting_trends.rt_tab4 import create_rt_tab4
+from pages.company_reporting_trends.rt_tab1 import create_rt_tab1
+from pages.company_reporting_trends.rt_tab2 import create_rt_tab2
+from pages.company_reporting_trends.rt_tab3 import create_rt_tab3
+from pages.company_reporting_trends.rt_tab4 import create_rt_tab4
 from components.bookmark_tabs import get_tab_styles
 
 # track if callbacks have been registered to prevent duplicates

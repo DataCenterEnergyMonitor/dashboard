@@ -8,7 +8,7 @@ from charts.global_policies.gp_choropleth_map import (
     create_gp_choropleth_map,
 )
 from components.excel_export import create_filtered_excel_download
-from components.tabs.global_policies.gp_tab3 import create_chart_row
+from pages.global_policies.gp_tab3 import create_chart_row
 from helpers.geojson_cache import get_geojson
 import numpy as np
 
