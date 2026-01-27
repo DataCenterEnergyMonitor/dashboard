@@ -98,7 +98,7 @@ def register_gp_tab3_callbacks(app, df):
             Input("gp_tab3_objective", "value"),
             Input("gp_tab3_clear-filters-btn", "n_clicks"),  # Add clear button as input
         ],
-        [State("active-tab-store", "data")],
+        [State("gp-active-tab-store", "data")],
     )
     def update_filters(
         gp_tab3_jurisdiction_level,
@@ -318,7 +318,7 @@ def register_gp_tab3_callbacks(app, df):
             State("gp_tab3_status", "value"),
             State("gp_tab3_instrument", "value"),
             State("gp_tab3_objective", "value"),
-            State("active-tab-store", "data"),
+            State("gp-active-tab-store", "data"),
         ],
         prevent_initial_call=False,
     )
@@ -540,7 +540,7 @@ def register_gp_tab3_callbacks(app, df):
         [
             State("gp-map-graph-modal", "is_open"),
             State("gp-choropleth-map-fig", "figure"),
-            State("active-tab-store", "data"),
+            State("gp-active-tab-store", "data"),
         ],
         prevent_initial_call=True,
     )

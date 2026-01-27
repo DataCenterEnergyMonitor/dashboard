@@ -9,7 +9,7 @@ def create_water_projections_data_page():
             dcc.Link(
                 html.Div([
                     html.I(className="fas fa-arrow-left", style={"marginRight": "8px"}),
-                    "Explore Energy Estimates And Projections Data"
+                    "Explore Water Estimates And Projections Data"
                 ], style={
                     "display": "flex",
                     "alignItems": "center",

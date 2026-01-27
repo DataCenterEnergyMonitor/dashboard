@@ -225,7 +225,7 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
         # More padding for fewer years makes bars appear narrower relative to chart width
         # Formula: fewer years = more padding to maintain consistent visual bar width
         if num_years <= 2:
-            x_padding = 2.0
+            x_padding = 3.5  # Much more padding for 1-2 years
         elif num_years <= 4:
             x_padding = 1.5
         elif num_years <= 7:

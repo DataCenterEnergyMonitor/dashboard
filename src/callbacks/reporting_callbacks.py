@@ -27,22 +27,8 @@ def create_reporting_callback(app, data_dict, chart_configs):
         ],
         [
             Input("url", "pathname"),
-            Input(
-                {
-                    "type": "filter-dropdown",
-                    "base_id": "reporting",
-                    "filter_id": "from_year",
-                },
-                "value",
-            ),
-            Input(
-                {
-                    "type": "filter-dropdown",
-                    "base_id": "reporting",
-                    "filter_id": "to_year",
-                },
-                "value",
-            ),
+            Input("reporting-from-year", "value"),
+            Input("reporting-to-year", "value"),
         ],
         allow_duplicate=True,
     )

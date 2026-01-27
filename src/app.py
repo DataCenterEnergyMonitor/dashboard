@@ -45,6 +45,7 @@ from pages.water_projections_methods_page import (
 )
 from pages.water_projections_data_page import create_water_projections_data_page
 from pages.global_policies_page import create_gp_page
+from pages.company_reporting_trends_page import create_rt_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -88,6 +89,12 @@ from callbacks.global_policies.gp_page_callback import (
 from callbacks.global_policies.gp_tab1_callback import register_gp_tab1_callbacks
 from callbacks.global_policies.gp_tab2_callback import register_gp_tab2_callbacks
 from callbacks.global_policies.gp_tab3_callback import register_gp_tab3_callbacks
+from callbacks.company_reporting_trends.rt_page_callback import (
+    register_rt_page_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab1_callback import (
+    register_rt_tab1_callbacks,
+)
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -122,7 +129,9 @@ def create_app():
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
     pue_wue_companies_df = load_pue_wue_companies_data()
     energyprojections_df = load_energyprojections_data()
-    waterprojections_df = load_energyprojections_data() # TO DO: replace with the function to load water projections dataset
+    waterprojections_df = (
+        load_energyprojections_data()
+    )  # TO DO: replace with the function to load water projections dataset
     globalpolicies_df = load_gp_data()
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
     print("TEST-TEST: transposed_df columns")
@@ -241,6 +250,9 @@ def create_app():
     # Use the transposed dataframe (with attr_type/attr_value) for Tab 2 callbacks
     register_gp_tab2_callbacks(app, gp_transposed_df)
     register_gp_tab3_callbacks(app, gp_transposed_df)
+    # Company Reporting Trends page callbacks
+    register_rt_page_callbacks(app, reporting_df)
+    register_rt_tab1_callbacks(app, reporting_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -267,7 +279,7 @@ def create_app():
         "pue": pue_df,
         "wue": wue_df,
         "company_name": pue_wue_df,
-        "energy_projections_studies": energyprojections_df, # TO DO: add water projections studies to the KPIs count
+        "energy_projections_studies": energyprojections_df,  # TO DO: add water projections studies to the KPIs count
     }
 
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
@@ -306,6 +318,8 @@ def create_app():
             return create_forecast_page(app, forecast_df)
         elif pathname == "/reporting":
             return create_reporting_page(app, reporting_df, data_dict, chart_configs)
+        elif pathname == "/reporting_test":
+            return create_rt_page(app, reporting_df)
         elif pathname == "/energy-use":
             return create_energy_use_page(app, energy_use_df)
         elif pathname == "/company-profile":

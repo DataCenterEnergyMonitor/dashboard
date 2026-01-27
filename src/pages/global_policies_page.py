@@ -2,6 +2,9 @@ from dash import html
 from layouts.base_layout import create_base_layout
 from components.bookmark_tabs import create_bookmark_tabs
 
+# ID prefix for this page's components
+ID_PREFIX = "gp-"
+
 
 def create_gp_page(app, globalpolicies_df):
     """
@@ -20,17 +23,18 @@ def create_gp_page(app, globalpolicies_df):
         tabs_config=tabs_config,
         active_tab_id="tab-1",
         data_page_parent="global_policies",
+        id_prefix=ID_PREFIX,
     )
 
     # This empty div will be populated by the callback
-    content_container = html.Div(id="tabs-content-container")
+    content_container = html.Div(id=f"{ID_PREFIX}tabs-content-container")
 
     # Wrap tabs in a sticky container (similar to pue_wue_page)
     # Tabs start after sidebar (320px) since tab content has sidebar
     sticky_tabs = html.Div(
         [tabs_component],
         className="d-none d-lg-block",  # Hide on mobile, show on desktop
-        id="global-policies-tabs-container",  # Add ID for debugging
+        id=f"{ID_PREFIX}tabs-container",
         style={
             "position": "fixed",
             "top": "100px",  # Below navbar

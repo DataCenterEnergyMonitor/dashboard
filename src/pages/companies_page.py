@@ -4,33 +4,6 @@ from layouts.base_layout import create_base_layout
 
 def create_companies_page():
     content = html.Div([
-        # # Back navigation button
-        # html.Div([
-        #     dcc.Link(
-        #         html.Div([
-        #             html.I(className="fas fa-arrow-left", style={"marginRight": "8px"}),
-        #             "Explore Energy Estimates And Projections Data"
-        #         ], style={
-        #             "display": "flex",
-        #             "alignItems": "center",
-        #             "padding": "8px 16px",
-        #             "color": "#6c757d",
-        #             "textDecoration": "none",
-        #             "fontSize": "0.9rem",
-        #             "transition": "all 0.2s ease"
-        #         }),
-        #         href="/energy-projections",
-        #         style={"textDecoration": "none"}
-        #     )
-        # ], style={
-        #     "position": "fixed",
-        #     "top": "90px",
-        #     "left": "120px",
-        #     "zIndex": "1001",
-        #     "backgroundColor": "white",
-        #     "padding": "10px",
-        #     "borderRadius": "8px",
-        # }),
         html.Div([
             html.Iframe(
                 src="assets/static_pages/companies/companies.html",
