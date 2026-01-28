@@ -32,9 +32,16 @@ def create_rt_page(app, reporting_df):
 
     # Shared filter store for cross-tab filter synchronization
     # This persists when switching tabs - values synced via callbacks
+    # - from_year, to_year: shared across all tabs
+    # - companies: shared across tabs 2-5 only
     filter_store = dcc.Store(
         id="rt-filter-store",
-        data={"from_year": min_year, "to_year": max_year, "source": "initial"},
+        data={
+            "from_year": min_year,
+            "to_year": max_year,
+            "companies": None,
+            "source": "initial",
+        },
     )
 
     # Empty div to be populated by the callback

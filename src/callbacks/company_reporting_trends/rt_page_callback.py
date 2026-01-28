@@ -15,8 +15,14 @@ _rt_callbacks_registered = False
 ID_PREFIX = "rt-"
 
 
-def register_rt_page_callbacks(app, reporting_df):
-    """Registers all callbacks related to the Company Reporting Trends page."""
+def register_rt_page_callbacks(app, reporting_df, pue_wue_companies_df=None):
+    """Registers all callbacks related to the Company Reporting Trends page.
+
+    Args:
+        app: Dash app instance
+        reporting_df: DataFrame with reporting data
+        pue_wue_companies_df: DataFrame with PUE/WUE companies data (for tabs 4-5)
+    """
     global _rt_callbacks_registered
 
     if _rt_callbacks_registered:
@@ -32,18 +38,20 @@ def register_rt_page_callbacks(app, reporting_df):
             Output(f"{ID_PREFIX}tab-btn-tab-2", "style"),
             Output(f"{ID_PREFIX}tab-btn-tab-3", "style"),
             Output(f"{ID_PREFIX}tab-btn-tab-4", "style"),
+            Output(f"{ID_PREFIX}tab-btn-tab-5", "style"),
         ],
         [
             Input(f"{ID_PREFIX}tab-btn-tab-1", "n_clicks"),
             Input(f"{ID_PREFIX}tab-btn-tab-2", "n_clicks"),
             Input(f"{ID_PREFIX}tab-btn-tab-3", "n_clicks"),
             Input(f"{ID_PREFIX}tab-btn-tab-4", "n_clicks"),
+            Input(f"{ID_PREFIX}tab-btn-tab-5", "n_clicks"),
         ],
         [State(f"{ID_PREFIX}active-tab-store", "data")],
         prevent_initial_call=False,
     )
     def render_tab_content(
-        btn1_clicks, btn2_clicks, btn3_clicks, btn4_clicks, current_tab
+        btn1_clicks, btn2_clicks, btn3_clicks, btn4_clicks, btn5_clicks, current_tab
     ):
         """Dynamically loads and returns the content for the selected tab."""
 
@@ -62,13 +70,13 @@ def register_rt_page_callbacks(app, reporting_df):
         if active_tab == "tab-1":
             content = create_rt_tab1(app, reporting_df)
         elif active_tab == "tab-2":
-            content = create_rt_tab2(app, reporting_df)
+            content = create_rt_tab2(app, reporting_df, pue_wue_companies_df)
         elif active_tab == "tab-3":
-            content = create_rt_tab3(app, reporting_df)
+            content = create_rt_tab3(app, reporting_df, pue_wue_companies_df)
         elif active_tab == "tab-4":
-            content = create_rt_tab4()
+            content = create_rt_tab4(app, pue_wue_companies_df)
         elif active_tab == "tab-5":
-            content = create_rt_tab5()
+            content = create_rt_tab5(app, reporting_df, pue_wue_companies_df)
         else:
             content = html.Div("Select a tab to explore or learn about data.")
 
@@ -80,5 +88,6 @@ def register_rt_page_callbacks(app, reporting_df):
         style2 = active_style if active_tab == "tab-2" else inactive_style
         style3 = active_style if active_tab == "tab-3" else inactive_style
         style4 = active_style if active_tab == "tab-4" else inactive_style
+        style5 = active_style if active_tab == "tab-5" else inactive_style
 
-        return content, active_tab, style1, style2, style3, style4
+        return content, active_tab, style1, style2, style3, style4, style5

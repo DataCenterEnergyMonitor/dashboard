@@ -131,16 +131,21 @@ def register_rt_tab1_callbacks(app, df):
         )
 
     # Callback to sync filter component changes to the store
+    # This handles year filters (all tabs) and company filter (tabs 2-5)
     @app.callback(
         Output(f"{ID_PREFIX}filter-store", "data"),
         [
             Input("reporting-from-year", "value"),
             Input("reporting-to-year", "value"),
+            Input("rt-company-filter", "value"),
+            Input("rt-clear-filters-btn", "n_clicks"),
         ],
         [State(f"{ID_PREFIX}filter-store", "data")],
         prevent_initial_call=True,
     )
-    def sync_filters_to_store(from_year, to_year, current_store):
+    def sync_filters_to_store(
+        from_year, to_year, companies, clear_clicks, current_store
+    ):
         """Sync filter component values to shared store"""
         ctx = callback_context
 
@@ -149,17 +154,40 @@ def register_rt_tab1_callbacks(app, df):
 
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
+        # Get current values from store
+        current_companies = current_store.get("companies") if current_store else None
+
+        # Handle clear filters button
+        if trigger_id == "rt-clear-filters-btn":
+            return {
+                "from_year": int(from_year) if from_year else None,
+                "to_year": int(to_year) if to_year else None,
+                "companies": None,
+                "source": "clear",
+            }
+
         # Convert to Python int to avoid numpy serialization issues
         if trigger_id in ["reporting-from-year", "reporting-to-year"]:
             return {
                 "from_year": int(from_year) if from_year else None,
                 "to_year": int(to_year) if to_year else None,
+                "companies": current_companies,
                 "source": "dropdown",
+            }
+
+        # Handle company filter
+        if trigger_id == "rt-company-filter":
+            return {
+                "from_year": int(from_year) if from_year else None,
+                "to_year": int(to_year) if to_year else None,
+                "companies": companies if companies else None,
+                "source": "company-filter",
             }
 
         raise dash.exceptions.PreventUpdate
 
     # Callback to sync store values to filter components (for cross-tab sync)
+    # This syncs year filters to all tabs
     @app.callback(
         [
             Output("reporting-from-year", "value"),
@@ -169,10 +197,10 @@ def register_rt_tab1_callbacks(app, df):
         [State(f"{ID_PREFIX}filter-store", "data")],
         prevent_initial_call=False,
     )
-    def sync_store_to_filters(active_tab, filter_data):
-        """Sync store values to filter components when tab is loaded"""
-        # Only sync for tabs that have these filter components (tab-1 and tab-2)
-        if active_tab not in ["tab-1", "tab-2", None]:
+    def sync_store_to_year_filters(active_tab, filter_data):
+        """Sync store values to year filter components when tab is loaded"""
+        # All tabs have year filters
+        if active_tab not in ["tab-1", "tab-2", "tab-3", "tab-4", "tab-5", None]:
             raise dash.exceptions.PreventUpdate
 
         if not filter_data:
@@ -186,6 +214,25 @@ def register_rt_tab1_callbacks(app, df):
         to_year = int(to_year) if to_year else None
 
         return from_year, to_year
+
+    # Callback to sync store values to company filter (tabs 2-5 only)
+    @app.callback(
+        Output("rt-company-filter", "value"),
+        [Input(f"{ID_PREFIX}active-tab-store", "data")],
+        [State(f"{ID_PREFIX}filter-store", "data")],
+        prevent_initial_call=False,
+    )
+    def sync_store_to_company_filter(active_tab, filter_data):
+        """Sync store values to company filter when switching to tabs 2-5"""
+        # Only tabs 2-5 have company filter
+        if active_tab not in ["tab-2", "tab-3", "tab-4", "tab-5"]:
+            raise dash.exceptions.PreventUpdate
+
+        if not filter_data:
+            raise dash.exceptions.PreventUpdate
+
+        companies = filter_data.get("companies")
+        return companies
 
     # Modal expand callback
     @app.callback(

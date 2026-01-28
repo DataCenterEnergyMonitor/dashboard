@@ -1,17 +1,20 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.company_reporting_trends.rt_filters import create_rt_filters
+from components.filters.company_reporting_trends.rt_filters_extended import (
+    create_rt_filters_extended,
+)
 
 
-def create_rt_tab2(app, reporting_df):
+def create_rt_tab2(app, reporting_df, pue_wue_companies_df=None):
     """
     Create tab 2 content (Electricity Usage chart).
     Filters are inside the tab and sync via rt-filter-store.
+    Includes company filter (shared with tabs 3-5).
     """
     content = html.Div(
         [
-            # Sticky sidebar wrapper with filters
-            create_rt_filters(reporting_df),
+            # Sticky sidebar wrapper with extended filters (year + company)
+            create_rt_filters_extended(reporting_df, pue_wue_companies_df),
             html.Div(
                 [
                     # Mobile navigation
@@ -47,7 +50,25 @@ def create_rt_tab2(app, reporting_df):
                     dbc.Container(
                         [
                             # Figure container (updated by callback)
-                            html.Div(id="rt-fig2-container"),
+                            # Wrapped with dcc.Loading for visual feedback
+                            dcc.Loading(
+                                id="rt-fig2-loading",
+                                type="circle",
+                                color="#395970",
+                                children=html.Div(
+                                    id="rt-fig2-container",
+                                    style={"width": "100%"},
+                                ),
+                                overlay_style={
+                                    "visibility": "visible",
+                                    "opacity": 0.8,
+                                    "backgroundColor": "white",
+                                },
+                                parent_style={
+                                    "minHeight": "400px",
+                                    "width": "100%",
+                                },
+                            ),
                         ],
                         fluid=True,
                     ),

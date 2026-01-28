@@ -258,11 +258,11 @@ def create_chart_row(
     )
 
 
-def create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df):
+def create_pue_wue_page(app, pue_wue_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_pue_wue_filters(df1=pue_wue_df, df2=pue_wue_companies_df),
+            create_pue_wue_filters(df=pue_wue_df),
             html.Div(
                 [
                     # Sticky bookmark bar
@@ -300,11 +300,6 @@ def create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df):
                                     dbc.NavLink(
                                         "Compare",
                                         href="#comparison-section",
-                                        className="px-2",
-                                    ),
-                                    dbc.NavLink(
-                                        "Reporting Trends",
-                                        href="#trends-section",
                                         className="px-2",
                                     ),
                                 ],
@@ -438,55 +433,6 @@ def create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df):
                                     ),
                                 ]
                             ),
-                            html.Br(),
-                            html.Div(
-                                [
-                                    html.A(id="trends-section"),
-                                    create_chart_row(
-                                        chart_id="pue-trends-chart",
-                                        title="PUE Reporting by Company Over Time",
-                                        expand_id="expand-pue-trends",
-                                        accordion_children=[dcc.Markdown("TBD")],
-                                        accordion_title=html.Span(
-                                            [
-                                                "PUE Reporting Trends",
-                                                html.Span(
-                                                    " Read more...",
-                                                    className="text-link",
-                                                ),
-                                            ]
-                                        ),
-                                        filename="pue_wue_companies",
-                                        scrollable=True,
-                                        dual_chart=True,  # Enable dual chart mode
-                                    ),
-                                ]
-                            ),
-                            html.Br(),
-                            # WUE Trends Chart
-                            html.Div(
-                                [
-                                    html.A(id="wue-trends-section"),
-                                    create_chart_row(
-                                        chart_id="wue-trends-chart",
-                                        title="WUE Reporting by Company Over Time",
-                                        expand_id="expand-wue-trends",
-                                        accordion_children=[dcc.Markdown("TBD")],
-                                        accordion_title=html.Span(
-                                            [
-                                                "WUE Reporting Trends",
-                                                html.Span(
-                                                    " Read more...",
-                                                    className="text-link",
-                                                ),
-                                            ]
-                                        ),
-                                        filename="pue_wue_companies",
-                                        scrollable=True,
-                                        dual_chart=True,  # Enable dual chart mode
-                                    ),
-                                ]
-                            ),
                         ],
                         fluid=True,
                     ),
@@ -519,7 +465,6 @@ def create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df):
                     ),
                 ],
                 id="graph-modal",
-                # size="xl",
                 fullscreen=True,
                 is_open=False,
                 style={

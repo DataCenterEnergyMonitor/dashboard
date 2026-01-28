@@ -98,6 +98,15 @@ from callbacks.company_reporting_trends.rt_tab1_callback import (
 from callbacks.company_reporting_trends.rt_tab2_callback import (
     register_rt_tab2_callbacks,
 )
+from callbacks.company_reporting_trends.rt_tab3_callback import (
+    register_rt_tab3_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab4_callback import (
+    register_rt_tab4_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab5_callback import (
+    register_rt_tab5_callbacks,
+)
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -223,7 +232,7 @@ def create_app():
     }
 
     # Initialize callbacks
-    register_pue_wue_callbacks(app, pue_wue_df, pue_wue_companies_df)
+    register_pue_wue_callbacks(app, pue_wue_df)
     register_energy_projections_callbacks(app, energyprojections_df)
     register_water_projections_callbacks(app, waterprojections_df)
     register_gp_page_callbacks(app, globalpolicies_df)
@@ -232,9 +241,12 @@ def create_app():
     register_gp_tab2_callbacks(app, gp_transposed_df)
     register_gp_tab3_callbacks(app, gp_transposed_df)
     # Company Reporting Trends page callbacks
-    register_rt_page_callbacks(app, reporting_df)
+    register_rt_page_callbacks(app, reporting_df, pue_wue_companies_df)
     register_rt_tab1_callbacks(app, reporting_df)
-    register_rt_tab2_callbacks(app, reporting_df)
+    register_rt_tab2_callbacks(app, reporting_df, pue_wue_companies_df)
+    register_rt_tab3_callbacks(app, reporting_df, pue_wue_companies_df)
+    register_rt_tab4_callbacks(app, pue_wue_companies_df)
+    register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -268,7 +280,7 @@ def create_app():
     def display_page(pathname):
         print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
         if pathname == "/pue_wue":
-            return create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df)
+            return create_pue_wue_page(app, pue_wue_df)
         elif pathname == "/pue-methodology":
             return create_pue_methodology_page()
         elif pathname == "/wue-methodology":

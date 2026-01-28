@@ -47,7 +47,25 @@ def create_rt_tab1(app, reporting_df):
                     dbc.Container(
                         [
                             # Figure container (updated by callback)
-                            html.Div(id="rt-fig1-container"),
+                            # Wrapped with dcc.Loading for visual feedback
+                            dcc.Loading(
+                                id="rt-fig1-loading",
+                                type="circle",
+                                color="#395970",
+                                children=html.Div(
+                                    id="rt-fig1-container",
+                                    style={"width": "100%"},
+                                ),
+                                overlay_style={
+                                    "visibility": "visible",
+                                    "opacity": 0.8,
+                                    "backgroundColor": "white",
+                                },
+                                parent_style={
+                                    "minHeight": "400px",
+                                    "width": "100%",
+                                },
+                            ),
                         ],
                         fluid=True,
                     ),

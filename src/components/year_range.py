@@ -7,6 +7,7 @@ def create_year_range_component(
     years: List[int],
     default_from: Optional[int] = None,
     default_to: Optional[int] = None,
+    className = None,
 ) -> html.Div:
     """
     Create a year range component with two dropdowns for selecting from and to years.
@@ -29,28 +30,28 @@ def create_year_range_component(
     return html.Div(
         [
             # Filter icon and label in one row
-            html.Div(
-                [
-                    # html.I(
-                    #     className="fas fa-calendar",
-                    #     style={"marginRight": "8px", "color": "#666"},
-                    # ),
-                    html.Label(
-                        "Select Year Range:",
-                        style={
-                            "fontFamily": "'Inter', sans-serif",
-                            "fontWeight": "500",
-                            "color": "#333",
-                            "fontSize": "0.9rem",
-                        },
-                    ),
-                ],
-                style={
-                    "display": "flex",
-                    "alignItems": "center",
-                    "marginBottom": "8px",
-                },
-            ),
+            # html.Div(
+            #     [
+            #         # html.I(
+            #         #     className="fas fa-calendar",
+            #         #     style={"marginRight": "8px", "color": "#666"},
+            #         # ),
+            #         # html.Label(
+            #         #     "Select Year Range:",
+            #         #     style={
+            #         #         "fontFamily": "'Inter', sans-serif",
+            #         #         "fontWeight": "500",
+            #         #         "color": "#333",
+            #         #         "fontSize": "0.9rem",
+            #         #     },
+            #         # ),
+            #     ],
+            #     style={
+            #         "display": "flex",
+            #         "alignItems": "center",
+            #         "marginBottom": "8px",
+            #     },
+            # ),
             # Dropdowns in one row
             html.Div(
                 [
@@ -107,15 +108,15 @@ def create_year_range_component(
                     "width": "100%",
                 },
             ),
-        ],
-        style={
-            "padding": "12px",
-            "backgroundColor": "white",
-            "borderRadius": "4px",
-            # "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
-            "marginBottom": "20px",
-            "width": "100%",
-            "position": "relative",
-            "zIndex": "auto",
-        },
+        ]#,className="filter-box mb-3"
+        # style={
+        #     "padding": "12px",
+        #     "backgroundColor": "white",
+        #     "borderRadius": "4px",
+        #     # "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+        #     "marginBottom": "20px",
+        #     "width": "100%",
+        #     "position": "relative",
+        #     "zIndex": "auto",
+        # },
     )

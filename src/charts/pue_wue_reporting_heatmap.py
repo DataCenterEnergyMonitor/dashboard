@@ -138,22 +138,34 @@ def create_pue_wue_reporting_heatmap_plot(
                 #     text = f"{company_name} ({year})<br>Company inactive"
                 elif "company Inactive" in scopes:
                     value = 0.01
-                    
-                    inactive_row = year_data[year_data[reporting_column] == "company Inactive"]
-                    
+
+                    inactive_row = year_data[
+                        year_data[reporting_column] == "company Inactive"
+                    ]
+
                     if not inactive_row.empty:
                         row = inactive_row.iloc[0]
-                        successor_entity = row.get('successor_entity', "")
-                        status_effective_date = row.get('status_effective_date', "")
-                        
-                        if status_effective_date and hasattr(status_effective_date, 'strftime'):
-                            status_effective_date = status_effective_date.strftime('%Y-%m-%d')
-                            
-                        successor_info = f"<br>Reports under {successor_entity} as of {status_effective_date}" if successor_entity else ""
+                        successor_entity = row.get("successor_entity", "")
+                        status_effective_date = row.get("status_effective_date", "")
+
+                        if status_effective_date and hasattr(
+                            status_effective_date, "strftime"
+                        ):
+                            status_effective_date = status_effective_date.strftime(
+                                "%Y-%m-%d"
+                            )
+
+                        successor_info = (
+                            f"<br>Reports under {successor_entity} as of {status_effective_date}"
+                            if successor_entity
+                            else ""
+                        )
                     else:
                         successor_info = ""
 
-                    text = f"{company_name} ({year})<br>Company inactive{successor_info}"
+                    text = (
+                        f"{company_name} ({year})<br>Company inactive{successor_info}"
+                    )
                 elif "no reporting evident" in scopes:
                     value = 0.21
                     text = f"{company_name} ({year})<br>No reporting"
@@ -273,10 +285,10 @@ def create_pue_wue_reporting_heatmap_plot(
             "linewidth": 1,
             "ticks": "outside",
             "tickfont": {"size": 12},
+            "tickangle": 0,
             "fixedrange": True,
             "title": "",
             "range": [-0.5, len(years) - 0.5],
-            #'domain': [0, 1.0]
         }
         yaxis_config = {
             "visible": True,
@@ -323,6 +335,7 @@ def create_pue_wue_reporting_heatmap_plot(
             "showline": False,
             "ticks": "outside",
             "tickfont": {"size": 12},
+            "tickangle": 0,
             "fixedrange": True,
             "range": [-0.5, len(years) - 0.5],
         }
@@ -358,7 +371,7 @@ def create_pue_wue_reporting_heatmap_plot(
         margin=margin_config,
         showlegend=show_legend,
         legend=legend_config,
-        autosize=False,
+        autosize=True,
     )
 
     return fig

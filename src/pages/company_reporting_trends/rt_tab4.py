@@ -1,17 +1,21 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.company_reporting_trends.rt_filters import create_rt_filters
+from components.filters.company_reporting_trends.rt_tab4_filters import (
+    create_rt_tab4_filters,
+)
 
 
-def create_rt_tab4(app, reporting_df):
+def create_rt_tab4(app, pue_wue_companies_df=None):
     """
-    Create tab 4 content (PUE Reporting heatmap).
+    Create tab 4 content (PUE Reporting heatmap with dual-chart pattern).
+    Uses header + scrollable main chart like pue_wue_page.
     Filters are inside the tab and sync via rt-filter-store.
+    Includes company filter (shared with tabs 2-5).
     """
     content = html.Div(
         [
-            # Sticky sidebar wrapper with filters
-            create_rt_filters(reporting_df),
+            # Sticky sidebar wrapper with extended filters (year + company)
+            create_rt_tab4_filters(pue_wue_companies_df),
             html.Div(
                 [
                     # Mobile navigation
@@ -46,8 +50,26 @@ def create_rt_tab4(app, reporting_df):
                     ),
                     dbc.Container(
                         [
-                            # Figure container (updated by callback)
-                            html.Div(id="rt-fig4-container"),
+                            # Figure container with dual-chart layout (updated by callback)
+                            # Wrapped with dcc.Loading for visual feedback during chart generation
+                            dcc.Loading(
+                                id="rt-fig4-loading",
+                                type="circle",
+                                color="#395970",
+                                children=html.Div(
+                                    id="rt-fig4-container",
+                                    style={"width": "100%"},
+                                ),
+                                overlay_style={
+                                    "visibility": "visible",
+                                    "opacity": 0.8,
+                                    "backgroundColor": "white",
+                                },
+                                parent_style={
+                                    "minHeight": "400px",
+                                    "width": "100%",
+                                },
+                            ),
                         ],
                         fluid=True,
                     ),

@@ -1,11 +1,11 @@
 import dash
 from pathlib import Path
-from dash import Dash, Input, Output, State, callback, dcc, html, callback_context
+from dash import Input, Output, State # Dash, callback, dcc, html, callback_context
 import pandas as pd
 from charts.pue_chart import create_pue_scatter_plot
 from charts.wue_chart import create_wue_scatter_plot
 from charts.pue_wue_chart import create_pue_wue_scatter_plot
-from charts.pue_wue_reporting_heatmap import create_pue_wue_reporting_heatmap_plot
+# from charts.pue_wue_reporting_heatmap import create_pue_wue_reporting_heatmap_plot
 from components.excel_export import create_filtered_excel_download
 
 
@@ -85,7 +85,7 @@ def filter_data(
     return filtered_df
 
 
-def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
+def register_pue_wue_callbacks(app, df):
     # Update all filters
     @app.callback(
         [
@@ -390,10 +390,10 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
     @app.callback(
         [
             Output("pue-wue-scatter-chart", "figure"),
-            Output("pue-trends-chart", "figure"),
-            Output("pue-trends-chart-header", "figure"),
-            Output("wue-trends-chart", "figure"),
-            Output("wue-trends-chart-header", "figure"),
+            # Output("pue-trends-chart", "figure"),
+            # Output("pue-trends-chart-header", "figure"),
+            # Output("wue-trends-chart", "figure"),
+            # Output("wue-trends-chart-header", "figure"),
         ],
         [
             Input("apply-filters-btn", "n_clicks"),
@@ -403,7 +403,7 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
         prevent_initial_call=False,
     )
     def update_pue_wue_scatter_plot(apply_clicks, clear_clicks, company):
-        """Handle PUE vs WUE chart and PUE Trends chart with company filter only"""
+        """Handle PUE vs WUE figure with company filter only"""
 
         ctx = dash.callback_context
 
@@ -417,8 +417,8 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                     pue_wue_filtered_df["wue_value"].notna()
                 ]
 
-                # PUE Trends data (from pue_wue_companies_df)
-                trends_filtered_df = pue_wue_companies_df.copy()
+                # # PUE Trends data (from pue_wue_companies_df)
+                # trends_filtered_df = pue_wue_companies_df.copy()
 
                 filters_applied = False
 
@@ -437,13 +437,13 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                     pue_wue_filtered_df["wue_value"].notna()
                 ]
 
-                # Apply company filter to second dataframe
-                if company:
-                    trends_filtered_df = pue_wue_companies_df[
-                        pue_wue_companies_df["company_name"].isin(company)
-                    ].copy()
-                else:
-                    trends_filtered_df = pue_wue_companies_df.copy()
+                # # Apply company filter to second dataframe
+                # if company:
+                #     trends_filtered_df = pue_wue_companies_df[
+                #         pue_wue_companies_df["company_name"].isin(company)
+                #     ].copy()
+                # else:
+                #     trends_filtered_df = pue_wue_companies_df.copy()
 
             else:
                 return dash.no_update, dash.no_update
@@ -454,7 +454,7 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
                 pue_wue_filtered_df["wue_value"].notna()
             ]
 
-            trends_filtered_df = pue_wue_companies_df.copy()
+            # trends_filtered_df = pue_wue_companies_df.copy()
 
             filters_applied = False
 
@@ -468,42 +468,42 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
             filters_applied=filters_applied,
         )
 
-        # Create PUE Trends chart
-        pue_trends_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=trends_filtered_df,
-            filters_applied=filters_applied,
-            header_only=False,
-            reporting_column="reports_pue",  # Full chart
-        )
+        # # Create PUE Trends chart
+        # pue_trends_fig = create_pue_wue_reporting_heatmap_plot(
+        #     filtered_df=trends_filtered_df,
+        #     filters_applied=filters_applied,
+        #     header_only=False,
+        #     reporting_column="reports_pue",  # Full chart
+        # )
 
-        pue_trends_header_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=trends_filtered_df,
-            filters_applied=filters_applied,
-            header_only=True,
-            reporting_column="reports_pue",  # Header only
-        )
+        # pue_trends_header_fig = create_pue_wue_reporting_heatmap_plot(
+        #     filtered_df=trends_filtered_df,
+        #     filters_applied=filters_applied,
+        #     header_only=True,
+        #     reporting_column="reports_pue",  # Header only
+        # )
 
-        # Create WUE Trends chart
-        wue_trends_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=trends_filtered_df,
-            filters_applied=filters_applied,
-            header_only=False,
-            reporting_column="reports_wue",  # Full chart
-        )
+        # # Create WUE Trends chart
+        # wue_trends_fig = create_pue_wue_reporting_heatmap_plot(
+        #     filtered_df=trends_filtered_df,
+        #     filters_applied=filters_applied,
+        #     header_only=False,
+        #     reporting_column="reports_wue",  # Full chart
+        # )
 
-        wue_trends_header_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=trends_filtered_df,
-            filters_applied=filters_applied,
-            header_only=True,
-            reporting_column="reports_wue",  # Header only
-        )
+        # wue_trends_header_fig = create_pue_wue_reporting_heatmap_plot(
+        #     filtered_df=trends_filtered_df,
+        #     filters_applied=filters_applied,
+        #     header_only=True,
+        #     reporting_column="reports_wue",  # Header only
+        # )
 
         return (
             pue_wue_fig,
-            pue_trends_fig,
-            pue_trends_header_fig,
-            wue_trends_fig,
-            wue_trends_header_fig,
+            # pue_trends_fig,
+            # pue_trends_header_fig,
+            # wue_trends_fig,
+            # wue_trends_header_fig,
         )
 
     # Modal callback
@@ -517,16 +517,16 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
             Input("expand-pue", "n_clicks"),
             Input("expand-wue", "n_clicks"),
             Input("expand-pue-wue", "n_clicks"),
-            Input("expand-pue-trends", "n_clicks"),
-            Input("expand-wue-trends", "n_clicks"),
+            # Input("expand-pue-trends", "n_clicks"),
+            # Input("expand-wue-trends", "n_clicks"),
         ],
         [
             State("graph-modal", "is_open"),
             State("pue-scatter-chart", "figure"),
             State("wue-scatter-chart", "figure"),
             State("pue-wue-scatter-chart", "figure"),
-            State("pue-trends-chart", "figure"),
-            State("wue-trends-chart", "figure"),
+            # State("pue-trends-chart", "figure"),
+            # State("wue-trends-chart", "figure"),
         ],
         prevent_initial_call=True,
     )
@@ -534,14 +534,14 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
         _pue_clicks,
         _wue_clicks,
         _comparison_clicks,
-        _pue_trends_clicks,
-        _wue_trends_clicks,
+        # _pue_trends_clicks,
+        # _wue_trends_clicks,
         is_open,
         pue_figure,
         wue_figure,
         pue_wue_figure,
-        pue_trends_figure,
-        wue_trends_figure,
+        # pue_trends_figure,
+        # wue_trends_figure,
     ):
         ctx = dash.callback_context
 
@@ -553,27 +553,27 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
         if button_id == "expand-pue":
             return (
                 not is_open,
-                "Power Usage Effectiveness (PUE) - Expanded View",
+                "Power Usage Effectiveness (PUE)",
                 pue_figure or {},
             )
         elif button_id == "expand-wue":
             return (
                 not is_open,
-                "Water Usage Effectiveness (WUE) - Expanded View",
+                "Water Usage Effectiveness (WUE)",
                 wue_figure or {},
             )
         elif button_id == "expand-pue-wue":
             return (
                 not is_open,
-                "PUE vs WUE Relationship - Expanded View",
+                "PUE vs WUE Relationship",
                 pue_wue_figure or {},
             )
-        elif button_id == "expand-pue-trends":
-            return (
-                not is_open,
-                "PUE Reporting Trends Over Time - Expanded View",
-                pue_trends_figure or {},
-            )
+        # elif button_id == "expand-pue-trends":
+        #     return (
+        #         not is_open,
+        #         "PUE Reporting Trends Over Time - Expanded View",
+        #         pue_trends_figure or {},
+        #     )
 
         return is_open, "", {}
 
@@ -742,23 +742,23 @@ def register_pue_wue_callbacks(app, df, pue_wue_companies_df):
             n_clicks=n_clicks,
         )
 
-    def download_pue_wue_companies_data(n_clicks):
-        # Get the project root directory (2 levels up from callbacks directory)
-        root_dir = Path(__file__).parent.parent.parent
-        input_path = root_dir / "data" / "Companies_list.xlsx"
+    # def download_pue_wue_companies_data(n_clicks):
+    #     # Get the project root directory (2 levels up from callbacks directory)
+    #     root_dir = Path(__file__).parent.parent.parent
+    #     input_path = root_dir / "data" / "Companies_list.xlsx"
 
-        # Debug print
-        print(f"Looking for file at: {input_path}")
-        print(f"File exists: {input_path.exists()}")
+    #     # Debug print
+    #     print(f"Looking for file at: {input_path}")
+    #     print(f"File exists: {input_path.exists()}")
 
-        return create_filtered_excel_download(
-            input_path=input_path,
-            output_filename="companies_data.xlsx",
-            sheets_to_export=[
-                "summary",
-                "reporting_status",
-            ],
-            internal_prefix="_internal_",
-            # skip_rows=1,
-            n_clicks=n_clicks,
-        )
+    #     return create_filtered_excel_download(
+    #         input_path=input_path,
+    #         output_filename="companies_data.xlsx",
+    #         sheets_to_export=[
+    #             "summary",
+    #             "reporting_status",
+    #         ],
+    #         internal_prefix="_internal_",
+    #         # skip_rows=1,
+    #         n_clicks=n_clicks,
+    #     )
