@@ -56,6 +56,13 @@ def filter_data_by_companies(df, companies, company_col="company_name"):
     return df[df[company_col].isin(companies)]
 
 
+def filter_data_by_reporting_status(df, pw_status, status_col="reports_wue"):
+    """Filter dataframe by reporting status values"""
+    if df.empty or not pw_status:
+        return df
+    return df[df[status_col].isin(pw_status)]
+
+
 # ID prefix for this page's components
 ID_PREFIX = "rt-"
 
@@ -93,6 +100,7 @@ def register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df):
         from_year = None
         to_year = None
         companies = None
+        pw_status = None
 
         if filter_data:
             from_year = (
@@ -104,6 +112,7 @@ def register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df):
                 int(filter_data.get("to_year")) if filter_data.get("to_year") else None
             )
             companies = filter_data.get("companies")
+            pw_status = filter_data.get("pw_status")
 
         # Filter pue_wue_companies_df by year range (uses "year" column)
         filtered_df = filter_data_by_year_range(
@@ -113,8 +122,13 @@ def register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df):
         # Filter by companies if selected
         filtered_df = filter_data_by_companies(filtered_df, companies)
 
+        # Filter by reporting status if selected
+        filtered_df = filter_data_by_reporting_status(
+            filtered_df, pw_status, status_col="reports_wue"
+        )
+
         # Determine if filters are applied
-        filters_applied = bool(companies)
+        filters_applied = bool(companies) or bool(pw_status)
 
         # Create WUE Trends chart (main scrollable chart)
         wue_trends_fig = create_pue_wue_reporting_heatmap_plot(

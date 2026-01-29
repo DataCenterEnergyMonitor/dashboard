@@ -20,7 +20,7 @@ def register_rt_page_callbacks(app, reporting_df, pue_wue_companies_df=None):
 
     Args:
         app: Dash app instance
-        reporting_df: DataFrame with reporting data
+        reporting_df: DataFrame with reporting data (for tabs 1-3)
         pue_wue_companies_df: DataFrame with PUE/WUE companies data (for tabs 4-5)
     """
     global _rt_callbacks_registered
@@ -70,13 +70,13 @@ def register_rt_page_callbacks(app, reporting_df, pue_wue_companies_df=None):
         if active_tab == "tab-1":
             content = create_rt_tab1(app, reporting_df)
         elif active_tab == "tab-2":
-            content = create_rt_tab2(app, reporting_df, pue_wue_companies_df)
+            content = create_rt_tab2(app, reporting_df)
         elif active_tab == "tab-3":
-            content = create_rt_tab3(app, reporting_df, pue_wue_companies_df)
+            content = create_rt_tab3(app, reporting_df)
         elif active_tab == "tab-4":
             content = create_rt_tab4(app, pue_wue_companies_df)
         elif active_tab == "tab-5":
-            content = create_rt_tab5(app, reporting_df, pue_wue_companies_df)
+            content = create_rt_tab5(app, pue_wue_companies_df)
         else:
             content = html.Div("Select a tab to explore or learn about data.")
 

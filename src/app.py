@@ -150,6 +150,8 @@ def create_app():
     print(gp_transposed_df.columns)
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
+    print("TEST-TEST: reported_df columns")
+    print(reporting_df.columns)
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
 

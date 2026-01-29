@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from components.year_range import create_year_range_component
 
 
-def create_rt_tab4_filters(df):
+def create_rt_tab5_filters(df):
     # extract years from data - convert to Python int to avoid numpy serialization issues
     years = sorted([int(y) for y in df["year"].unique()])
     min_year, max_year = int(min(years)), int(max(years))

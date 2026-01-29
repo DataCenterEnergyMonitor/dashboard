@@ -13,7 +13,7 @@ def create_year_range_component(
     Create a year range component with two dropdowns for selecting from and to years.
 
     Args:
-        base_id (str): Base ID for the component (e.g., "reporting" -> "reporting-from-year")
+        base_id (str): Base ID for the component (e.g., "reporting-from-year")
         years (List[int]): List of available years
         default_from (int, optional): Default value for from year
         default_to (int, optional): Default value for to year

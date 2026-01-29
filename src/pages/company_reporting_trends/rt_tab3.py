@@ -1,11 +1,11 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.company_reporting_trends.rt_filters_extended import (
-    create_rt_filters_extended,
+from components.filters.company_reporting_trends.rt_tab3_filters import (
+    create_rt_tab3_filters,
 )
 
 
-def create_rt_tab3(app, reporting_df, pue_wue_companies_df=None):
+def create_rt_tab3(app, reporting_df):
     """
     Create tab 3 content (Water Reporting heatmap).
     Filters are inside the tab and sync via rt-filter-store.
@@ -14,7 +14,7 @@ def create_rt_tab3(app, reporting_df, pue_wue_companies_df=None):
     content = html.Div(
         [
             # Sticky sidebar wrapper with extended filters (year + company)
-            create_rt_filters_extended(reporting_df, pue_wue_companies_df),
+            create_rt_tab3_filters(reporting_df),
             html.Div(
                 [
                     # Mobile navigation

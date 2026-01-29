@@ -56,6 +56,13 @@ def filter_data_by_companies(df, companies, company_col="company_name"):
     return df[df[company_col].isin(companies)]
 
 
+def filter_data_by_reporting_status(df, pw_status, status_col="reports_pue"):
+    """Filter dataframe by reporting status values"""
+    if df.empty or not pw_status:
+        return df
+    return df[df[status_col].isin(pw_status)]
+
+
 # ID prefix for this page's components
 ID_PREFIX = "rt-"
 
@@ -93,6 +100,7 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
         from_year = None
         to_year = None
         companies = None
+        pw_status = None
 
         if filter_data:
             from_year = (
@@ -104,6 +112,7 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
                 int(filter_data.get("to_year")) if filter_data.get("to_year") else None
             )
             companies = filter_data.get("companies")
+            pw_status = filter_data.get("pw_status")
 
         # Filter pue_wue_companies_df by year range (uses "year" column)
         filtered_df = filter_data_by_year_range(
@@ -113,8 +122,13 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
         # Filter by companies if selected
         filtered_df = filter_data_by_companies(filtered_df, companies)
 
+        # Filter by reporting status if selected
+        filtered_df = filter_data_by_reporting_status(
+            filtered_df, pw_status, status_col="reports_pue"
+        )
+
         # Determine if filters are applied
-        filters_applied = bool(companies)
+        filters_applied = bool(companies) or bool(pw_status)
 
         # Create PUE Trends chart (main scrollable chart)
         pue_trends_fig = create_pue_wue_reporting_heatmap_plot(
@@ -347,25 +361,34 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
             internal_prefix="_internal_",
             n_clicks=n_clicks,
         )
-        # callback to handle Clear All button
 
+    # Callback to handle Clear All button - resets filter UI components
+    # The store is updated separately in rt_tab1_callback.py
     @app.callback(
         [
-            Output("rt-tab4-reporting-from-year", "value"),
-            Output("rt-tab4-reporting-to-year", "value"),
-            Output("rt-tab4-company-filter", "value"),
-            Output("rt-tab4-reporting_status", "value"),
+            Output("rt-from-year", "value", allow_duplicate=True),
+            Output("rt-to-year", "value", allow_duplicate=True),
+            Output("rt-company-filter", "value", allow_duplicate=True),
+            Output("pw_reporting_status", "value", allow_duplicate=True),
         ],
         [Input("rt-clear-filters-btn", "n_clicks")],
         prevent_initial_call=True,
     )
     def clear_all_filters(clear_clicks):
         if clear_clicks:
-            # Clear all filter values
+            # Clear all filter values - reset pw_status to default (all selected)
+            default_pw_status = [
+                "company not established",
+                "no reporting evident",
+                "individual data center values only",
+                "fleet-wide values only",
+                "both fleet-wide and individual data center values",
+                "pending",
+            ]
             return (
                 None,
                 None,
                 None,
-                [],
+                default_pw_status,
             )
         return dash.no_update

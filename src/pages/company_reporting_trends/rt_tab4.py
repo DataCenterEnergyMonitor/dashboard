@@ -5,7 +5,7 @@ from components.filters.company_reporting_trends.rt_tab4_filters import (
 )
 
 
-def create_rt_tab4(app, pue_wue_companies_df=None):
+def create_rt_tab4(app, df):
     """
     Create tab 4 content (PUE Reporting heatmap with dual-chart pattern).
     Uses header + scrollable main chart like pue_wue_page.
@@ -15,7 +15,7 @@ def create_rt_tab4(app, pue_wue_companies_df=None):
     content = html.Div(
         [
             # Sticky sidebar wrapper with extended filters (year + company)
-            create_rt_tab4_filters(pue_wue_companies_df),
+            create_rt_tab4_filters(df),
             html.Div(
                 [
                     # Mobile navigation

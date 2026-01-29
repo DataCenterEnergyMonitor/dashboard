@@ -4,17 +4,15 @@ import dash_bootstrap_components as dbc
 from components.year_range import create_year_range_component
 
 
-def create_rt_tab4_filters(df):
+def create_rt_tab3_filters(df):
     # extract years from data - convert to Python int to avoid numpy serialization issues
-    years = sorted([int(y) for y in df["year"].unique()])
+    years = sorted([int(y) for y in df["reported_data_year"].unique()])
     min_year, max_year = int(min(years)), int(max(years))
     reporting_status = [
-        "company not established",
-        "no reporting evident",
-        "individual data center values only",
-        "fleet-wide values only",
-        "both fleet-wide and individual data center values",
-        "pending",
+        "No Reporting",
+        "Pending",
+        "Company Wide Water Use",
+        "Data Center Water Use",
     ]
     return html.Div(
         [
@@ -84,32 +82,10 @@ def create_rt_tab4_filters(df):
                                         "Reporting Status:", className="filter-label"
                                     ),
                                     dcc.Checklist(
-                                        id="pw_reporting_status",
+                                        id="rt_tab3_reporting_status",
                                         options=[
-                                            {
-                                                "label": "Not established",
-                                                "value": "company not established",
-                                            },
-                                            {
-                                                "label": "No reporting",
-                                                "value": "no reporting evident",
-                                            },
-                                            {
-                                                "label": "Individual Data Centers only",
-                                                "value": "individual data center values only",
-                                            },
-                                            {
-                                                "label": "Fleet-wide only",
-                                                "value": "fleet-wide values only",
-                                            },
-                                            {
-                                                "label": "Fleet and Individual Data Centers",
-                                                "value": "both fleet-wide and individual data center values",
-                                            },
-                                            {
-                                                "label": "Pending data submission",
-                                                "value": "pending",
-                                            },
+                                            {"label": status, "value": status}
+                                            for status in reporting_status
                                         ],
                                         value=reporting_status,
                                         persistence=True,
@@ -168,6 +144,12 @@ def create_rt_tab4_filters(df):
                     ),
                     # Hidden div to store applied filter state
                     html.Div(id="applied-filters-store", style={"display": "none"}),
+                    # Hidden placeholder for pw_reporting_status (used by tabs 4-5 only)
+                    dcc.Checklist(
+                        id="pw_reporting_status",
+                        value=[],
+                        style={"display": "none"},
+                    ),
                 ],
                 style={
                     "width": "300px",
@@ -188,8 +170,3 @@ def create_rt_tab4_filters(df):
             )
         ]
     )
-
-
-# def get_options(column, filtered_df):
-#     """Get unique options from filtered dataframe"""
-#     return [{'label': val, 'value': val} for val in sorted(filtered_df[column].unique())]

@@ -1,6 +1,6 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.company_reporting_trends.rt_filters import create_rt_filters
+from components.filters.company_reporting_trends.rt_tab1_filters import create_rt_tab1_filters
 
 
 def create_rt_tab1(app, reporting_df):
@@ -11,7 +11,7 @@ def create_rt_tab1(app, reporting_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper with filters
-            create_rt_filters(reporting_df),
+            create_rt_tab1_filters(reporting_df),
             html.Div(
                 [
                     # Mobile navigation

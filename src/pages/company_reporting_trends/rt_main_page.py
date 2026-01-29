@@ -30,17 +30,30 @@ def create_rt_page(app, reporting_df):
         id_prefix="rt-",
     )
 
+    # Default pw_status values for tabs 4-5 (all statuses selected by default)
+    default_pw_status = [
+        "company not established",
+        "no reporting evident",
+        "individual data center values only",
+        "fleet-wide values only",
+        "both fleet-wide and individual data center values",
+        "pending",
+    ]
+
     # Shared filter store for cross-tab filter synchronization
     # This persists when switching tabs - values synced via callbacks
     # - from_year, to_year: shared across all tabs
     # - companies: shared across tabs 2-5 only
+    # - pw_status: shared across tabs 4-5 only
     filter_store = dcc.Store(
         id="rt-filter-store",
         data={
             "from_year": min_year,
             "to_year": max_year,
             "companies": None,
+            "pw_status": default_pw_status,
             "source": "initial",
+            "timestamp": 0,
         },
     )
 
