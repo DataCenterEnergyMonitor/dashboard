@@ -7,7 +7,7 @@ from components.filters.company_reporting_trends.rt_tab2_filters import (
 
 def create_rt_tab2(app, reporting_df):
     """
-    Create tab 2 content (Electricity Usage chart).
+    Create tab 2 content (Energy reporting heatmap chart).
     Filters are inside the tab and sync via rt-filter-store.
     Includes company filter (shared with tabs 3-5).
     """
@@ -23,7 +23,7 @@ def create_rt_tab2(app, reporting_df):
                             dbc.Nav(
                                 [
                                     dbc.NavLink(
-                                        "Electricity Usage Reporting by Company",
+                                        "Energy Reporting by Company Over Time",
                                         href="#rt-tab2-nav",
                                         className="px-2",
                                     ),
@@ -49,6 +49,70 @@ def create_rt_tab2(app, reporting_df):
                     ),
                     dbc.Container(
                         [
+                            # Static title and action buttons (remain fixed when callback runs)
+                            html.Div(
+                                [
+                                    html.H5(
+                                        "Energy Reporting by Company Over Time",
+                                        className="text-left",
+                                    ),
+                                    html.Div(
+                                        [
+                                            dbc.Button(
+                                                [
+                                                    html.I(
+                                                        className="fas fa-download",
+                                                        style={"marginRight": "6px"},
+                                                    ),
+                                                    html.Span(
+                                                        "Data .xlsx",
+                                                        style={"fontSize": "0.8rem"},
+                                                    ),
+                                                ],
+                                                id="download-btn-rt-tab2-fig1",
+                                                size="sm",
+                                                color="light",
+                                                className="me-2",
+                                                title="Download figure data",
+                                            ),
+                                            dbc.Tooltip(
+                                                "Download figure data as Excel file",
+                                                target="download-btn-rt-tab2-fig1",
+                                                placement="bottom",
+                                            ),
+                                            dbc.Button(
+                                                [
+                                                    html.I(
+                                                        className="fas fa-expand",
+                                                        style={"marginRight": "6px"},
+                                                    ),
+                                                    html.Span(
+                                                        "Expand",
+                                                        style={"fontSize": "0.8rem"},
+                                                    ),
+                                                ],
+                                                id="expand-rt-tab2-fig1",
+                                                size="sm",
+                                                color="light",
+                                                title="Expand figure",
+                                            ),
+                                            dbc.Tooltip(
+                                                "View figure in expanded window",
+                                                target="expand-rt-tab2-fig1",
+                                                placement="bottom",
+                                            ),
+                                        ],
+                                        className="float-end",
+                                    ),
+                                    dcc.Download(id="download-rt-tab2-fig1"),
+                                ],
+                                style={
+                                    "border": "none",
+                                    "padding": "25px 15px",
+                                    "marginBottom": "0px",
+                                    "backgroundColor": "#ffffff",
+                                },
+                            ),
                             # Figure container (updated by callback)
                             # Wrapped with dcc.Loading for visual feedback
                             dcc.Loading(

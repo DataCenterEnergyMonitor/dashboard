@@ -5,7 +5,6 @@ import json
 from datetime import datetime
 from charts.energy_reporting_heatmap import create_energy_reporting_heatmap
 from components.excel_export import create_filtered_excel_download
-from components.figure_card import create_figure_card
 
 
 def get_rt_last_modified_date():
@@ -109,25 +108,6 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
 
         # Filter by companies if selected
         filtered_df = filter_data_by_companies(filtered_df, companies)
-
-        # Get last modified date for title
-        last_modified_date = get_rt_last_modified_date()
-        if last_modified_date:
-            title = html.Div(
-                [
-                    html.Div("Data Center Reporting Over Time"),
-                    html.Div(
-                        f"(as of {last_modified_date})",
-                        style={
-                            "fontSize": "0.85em",
-                            "color": "#666",
-                            "marginTop": "4px",
-                        },
-                    ),
-                ]
-            )
-        else:
-            title = "Energy Reporting by Company Over Time"
 
         # Create Header (legend and x-axis)
         header_fig = create_energy_reporting_heatmap(filtered_df, header_only=True)

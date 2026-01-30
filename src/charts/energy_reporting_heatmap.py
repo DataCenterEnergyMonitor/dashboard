@@ -278,7 +278,7 @@ def create_energy_reporting_heatmap(
             'type': 'category',
             'showgrid': False,
             'showticklabels': True if is_expanded else False,
-            'showline': False,
+            'showline': True if is_expanded else False,
             'ticks': 'outside' if is_expanded else "",
             'tickfont': {'size': 12},
             'tickangle': 0,
