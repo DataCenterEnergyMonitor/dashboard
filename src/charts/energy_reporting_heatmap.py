@@ -209,13 +209,14 @@ def create_energy_reporting_heatmap(
     fig = go.Figure(data=[heatmap] + legend_traces)
 
     if header_only:
-        fig_height = 180
-        margin_config = dict(
-            l=shared_left_margin,
-            r=50,
-            t=110,
-            b=40,
-        )
+        fig_height = 120 # Cahnged from 180
+        margin_config = dict(l=shared_left_margin, r=50, t=80, b=10)
+        # margin_config = dict(
+        #     l=shared_left_margin,
+        #     r=50,
+        #     t=110,
+        #     b=40,
+        # )
         xaxis_config = {
             'side': 'bottom',
             'tickmode': 'array',
@@ -256,16 +257,18 @@ def create_energy_reporting_heatmap(
             tracegroupgap=5,
         )
     else:
+         # Minimal top margin
         # Calculate height based on actual number of filtered companies
         num_companies = len(companies_display)
-        fig_height = num_companies * FIXED_ROW_HEIGHT + 100
-
-        margin_config = dict(
-            l=shared_left_margin,
-            r=50,
-            t=60,
-            b=40,
-        )
+        fig_height = (num_companies * FIXED_ROW_HEIGHT) + 40
+        margin_config = dict(l=shared_left_margin, r=50, t=10, b=30)
+        #fig_height = num_companies * FIXED_ROW_HEIGHT + 100
+        # margin_config = dict(
+        #     l=shared_left_margin,
+        #     r=50,
+        #     t=60,
+        #     b=40,
+        # )
         xaxis_config = {
             'side': 'bottom',
             'tickmode': 'array',
@@ -290,7 +293,7 @@ def create_energy_reporting_heatmap(
             'autorange': 'reversed',
             'fixedrange': False,  # Enable scrolling on y-axis
         }
-        show_legend = True
+        show_legend = False
         legend_config = dict(
             orientation='h',
             yanchor='bottom',
@@ -313,7 +316,7 @@ def create_energy_reporting_heatmap(
         margin=margin_config,
         showlegend=show_legend,
         legend=legend_config,
-        autosize=True,
+        autosize=True
     )
 
     return fig

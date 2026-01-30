@@ -1,6 +1,6 @@
 import dash
 from pathlib import Path
-from dash import Input, Output, State, callback_context, html
+from dash import Input, Output, State, callback_context, html, dcc
 import json
 from datetime import datetime
 from charts.energy_reporting_heatmap import create_energy_reporting_heatmap
@@ -71,7 +71,9 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
 
     # Callback to update chart when filters or tab changes
     @app.callback(
-        Output("rt-fig2-container", "children"),
+        # Output("rt-fig2-container", "children"),
+        [Output("rt-header-container", "children"),
+        Output("rt-body-container", "children")],
         [
             Input(f"{ID_PREFIX}filter-store", "data"),
             Input(f"{ID_PREFIX}active-tab-store", "data"),
@@ -106,8 +108,26 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         # Filter by companies if selected
         filtered_df = filter_data_by_companies(filtered_df, companies)
 
-        # Create the chart figure
-        rt_tab2_fig = create_energy_reporting_heatmap(filtered_df)
+        # Create Header (legend and x-axis)
+        header_fig = create_energy_reporting_heatmap(filtered_df, header_only=True)
+        # Create Body (the actual data rows)
+        body_fig = create_energy_reporting_heatmap(filtered_df, header_only=False)
+
+        header_card = dcc.Graph(
+        figure=header_fig,
+        config={'displayModeBar': False, 'responsive': True},
+        style={'height': '120px'} # Match the fig_height in python
+    )
+
+        body_card = dcc.Graph(
+        figure=body_fig,
+        config={'displayModeBar': False, 'responsive': True},
+        # Important: the style height here must match the calculated fig_height
+        style={'height': f"{len(filtered_df['company_name'].unique()) * 25 + 40}px"}
+    )
+
+        # # Create the chart figure
+        # rt_tab2_fig = create_energy_reporting_heatmap(filtered_df)
 
         # Get last modified date for title
         last_modified_date = get_rt_last_modified_date()
@@ -128,20 +148,20 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         else:
             title = "Energy Reporting by Company Over Time"
 
-        return html.Div(
-            [
-                html.A(id="rt-tab2-nav"),
-                create_figure_card(
-                    fig_id="rt-tab2-fig1",
-                    title=title,
-                    expand_id="expand-rt-tab2-fig1",
-                    filename="reporting_trends_heatmap",
-                    figure=rt_tab2_fig,
-                    show_modebar=False,
-                ),
-            ],
-            style={"margin": "35px 0"},
-        )
+        return header_card, body_card #html.Div(
+        #     [
+        #         html.A(id="rt-tab2-nav"),
+        #         create_figure_card(
+        #             fig_id="rt-tab2-fig1",
+        #             title=title,
+        #             expand_id="expand-rt-tab2-fig1",
+        #             filename="reporting_trends_heatmap",
+        #             figure=rt_tab2_fig,
+        #             show_modebar=False,
+        #         ),
+        #     ],
+        #     style={"margin": "35px 0"},
+        # )
 
     # NOTE: Filter sync callbacks (sync_filters_to_store, sync_store_to_filters)
     # are shared across tabs and are defined in rt_tab1_callback.py only

@@ -55,10 +55,29 @@ def create_rt_tab2(app, reporting_df):
                                 id="rt-fig2-loading",
                                 type="circle",
                                 color="#395970",
-                                children=html.Div(
-                                    id="rt-fig2-container",
-                                    style={"width": "100%"},
-                                ),
+                                children=html.Div([
+                                    # fixed header (No Scroll)
+                                    html.Div(
+                                        id="rt-header-container",
+                                        style={"position": "sticky", "top": "0", "zIndex": "999", "backgroundColor": "white"}
+                                    ),
+                                    # scrollable body
+                                    html.Div(
+                                        id="rt-body-container",
+                                        style={
+                                            "maxHeight": "600px", # Set the viewport height
+                                            "overflowY": "auto",   # Enable vertical scroll
+                                            "overflowX": "hidden"
+                                        }
+                                    )
+                                ]),
+                                # children=html.Div(
+                                #     id="rt-fig2-container",
+                                #     style={
+                                #         "width": "100%",
+                                #         "overflowY": "auto",  # ADDED: this to allow vertical scrolling 
+                                #         "overflowX": "hidden"}, # ADDED: Prevent horizontal jitter
+                                # ),
                                 overlay_style={
                                     "visibility": "visible",
                                     "opacity": 0.8,
