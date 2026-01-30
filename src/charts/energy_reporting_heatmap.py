@@ -16,6 +16,7 @@ def create_energy_reporting_heatmap(
     original_df=None,
     filters_applied=False,
     header_only=False,
+    is_expanded=False,
 ):
     """Create a heatmap showing companies' reporting patterns over time.
 
@@ -276,9 +277,9 @@ def create_energy_reporting_heatmap(
             'tickvals': years,
             'type': 'category',
             'showgrid': False,
-            'showticklabels': True,
+            'showticklabels': True if is_expanded else False,
             'showline': False,
-            'ticks': 'outside',
+            'ticks': 'outside' if is_expanded else "",
             'tickfont': {'size': 12},
             'tickangle': 0,
             'fixedrange': True,
@@ -293,7 +294,7 @@ def create_energy_reporting_heatmap(
             'autorange': 'reversed',
             'fixedrange': False,  # Enable scrolling on y-axis
         }
-        show_legend = False
+        show_legend = True if is_expanded else False
         legend_config = dict(
             orientation='h',
             yanchor='bottom',

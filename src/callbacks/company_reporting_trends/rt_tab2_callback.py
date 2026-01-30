@@ -72,8 +72,10 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
     # Callback to update chart when filters or tab changes
     @app.callback(
         # Output("rt-fig2-container", "children"),
-        [Output("rt-header-container", "children"),
-        Output("rt-body-container", "children")],
+        [
+            Output("rt-header-container", "children"),
+            Output("rt-body-container", "children"),
+        ],
         [
             Input(f"{ID_PREFIX}filter-store", "data"),
             Input(f"{ID_PREFIX}active-tab-store", "data"),
@@ -108,27 +110,6 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         # Filter by companies if selected
         filtered_df = filter_data_by_companies(filtered_df, companies)
 
-        # Create Header (legend and x-axis)
-        header_fig = create_energy_reporting_heatmap(filtered_df, header_only=True)
-        # Create Body (the actual data rows)
-        body_fig = create_energy_reporting_heatmap(filtered_df, header_only=False)
-
-        header_card = dcc.Graph(
-        figure=header_fig,
-        config={'displayModeBar': False, 'responsive': True},
-        style={'height': '120px'} # Match the fig_height in python
-    )
-
-        body_card = dcc.Graph(
-        figure=body_fig,
-        config={'displayModeBar': False, 'responsive': True},
-        # Important: the style height here must match the calculated fig_height
-        style={'height': f"{len(filtered_df['company_name'].unique()) * 25 + 40}px"}
-    )
-
-        # # Create the chart figure
-        # rt_tab2_fig = create_energy_reporting_heatmap(filtered_df)
-
         # Get last modified date for title
         last_modified_date = get_rt_last_modified_date()
         if last_modified_date:
@@ -148,7 +129,30 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         else:
             title = "Energy Reporting by Company Over Time"
 
-        return header_card, body_card #html.Div(
+        # Create Header (legend and x-axis)
+        header_fig = create_energy_reporting_heatmap(filtered_df, header_only=True)
+        # Create Body (the actual data rows)
+        body_fig = create_energy_reporting_heatmap(filtered_df, header_only=False)
+
+        header_card = dcc.Graph(
+            figure=header_fig,
+            config={"displayModeBar": False, "responsive": True},
+            style={"height": "120px"},  # Match the fig_height in python
+        )
+
+        body_card = dcc.Graph(
+            figure=body_fig,
+            config={"displayModeBar": False, "responsive": True},
+            # Important: the style height here must match the calculated fig_height
+            style={
+                "height": f"{len(filtered_df['company_name'].unique()) * 25 + 40}px"
+            },
+        )
+
+        # # Create the chart figure
+        # rt_tab2_fig = create_energy_reporting_heatmap(filtered_df)
+
+        return header_card, body_card  # html.Div(
         #     [
         #         html.A(id="rt-tab2-nav"),
         #         create_figure_card(
@@ -173,15 +177,17 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
             Output("rt-fig2-modal", "is_open"),
             Output("rt-fig2-modal-title", "children"),
             Output("rt-fig2-expanded", "figure"),
+            Output("rt-fig2-expanded", "style"),
         ],
         [Input("expand-rt-tab2-fig1", "n_clicks")],
         [
             State("rt-fig2-modal", "is_open"),
-            State("rt-tab2-fig1", "figure"),
+            # State("rt-tab2-fig1", "figure"),
+            State(f"{ID_PREFIX}filter-store", "data"),
         ],
         prevent_initial_call=True,
     )
-    def toggle_rt_tab2_modal(expand_clicks, is_open, current_figure):
+    def toggle_rt_tab2_modal(expand_clicks, is_open, filter_data):
         """Toggle the expanded modal view"""
         if not expand_clicks:
             raise dash.exceptions.PreventUpdate
@@ -204,12 +210,29 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
             )
         else:
             modal_title = "Energy Reporting by Company Over Time"
+        # Re-filter data to get the fresh dataframe for the modal
+        from_year = filter_data.get("from_year") if filter_data else None
+        to_year = filter_data.get("to_year") if filter_data else None
+        companies = filter_data.get("companies") if filter_data else None
 
-        return (
-            not is_open,
-            modal_title,
-            current_figure or {},
+        filtered_df = filter_data_by_year_range(df, from_year, to_year)
+        filtered_df = filter_data_by_companies(filtered_df, companies)
+
+        # Generate specific figure for expanded view with LEGEND and X-AXIS
+        expanded_fig = create_energy_reporting_heatmap(
+            filtered_df, header_only=False, is_expanded=True
         )
+
+        num_rows = len(filtered_df["company_name"].unique())
+        calc_height = (num_rows * 25) + 120  # Added buffer for legend
+
+        modal_graph_style = {
+            "height": f"min({calc_height}px, 85vh)",
+            "width": "100%",
+            "margin": "20px auto",
+        }
+
+        return not is_open, modal_title, expanded_fig, modal_graph_style
 
     # Download data callback
     @app.callback(
