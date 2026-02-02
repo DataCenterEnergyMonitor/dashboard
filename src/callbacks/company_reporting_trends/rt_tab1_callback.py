@@ -170,6 +170,7 @@ def register_rt_tab1_callbacks(app, df):
         # Get default pw_status values for tabs 4-5
         default_pw_status = [
             "company not established",
+            "company Inactive",
             "no reporting evident",
             "individual data center values only",
             "fleet-wide values only",

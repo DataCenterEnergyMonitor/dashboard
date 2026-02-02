@@ -274,6 +274,7 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
             # Clear all filter values - reset pw_status to default (all selected)
             default_pw_status = [
                 "company not established",
+                "company Inactive",
                 "no reporting evident",
                 "individual data center values only",
                 "fleet-wide values only",

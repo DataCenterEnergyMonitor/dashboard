@@ -240,9 +240,9 @@ def create_pue_wue_reporting_heatmap_plot(
         opacity=0 if header_only else 1,
     )
 
-    # Create legend traces
+    # Create legend traces (Not established and Company inactive share one entry/same color)
     legend_items = {
-        "Not established": REPORTING_SCOPE_COLORS["company not established"],
+        "Not established/inactive": REPORTING_SCOPE_COLORS["company not established"],
         "No reporting": REPORTING_SCOPE_COLORS["no reporting evident"],
         "Individual DC only": REPORTING_SCOPE_COLORS[
             "individual data center values only"

@@ -26,6 +26,7 @@ ID_PREFIX = "rt-"
 # Default pw_status values for tabs 4-5 (all statuses selected by default)
 DEFAULT_PW_STATUS = [
     "company not established",
+    "company Inactive",
     "no reporting evident",
     "individual data center values only",
     "fleet-wide values only",

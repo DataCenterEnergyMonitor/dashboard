@@ -10,6 +10,7 @@ def create_rt_tab5_filters(df):
     min_year, max_year = int(min(years)), int(max(years))
     reporting_status = [
         "company not established",
+        "company Inactive",
         "no reporting evident",
         "individual data center values only",
         "fleet-wide values only",
@@ -89,6 +90,10 @@ def create_rt_tab5_filters(df):
                                             {
                                                 "label": "Not established",
                                                 "value": "company not established",
+                                            },
+                                            {
+                                                "label": "Company inactive",
+                                                "value": "company Inactive",
                                             },
                                             {
                                                 "label": "No reporting",

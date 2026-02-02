@@ -177,7 +177,7 @@ def create_rt_tab5(app, df=None):
                             ),
                         ],
                         fluid=True,
-                        #style={"marginTop": "35px"},
+                        # style={"marginTop": "35px"},
                     ),
                 ],
                 style={
