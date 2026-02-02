@@ -3,15 +3,19 @@ import dash_bootstrap_components as dbc
 from components.filters.company_reporting_trends.rt_tab4_filters import (
     create_rt_tab4_filters,
 )
+from callbacks.company_reporting_trends.rt_tab4_callback import (
+    get_rt_last_modified_date,
+)
 
 
 def create_rt_tab4(app, df):
     """
     Create tab 4 content (PUE Reporting heatmap with dual-chart pattern).
-    Uses header + scrollable main chart like pue_wue_page.
+    Uses header + scrollable main chart like tab 2.
     Filters are inside the tab and sync via rt-filter-store.
     Includes company filter (shared with tabs 2-5).
     """
+    last_modified_date = get_rt_last_modified_date()
     content = html.Div(
         [
             # Sticky sidebar wrapper with extended filters (year + company)
@@ -50,14 +54,115 @@ def create_rt_tab4(app, df):
                     ),
                     dbc.Container(
                         [
-                            # Figure container with dual-chart layout (updated by callback)
-                            # Wrapped with dcc.Loading for visual feedback during chart generation
+                            # Static title and action buttons (remain fixed when callback runs)
+                            html.Div(
+                                [
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                "PUE Reporting by Company Over Time",
+                                                style={
+                                                    "fontSize": "1.25rem",
+                                                    "fontWeight": "500",
+                                                },
+                                            ),
+                                            (
+                                                html.Div(
+                                                    f"(as of {last_modified_date})",
+                                                    style={
+                                                        "fontSize": "0.85em",
+                                                        "color": "#666",
+                                                        "marginTop": "4px",
+                                                    },
+                                                )
+                                                if last_modified_date
+                                                else None
+                                            ),
+                                        ],
+                                        className="text-left",
+                                    ),
+                                    html.Div(
+                                        [
+                                            dbc.Button(
+                                                [
+                                                    html.I(
+                                                        className="fas fa-download",
+                                                        style={"marginRight": "6px"},
+                                                    ),
+                                                    html.Span(
+                                                        "Data .xlsx",
+                                                        style={"fontSize": "0.8rem"},
+                                                    ),
+                                                ],
+                                                id="download-btn-rt-tab4-fig1",
+                                                size="sm",
+                                                color="light",
+                                                className="me-2",
+                                                title="Download figure data",
+                                            ),
+                                            dbc.Tooltip(
+                                                "Download figure data as Excel file",
+                                                target="download-btn-rt-tab4-fig1",
+                                                placement="bottom",
+                                            ),
+                                            dbc.Button(
+                                                [
+                                                    html.I(
+                                                        className="fas fa-expand",
+                                                        style={"marginRight": "6px"},
+                                                    ),
+                                                    html.Span(
+                                                        "Expand",
+                                                        style={"fontSize": "0.8rem"},
+                                                    ),
+                                                ],
+                                                id="expand-rt-tab4-fig1",
+                                                size="sm",
+                                                color="light",
+                                                title="Expand figure",
+                                            ),
+                                            dbc.Tooltip(
+                                                "View figure in expanded window",
+                                                target="expand-rt-tab4-fig1",
+                                                placement="bottom",
+                                            ),
+                                        ],
+                                        className="float-end",
+                                    ),
+                                    dcc.Download(id="download-rt-tab4-fig1"),
+                                ],
+                                style={
+                                    "border": "none",
+                                    "padding": "25px 15px",
+                                    "marginBottom": "0px",
+                                    "backgroundColor": "#ffffff",
+                                },
+                            ),
+                            # Figure: header (sticky) + body (scrollable), updated by callback
                             dcc.Loading(
                                 id="rt-fig4-loading",
                                 type="circle",
                                 color="#395970",
                                 children=html.Div(
-                                    id="rt-fig4-container",
+                                    [
+                                        html.Div(
+                                            id="rt-fig4-header-container",
+                                            style={
+                                                "position": "sticky",
+                                                "top": "0",
+                                                "zIndex": "999",
+                                                "backgroundColor": "white",
+                                            },
+                                        ),
+                                        html.Div(
+                                            id="rt-fig4-body-container",
+                                            style={
+                                                "maxHeight": "600px",
+                                                "overflowY": "auto",
+                                                "overflowX": "hidden",
+                                            },
+                                        ),
+                                    ],
                                     style={"width": "100%"},
                                 ),
                                 overlay_style={

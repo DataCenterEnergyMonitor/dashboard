@@ -1,7 +1,6 @@
 import dash
 from pathlib import Path
 from dash import Input, Output, State, dcc, html
-import dash_bootstrap_components as dbc
 import json
 from datetime import datetime
 from charts.pue_wue_reporting_heatmap import create_pue_wue_reporting_heatmap_plot
@@ -83,7 +82,10 @@ def register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df):
 
     # Callback to update chart when filters or tab changes
     @app.callback(
-        Output("rt-fig5-container", "children"),
+        [
+            Output("rt-fig5-header-container", "children"),
+            Output("rt-fig5-body-container", "children"),
+        ],
         [
             Input(f"{ID_PREFIX}filter-store", "data"),
             Input(f"{ID_PREFIX}active-tab-store", "data"),
@@ -130,15 +132,7 @@ def register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df):
         # Determine if filters are applied
         filters_applied = bool(companies) or bool(pw_status)
 
-        # Create WUE Trends chart (main scrollable chart)
-        wue_trends_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=filtered_df,
-            filters_applied=filters_applied,
-            header_only=False,
-            reporting_column="reports_wue",
-        )
-
-        # Create WUE Trends header chart (sticky header with legend and x-axis)
+        # Header (legend + x-axis), sticky
         wue_trends_header_fig = create_pue_wue_reporting_heatmap_plot(
             filtered_df=filtered_df,
             filters_applied=filters_applied,
@@ -146,10 +140,54 @@ def register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df):
             reporting_column="reports_wue",
         )
 
-        # Get last modified date for title
+        # Body (scrollable data rows), fixed row height
+        wue_trends_fig = create_pue_wue_reporting_heatmap_plot(
+            filtered_df=filtered_df,
+            filters_applied=filters_applied,
+            header_only=False,
+            reporting_column="reports_wue",
+        )
+
+        num_companies = len(filtered_df["company_name"].unique()) if not filtered_df.empty else 0
+        FIXED_ROW_HEIGHT = 25
+        body_height_px = num_companies * FIXED_ROW_HEIGHT + 40
+
+        header_card = dcc.Graph(
+            figure=wue_trends_header_fig,
+            config=chart_config,
+            style={"height": "120px", "width": "100%"},
+        )
+        body_card = dcc.Graph(
+            figure=wue_trends_fig,
+            config=chart_config,
+            style={"height": f"{body_height_px}px", "width": "100%"},
+        )
+
+        return header_card, body_card
+
+    # Modal expand callback: build expanded figure from filter store with fixed row height
+    @app.callback(
+        [
+            Output("rt-fig5-modal", "is_open"),
+            Output("rt-fig5-modal-title", "children"),
+            Output("rt-fig5-expanded", "figure"),
+            Output("rt-fig5-expanded", "style"),
+        ],
+        [Input("expand-rt-tab5-fig1", "n_clicks")],
+        [
+            State("rt-fig5-modal", "is_open"),
+            State(f"{ID_PREFIX}filter-store", "data"),
+        ],
+        prevent_initial_call=True,
+    )
+    def toggle_rt_tab5_modal(expand_clicks, is_open, filter_data):
+        """Toggle the expanded modal view; expanded figure uses fixed row height (no stretch)."""
+        if not expand_clicks:
+            raise dash.exceptions.PreventUpdate
+
         last_modified_date = get_rt_last_modified_date()
         if last_modified_date:
-            title = html.Div(
+            modal_title = html.Div(
                 [
                     html.Div("WUE Reporting by Company Over Time"),
                     html.Div(
@@ -163,185 +201,42 @@ def register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df):
                 ]
             )
         else:
-            title = "WUE Reporting by Company Over Time"
+            modal_title = "WUE Reporting by Company Over Time"
 
-        # Create dual-chart layout (header + scrollable main chart)
-        chart_card = dbc.Card(
-            [
-                dbc.CardHeader(
-                    [
-                        html.H5(title, className="text-left"),
-                        html.Div(
-                            [
-                                dbc.Button(
-                                    [
-                                        html.I(
-                                            className="fas fa-download",
-                                            style={"marginRight": "6px"},
-                                        ),
-                                        html.Span(
-                                            "Data .xlsx",
-                                            style={"fontSize": "0.8rem"},
-                                        ),
-                                    ],
-                                    id="download-btn-rt-tab5-fig1",
-                                    size="sm",
-                                    color="light",
-                                    className="me-2",
-                                ),
-                                dbc.Tooltip(
-                                    "Download chart data as Excel file",
-                                    target="download-btn-rt-tab5-fig1",
-                                    placement="bottom",
-                                ),
-                                dbc.Button(
-                                    [
-                                        html.I(
-                                            className="fas fa-expand",
-                                            style={"marginRight": "6px"},
-                                        ),
-                                        html.Span(
-                                            "Expand",
-                                            style={"fontSize": "0.8rem"},
-                                        ),
-                                    ],
-                                    id="expand-rt-tab5-fig1",
-                                    size="sm",
-                                    color="light",
-                                ),
-                                dbc.Tooltip(
-                                    "View chart in expanded window",
-                                    target="expand-rt-tab5-fig1",
-                                    placement="bottom",
-                                ),
-                            ],
-                            className="float-end",
-                        ),
-                        dcc.Download(id="download-rt-tab5-fig1"),
-                    ],
-                    style={
-                        "border": "none",
-                        "padding": "8px 15px",
-                        "marginBottom": "0px",
-                        "backgroundColor": "#ffffff",
-                    },
-                ),
-                dbc.CardBody(
-                    html.Div(
-                        [
-                            # Sticky header (legend + x-axis)
-                            html.Div(
-                                [
-                                    dcc.Graph(
-                                        id="rt-tab5-fig1-header",
-                                        figure=wue_trends_header_fig,
-                                        config=chart_config,
-                                        style={
-                                            "height": "100px",
-                                            "width": "100%",
-                                            "marginBottom": "0px",
-                                        },
-                                    )
-                                ],
-                                style={
-                                    "position": "sticky",
-                                    "top": "0px",
-                                    "backgroundColor": "white",
-                                    "zIndex": "50",
-                                },
-                            ),
-                            # Scrollable main chart
-                            html.Div(
-                                [
-                                    dcc.Graph(
-                                        id="rt-tab5-fig1",
-                                        figure=wue_trends_fig,
-                                        config=chart_config,
-                                        style={"height": "auto", "width": "100%"},
-                                    )
-                                ],
-                                style={
-                                    "overflowY": "auto",
-                                    "overflowX": "hidden",
-                                    "maxHeight": "calc(65vh - 100px)",
-                                },
-                            ),
-                        ],
-                        style={"position": "relative"},
-                    ),
-                    style={
-                        "border": "none",
-                        "paddingTop": "0px",
-                        "backgroundColor": "#ffffff",
-                        "height": "auto",
-                    },
-                ),
-            ],
-            style={"border": "none", "boxShadow": "none", "height": "auto"},
+        from_year = filter_data.get("from_year") if filter_data else None
+        to_year = filter_data.get("to_year") if filter_data else None
+        companies = filter_data.get("companies") if filter_data else None
+        pw_status = filter_data.get("pw_status") if filter_data else None
+
+        filtered_df = filter_data_by_year_range(
+            pue_wue_companies_df, from_year, to_year, year_col="year"
+        )
+        filtered_df = filter_data_by_companies(filtered_df, companies)
+        filtered_df = filter_data_by_reporting_status(
+            filtered_df, pw_status, status_col="reports_wue"
+        )
+        filters_applied = bool(companies) or bool(pw_status)
+
+        expanded_fig = create_pue_wue_reporting_heatmap_plot(
+            filtered_df=filtered_df,
+            filters_applied=filters_applied,
+            header_only=False,
+            is_expanded=True,
+            reporting_column="reports_wue",
         )
 
-        return html.Div(
-            [
-                html.A(id="rt-tab5-nav"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [chart_card],
-                            xs=12,
-                            sm=12,
-                            md=12,
-                            lg=12,
-                            className="ps-0 pe-3",
-                        ),
-                    ],
-                    className="mb-3 gx-2",
-                ),
-            ],
-            style={"margin": "35px 0"},
+        num_rows = (
+            len(filtered_df["company_name"].unique()) if not filtered_df.empty else 0
         )
+        FIXED_ROW_HEIGHT = 25
+        calc_height = num_rows * FIXED_ROW_HEIGHT + 120
+        modal_graph_style = {
+            "height": f"min({calc_height}px, 85vh)",
+            "width": "100%",
+            "margin": "20px auto",
+        }
 
-    # Modal expand callback
-    @app.callback(
-        [
-            Output("rt-fig5-modal", "is_open"),
-            Output("rt-fig5-modal-title", "children"),
-            Output("rt-fig5-expanded", "figure"),
-        ],
-        [Input("expand-rt-tab5-fig1", "n_clicks")],
-        [
-            State("rt-fig5-modal", "is_open"),
-            State("rt-tab5-fig1", "figure"),
-        ],
-        prevent_initial_call=True,
-    )
-    def toggle_rt_tab5_modal(expand_clicks, is_open, current_figure):
-        """Toggle the expanded modal view"""
-        if not expand_clicks:
-            raise dash.exceptions.PreventUpdate
-
-        last_modified_date = get_rt_last_modified_date()
-        if last_modified_date:
-            modal_title = html.Div(
-                [
-                    html.Div("WUE Reporting by Company Over Time - Expanded View"),
-                    html.Div(
-                        f"(as of {last_modified_date})",
-                        style={
-                            "fontSize": "0.85em",
-                            "color": "#666",
-                            "marginTop": "4px",
-                        },
-                    ),
-                ]
-            )
-        else:
-            modal_title = "WUE Reporting by Company Over Time - Expanded View"
-
-        return (
-            not is_open,
-            modal_title,
-            current_figure or {},
-        )
+        return not is_open, modal_title, expanded_fig, modal_graph_style
 
     # Download data callback
     @app.callback(

@@ -18,6 +18,7 @@ def create_pue_wue_reporting_heatmap_plot(
     original_df=None,
     filters_applied=False,
     header_only=False,
+    is_expanded=False,
     reporting_column="reports_pue",
 ):
     """Create a heatmap showing pue reporting patterns over time.
@@ -26,6 +27,7 @@ def create_pue_wue_reporting_heatmap_plot(
         filtered_df: The filtered dataframe for the current view
         original_df: Optional full dataframe to ensure all companies are shown
         header_only: If True, creates a minimal chart with just legend and x-axis at top
+        is_expanded: If True, show legend and x-axis in modal with fixed row height (no stretch)
         reporting_column: The column name to use for the reporting data "reports_pue" or "reports_wue"
     """
 
@@ -267,13 +269,8 @@ def create_pue_wue_reporting_heatmap_plot(
     fig = go.Figure(data=[heatmap] + legend_traces)
 
     if header_only:
-        fig_height = 180
-        margin_config = dict(
-            l=shared_left_margin,
-            r=50,
-            t=110,
-            b=40,
-        )
+        fig_height = 120
+        margin_config = dict(l=shared_left_margin, r=50, t=80, b=10)
         xaxis_config = {
             "side": "bottom",
             "tickmode": "array",
@@ -314,16 +311,11 @@ def create_pue_wue_reporting_heatmap_plot(
             tracegroupgap=5,
         )
     else:
-        # Calculate height based on actual number of filtered companies
+        # Fixed row height: body uses minimal top/bottom; expanded adds space for legend
         num_companies = len(companies_display)
-        fig_height = num_companies * FIXED_ROW_HEIGHT + 100
+        fig_height = num_companies * FIXED_ROW_HEIGHT + (120 if is_expanded else 40)
 
-        margin_config = dict(
-            l=shared_left_margin,
-            r=50,
-            t=10,
-            b=40,
-        )
+        margin_config = dict(l=shared_left_margin, r=50, t=10, b=30)
         xaxis_config = {
             "side": "bottom",
             "tickmode": "array",
@@ -331,9 +323,9 @@ def create_pue_wue_reporting_heatmap_plot(
             "tickvals": years,
             "type": "category",
             "showgrid": False,
-            "showticklabels": True,
+            "showticklabels": True if is_expanded else False,
             "showline": False,
-            "ticks": "outside",
+            "ticks": "outside" if is_expanded else "",
             "tickfont": {"size": 12},
             "tickangle": 0,
             "fixedrange": True,
@@ -348,16 +340,16 @@ def create_pue_wue_reporting_heatmap_plot(
             "autorange": "reversed",
             "fixedrange": False,
         }
-        show_legend = False
+        show_legend = is_expanded
         legend_config = dict(
             orientation="h",
-            yanchor="top",
-            y=1.0,
+            yanchor="bottom",
+            y=1.02,
             xanchor="center",
             x=0.5,
             bgcolor="rgba(255,255,255,1)",
             bordercolor=None,
-            font={"size": 12},
+            font={"size": 14},
             itemsizing="constant",
             tracegroupgap=5,
         )

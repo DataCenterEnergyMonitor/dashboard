@@ -3,6 +3,9 @@ import dash_bootstrap_components as dbc
 from components.filters.company_reporting_trends.rt_tab2_filters import (
     create_rt_tab2_filters,
 )
+from callbacks.company_reporting_trends.rt_tab2_callback import (
+    get_rt_last_modified_date,
+)
 
 
 def create_rt_tab2(app, reporting_df):
@@ -11,6 +14,7 @@ def create_rt_tab2(app, reporting_df):
     Filters are inside the tab and sync via rt-filter-store.
     Includes company filter (shared with tabs 3-5).
     """
+    last_modified_date = get_rt_last_modified_date()
     content = html.Div(
         [
             # Sticky sidebar wrapper with extended filters (year + company)
@@ -52,8 +56,28 @@ def create_rt_tab2(app, reporting_df):
                             # Static title and action buttons (remain fixed when callback runs)
                             html.Div(
                                 [
-                                    html.H5(
-                                        "Energy Reporting by Company Over Time",
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                "Energy Reporting by Company Over Time",
+                                                style={
+                                                    "fontSize": "1.25rem",
+                                                    "fontWeight": "500",
+                                                },
+                                            ),
+                                            (
+                                                html.Div(
+                                                    f"(as of {last_modified_date})",
+                                                    style={
+                                                        "fontSize": "0.85em",
+                                                        "color": "#666",
+                                                        "marginTop": "4px",
+                                                    },
+                                                )
+                                                if last_modified_date
+                                                else None
+                                            ),
+                                        ],
                                         className="text-left",
                                     ),
                                     html.Div(
@@ -119,27 +143,34 @@ def create_rt_tab2(app, reporting_df):
                                 id="rt-fig2-loading",
                                 type="circle",
                                 color="#395970",
-                                children=html.Div([
-                                    # fixed header (No Scroll)
-                                    html.Div(
-                                        id="rt-header-container",
-                                        style={"position": "sticky", "top": "0", "zIndex": "999", "backgroundColor": "white"}
-                                    ),
-                                    # scrollable body
-                                    html.Div(
-                                        id="rt-body-container",
-                                        style={
-                                            "maxHeight": "600px", # Set the viewport height
-                                            "overflowY": "auto",   # Enable vertical scroll
-                                            "overflowX": "hidden"
-                                        }
-                                    )
-                                ]),
+                                children=html.Div(
+                                    [
+                                        # fixed header (No Scroll)
+                                        html.Div(
+                                            id="rt-header-container",
+                                            style={
+                                                "position": "sticky",
+                                                "top": "0",
+                                                "zIndex": "999",
+                                                "backgroundColor": "white",
+                                            },
+                                        ),
+                                        # scrollable body
+                                        html.Div(
+                                            id="rt-body-container",
+                                            style={
+                                                "maxHeight": "600px",  # Set the viewport height
+                                                "overflowY": "auto",  # Enable vertical scroll
+                                                "overflowX": "hidden",
+                                            },
+                                        ),
+                                    ]
+                                ),
                                 # children=html.Div(
                                 #     id="rt-fig2-container",
                                 #     style={
                                 #         "width": "100%",
-                                #         "overflowY": "auto",  # ADDED: this to allow vertical scrolling 
+                                #         "overflowY": "auto",  # ADDED: this to allow vertical scrolling
                                 #         "overflowX": "hidden"}, # ADDED: Prevent horizontal jitter
                                 # ),
                                 overlay_style={
