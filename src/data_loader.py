@@ -320,11 +320,21 @@ def load_pue_wue_companies_data():
     #     (pue_wue_reporting_df[['entity_status']].eq(
     #         'no reporting evident').all(axis=1)), ['reports_pue', 'reports_wue']] = 'not yet released'
     cols_to_check = ["reports_pue", "reports_wue"]
-    current_year = datetime.today().year
+    # account for the delay in reporting 
+    current_date = datetime.today()
+    # Assumption: reports for year X are typically released by Aug 31st of year X+1
+    reporting_release_cutoff = datetime(current_date.year, 8, 31)
+
+    if current_date < reporting_release_cutoff:
+        # last year's data is pending
+        reporting_year = current_date.year - 1
+    else:
+        # last year's data is release, current year data is pending
+        reporting_year = current_date.year
 
     # iterate and update each column separately
     for col in cols_to_check:
-        mask = (pue_wue_reporting_df["year"] == current_year) & (
+        mask = (pue_wue_reporting_df["year"] == reporting_year) & (
             pue_wue_reporting_df[col].isna()
             | pue_wue_reporting_df[col].eq("")
             | pue_wue_reporting_df[col].eq("no reporting evident")

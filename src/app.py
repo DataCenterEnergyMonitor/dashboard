@@ -146,12 +146,8 @@ def create_app():
     )  # TO DO: replace with the function to load water projections dataset
     globalpolicies_df = load_gp_data()
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
-    print("TEST-TEST: transposed_df columns")
-    print(gp_transposed_df.columns)
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
-    print("TEST-TEST: reported_df columns")
-    print(reporting_df.columns)
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
 
