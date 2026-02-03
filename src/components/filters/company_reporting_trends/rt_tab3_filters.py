@@ -71,7 +71,7 @@ def create_rt_tab3_filters(df):
                                         multi=True,
                                         persistence=True,
                                         persistence_type="session",
-                                        placeholder="Select companies",
+                                        placeholder="All companies",
                                         className="filter-box mb-3",
                                     ),
                                 ]

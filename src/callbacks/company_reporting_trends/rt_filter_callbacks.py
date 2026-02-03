@@ -115,11 +115,15 @@ def register_rt_filter_callbacks(app):
                 "timestamp": timestamp,
             }
             if active_tab in ("tab-2", "tab-3", "tab-4", "tab-5"):
-                out["companies"] = companies if companies is not None else base.get("companies")
+                out["companies"] = (
+                    companies if companies is not None else base.get("companies")
+                )
                 out["sort_by"] = sort_by or base.get("sort_by", "company_name")
                 out["sort_order"] = sort_order or base.get("sort_order", "asc")
             if active_tab in ("tab-4", "tab-5"):
-                out["pw_status"] = pw_status if pw_status is not None else base.get("pw_status")
+                out["pw_status"] = (
+                    pw_status if pw_status is not None else base.get("pw_status")
+                )
             return out
 
         raise dash.exceptions.PreventUpdate

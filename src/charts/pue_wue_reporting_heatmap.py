@@ -130,6 +130,15 @@ def create_pue_wue_reporting_heatmap_plot(
                     & (filtered_df["year"] == year)
                 ]
 
+                # No row for this (company, year) = missing in source (data gap)
+                # Callback passes chart data without status filter, so empty = missing only
+                if year_data.empty:
+                    value = float("nan")
+                    text = f"{company_name} ({year})<br>No Data"
+                    row_data.append(value)
+                    row_hover.append(text)
+                    continue
+
                 scopes = set(year_data[reporting_column].dropna().unique())
 
                 if "company not established" in scopes:
@@ -186,6 +195,7 @@ def create_pue_wue_reporting_heatmap_plot(
                     value = 0.55
                     text = f"{company_name} ({year})<br>Reporting: individual data center values only"
                 else:
+                    # Row exists but status unrecognized = unknown / data glitch
                     value = 0.21
                     text = f"{company_name} ({year})<br>No Data"
 

@@ -116,25 +116,36 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
             companies = filter_data.get("companies")
             pw_status = filter_data.get("pw_status")
 
-        # Filter pue_wue_companies_df by year range (uses "year" column)
-        filtered_df = filter_data_by_year_range(
+        # Filter by year range and company (no status filter yet)
+        df_year_company = filter_data_by_year_range(
             pue_wue_companies_df, from_year, to_year, year_col="year"
         )
+        df_year_company = filter_data_by_companies(df_year_company, companies)
 
-        # Filter by companies if selected
-        filtered_df = filter_data_by_companies(filtered_df, companies)
-
-        # Filter by reporting status if selected
-        filtered_df = filter_data_by_reporting_status(
-            filtered_df, pw_status, status_col="reports_pue"
+        # Apply status filter only to determine which companies to show:
+        # keep companies that have at least one row with a selected status in the range
+        filtered_by_status = filter_data_by_reporting_status(
+            df_year_company, pw_status, status_col="reports_pue"
+        )
+        visible_companies = (
+            sorted(filtered_by_status["company_name"].unique())
+            if not filtered_by_status.empty
+            else []
         )
 
-        # Determine if filters are applied
+        # Chart data: same year+company scope, restricted to visible companies,
+        # but do NOT filter by status so each cell shows the actual status
+        df_for_chart = (
+            df_year_company[df_year_company["company_name"].isin(visible_companies)]
+            if visible_companies
+            else df_year_company.iloc[0:0]
+        )
+
         filters_applied = bool(companies) or bool(pw_status)
 
         # Header (legend + x-axis), sticky
         pue_trends_header_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=filtered_df,
+            filtered_df=df_for_chart,
             filters_applied=filters_applied,
             header_only=True,
             reporting_column="reports_pue",
@@ -142,13 +153,13 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
 
         # Body (scrollable data rows), fixed row height
         pue_trends_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=filtered_df,
+            filtered_df=df_for_chart,
             filters_applied=filters_applied,
             header_only=False,
             reporting_column="reports_pue",
         )
 
-        num_companies = len(filtered_df["company_name"].unique()) if not filtered_df.empty else 0
+        num_companies = len(visible_companies)
         FIXED_ROW_HEIGHT = 25
         body_height_px = num_companies * FIXED_ROW_HEIGHT + 40
 
@@ -208,26 +219,34 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
         companies = filter_data.get("companies") if filter_data else None
         pw_status = filter_data.get("pw_status") if filter_data else None
 
-        filtered_df = filter_data_by_year_range(
+        df_year_company = filter_data_by_year_range(
             pue_wue_companies_df, from_year, to_year, year_col="year"
         )
-        filtered_df = filter_data_by_companies(filtered_df, companies)
-        filtered_df = filter_data_by_reporting_status(
-            filtered_df, pw_status, status_col="reports_pue"
+        df_year_company = filter_data_by_companies(df_year_company, companies)
+        filtered_by_status = filter_data_by_reporting_status(
+            df_year_company, pw_status, status_col="reports_pue"
+        )
+        visible_companies = (
+            sorted(filtered_by_status["company_name"].unique())
+            if not filtered_by_status.empty
+            else []
+        )
+        df_for_chart = (
+            df_year_company[df_year_company["company_name"].isin(visible_companies)]
+            if visible_companies
+            else df_year_company.iloc[0:0]
         )
         filters_applied = bool(companies) or bool(pw_status)
 
         expanded_fig = create_pue_wue_reporting_heatmap_plot(
-            filtered_df=filtered_df,
+            filtered_df=df_for_chart,
             filters_applied=filters_applied,
             header_only=False,
             is_expanded=True,
             reporting_column="reports_pue",
         )
 
-        num_rows = (
-            len(filtered_df["company_name"].unique()) if not filtered_df.empty else 0
-        )
+        num_rows = len(visible_companies)
         FIXED_ROW_HEIGHT = 25
         calc_height = num_rows * FIXED_ROW_HEIGHT + 120
         modal_graph_style = {

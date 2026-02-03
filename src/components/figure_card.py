@@ -1,6 +1,7 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 
+
 def create_figure_card(
     fig_id,
     title,
@@ -177,4 +178,3 @@ def create_figure_card(
         ],
         className="mb-3 gx-2",
     )
-
