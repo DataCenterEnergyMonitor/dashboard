@@ -11,6 +11,45 @@ REPORTING_SCOPE_COLORS = {
 }
 
 
+def _display_value_for_year_data(year_data):
+    """Map (company, year) rows to a single display value and heatmap z value.
+
+    Display is driven by reporting_status so we never show a scope as reported
+    when its status is "Pending Data Submission".
+
+    - If any row has reporting_status equal to a scope
+      ("Data Center Electricity Use", "Data Center Fuel Use",
+      "Company Wide Electricity Use"), treat that as reported and show the
+      highest-priority scope (Data Center Electricity > Fuel > Company Wide).
+    - Else if any row has reporting_status == "Pending Data Submission",
+      show Pending.
+    - Else show No Reporting.
+    """
+    statuses = set(year_data["reporting_status"].dropna().unique())
+
+    # Reported scopes: only where status equals the scope (not Pending / No Reporting)
+    reported_scopes = statuses & {
+        "Data Center Electricity Use",
+        "Data Center Fuel Use",
+        "Company Wide Electricity Use",
+    }
+    if reported_scopes:
+        if "Data Center Electricity Use" in reported_scopes:
+            return 1.0, "Data Center Electricity Use"
+        if "Data Center Fuel Use" in reported_scopes:
+            return 0.7, "Data Center Fuel Use"
+        if "Company Wide Electricity Use" in reported_scopes:
+            return 0.4, "Company Wide Electricity Use"
+        return 0, "No Reporting"
+
+    # No reported scopes: check for pending / no reporting
+    if "Pending Data Submission" in statuses:
+        return 0.1, "Pending Data Submission"
+    if "No Reporting" in statuses:
+        return 0, "No Reporting"
+    return 0, "No Reporting"
+
+
 def create_energy_reporting_heatmap(
     filtered_df,
     original_df=None,
@@ -125,35 +164,18 @@ def create_energy_reporting_heatmap(
                 ]
 
                 if year_data.empty:
-                    value = 0
-                    text = f"{company} ({year})<br>No Reporting"
+                    value, display_label = 0, "No Reporting"
                 else:
-                    # Get reporting status
-                    status = year_data["reporting_status"].iloc[0]
+                    value, display_label = _display_value_for_year_data(year_data)
 
-                    # Handle pending submissions first
-                    if status == "Pending data submission":
-                        value = 0.1
-                        text = f"{company} ({year})<br>Pending data submission"
-                    else:
-                        # Get all scopes for this company/year
-                        scopes = set(year_data["reporting_scope"].dropna().unique())
-
-                        # Implement reporting hierarchy for reported data
-                        if "Data Center Electricity Use" in scopes:
-                            value = 1.0
-                            text = f"{company} ({year})<br>Reporting: Data Center Electricity Use"
-                        elif "Data Center Fuel Use" in scopes:
-                            value = 0.7
-                            text = (
-                                f"{company} ({year})<br>Reporting: Data Center Fuel Use"
-                            )
-                        elif "Company Wide Electricity Use" in scopes:
-                            value = 0.4
-                            text = f"{company} ({year})<br>Reporting: Company Wide Electricity Use"
-                        else:
-                            value = 0
-                            text = f"{company} ({year})<br>No Reporting"
+                if display_label in (
+                    "Data Center Electricity Use",
+                    "Data Center Fuel Use",
+                    "Company Wide Electricity Use",
+                ):
+                    text = f"{company} ({year})<br>Reporting: {display_label}"
+                else:
+                    text = f"{company} ({year})<br>{display_label}"
 
                 row_data.append(value)
                 row_hover.append(text)
@@ -201,6 +223,7 @@ def create_energy_reporting_heatmap(
     # Create legend traces
     legend_items = {
         "No Reporting": REPORTING_SCOPE_COLORS["No Reporting"],
+        "Pending Data Submission": REPORTING_SCOPE_COLORS["Pending"],
         "Company Wide Electricity Use": REPORTING_SCOPE_COLORS[
             "Company Wide Electricity Use"
         ],

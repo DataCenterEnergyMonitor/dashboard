@@ -148,6 +148,9 @@ def create_app():
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
+    print("Test-Tets: Reporting_df")
+    print(reporting_df["reporting_status"].unique())
+    print(reporting_df[reporting_df["reporting_status"] == "Pending Data Submission"].head(10))
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
 

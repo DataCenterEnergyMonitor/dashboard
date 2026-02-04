@@ -751,20 +751,40 @@ def load_energyforecast_data():
 
 
 def load_reporting_data():
+    """Load energy reporting data and build reporting_status per (company, year).
+
+    reporting_scope is only ever one of the three original values from the sheets:
+    - Company Wide Electricity Use
+    - Data Center Electricity Use
+    - Data Center Fuel Use
+
+    Rules:
+    - If a (company, year) has at least one record in the source data, keep those rows
+      with reporting_scope as above and reporting_status = reporting_scope.
+    - If a (company, year) has no records:
+      * For the pending year only: if the company reported a given scope at least once
+        in the last three years (pending_year-3 to pending_year-1), create one row per
+        such scope with that reporting_scope and reporting_status = "Pending Data Submission".
+        Example: Feb 2026 → pending_year=2025; Company A reported Company Wide Electricity Use
+        in 2022–2024 → add (Company A, 2025, Company Wide Electricity Use, Pending Data Submission).
+      * If pending year but company reported no scope in last three years, or if not
+        pending year: one row with reporting_scope = NaN, reporting_status = "No Reporting".
+
+    Pending year: reports for year X typically released by Aug 31 of year X+1.
+    If today < Aug 31 of current year → pending_year = current_year - 1.
+    If today >= Aug 31 of current year → pending_year = current_year.
+    """
     current_dir = Path(__file__).parent
     data_path = current_dir.parent / "data" / "modules.xlsx"
 
-    # import and clean energy consumption data
-    # import and clean energy consumption data
+    # Base data from modules.xlsx
     company_total_ec_df = pd.read_excel(
         data_path, sheet_name="Company Total Electricity Use", skiprows=1
     )
     company_total_ec_df = company_total_ec_df.clean_names()
     company_total_ec_df.rename(columns={"company": "company_name"}, inplace=True)
     company_total_ec_df = company_total_ec_df[["company_name", "reported_data_year"]]
-    company_total_ec_df = company_total_ec_df.dropna(
-        subset=["reported_data_year"]
-    )  # remove rows with no data
+    company_total_ec_df = company_total_ec_df.dropna(subset=["reported_data_year"])
 
     dc_ec_df = pd.read_excel(
         data_path, sheet_name="Data Center Electricity Use ", skiprows=1
@@ -778,77 +798,104 @@ def load_reporting_data():
     dc_fuel_df = dc_fuel_df.clean_names()
     dc_fuel_df = dc_fuel_df[["company_name", "reported_data_year"]]
 
-    # dc_water_df = pd.read_excel(data_path, sheet_name='Data Center Water Use ', skiprows=1)
-    # dc_water_df = dc_water_df.clean_names()
-    # dc_water_df = dc_water_df[['company_name', 'reported_data_year']]
-
-    # add a reporting_scope column to each DataFrame
+    # Add reporting_scope column to each DataFrame
     company_total_ec_df.loc[:, "reporting_scope"] = "Company Wide Electricity Use"
     dc_ec_df.loc[:, "reporting_scope"] = "Data Center Electricity Use"
     dc_fuel_df.loc[:, "reporting_scope"] = "Data Center Fuel Use"
-    # dc_water_df.loc[:, 'reporting_scope'] = 'Data Center Water Use'
 
-    # combine all the dfs into one - maintaining the original columns
+    # Combine all the dfs into one
     reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df], axis=0)
     reporting_df["reported_data_year"] = reporting_df["reported_data_year"].astype(int)
 
-    # strip whitespace from all string columns
+    # Clean strings
     for col in reporting_df.select_dtypes(include="object").columns:
-        reporting_df[col] = reporting_df[col].str.strip()
-
-    # companies report the data one year later than the current year
-    current_reporting_year = datetime.now().year - 1
-    previous_reporting_year = current_reporting_year - 1
-
-    # Strip whitespace from the 'company_name' and 'reporting_scope' columns
-    reporting_df["company_name"] = reporting_df["company_name"].str.strip()
-    reporting_df["reporting_scope"] = reporting_df["reporting_scope"].str.strip()
-
-    # Create a unique DataFrame with necessary columns
-    unique_companies_and_scopes = (
-        reporting_df[["company_name", "reporting_scope", "reported_data_year"]]
-        .drop_duplicates(ignore_index=True)
-        .dropna()
-    )
-
-    # Identify combinations of company_name and reporting_scope with reported_data_year == 2024
-    combinations_to_remove = unique_companies_and_scopes[
-        unique_companies_and_scopes["reported_data_year"] == current_reporting_year
-    ][["company_name", "reporting_scope"]]
-
-    # Filter out the combinations to remove using merge
-    unique_companies_and_scopes = unique_companies_and_scopes.merge(
-        combinations_to_remove,
-        on=["company_name", "reporting_scope"],
-        how="left",
-        indicator=True,
-    )
-    unique_companies_and_scopes = unique_companies_and_scopes[
-        unique_companies_and_scopes["_merge"] == "left_only"
-    ].drop(columns="_merge")
-
-    # Filter out the combinations of company_name and reporting_scope with reported_data_year == previous_year
-    unique_companies_and_scopes = unique_companies_and_scopes[
-        unique_companies_and_scopes["reported_data_year"] == previous_reporting_year
-    ][["company_name", "reporting_scope"]]
-
-    # Set the reported_data_year to the current year and add reporting_status
-    unique_companies_and_scopes = unique_companies_and_scopes.assign(
-        reported_data_year=current_reporting_year,
-        reporting_status="Pending data submission",
-    ).drop_duplicates(ignore_index=True)
-
-    # Prepare reporting_df
-    reporting_df["reporting_status"] = "Reported"
-
-    # Replace 'Samgung' with 'Samsung' in the entire DataFrame
+        reporting_df[col] = reporting_df[col].astype(str).str.strip()
     reporting_df.replace("Samgung", "Samsung", inplace=True)
-    reporting_df.dropna(inplace=True)
-
-    # Add unique_companies_and_scopes to the reporting_df
-    reporting_df = pd.concat(
-        [reporting_df, unique_companies_and_scopes], ignore_index=True
+    reporting_df = reporting_df.dropna(
+        subset=["company_name", "reported_data_year", "reporting_scope"]
     )
+
+    # Pending year logic: reports for year X typically released by Aug 31 of year X+1
+    current_date = datetime.today()
+    reporting_release_cutoff = datetime(current_date.year, 8, 31)
+    if current_date < reporting_release_cutoff:
+        pending_year = current_date.year - 1
+    else:
+        pending_year = current_date.year
+
+    # Last three years relative to pending year (inclusive): e.g. pending_year=2025 → 2022–2024
+    last_three_years = {pending_year - 3, pending_year - 2, pending_year - 1}
+
+    # Existing records: status = scope
+    reporting_df["reporting_status"] = reporting_df["reporting_scope"]
+
+    # Companies and years present
+    companies = reporting_df["company_name"].unique()
+    years_in_data = sorted(reporting_df["reported_data_year"].unique())
+    years_all = sorted(set(years_in_data) | {pending_year})
+
+    # (company, year) pairs that already have data
+    has_records = set(
+        zip(
+            reporting_df["company_name"].astype(str),
+            reporting_df["reported_data_year"].astype(int),
+        )
+    )
+
+    # For each company, which scopes they reported in the last three years
+    reported_in_last_three = (
+        reporting_df[reporting_df["reported_data_year"].isin(last_three_years)]
+        .groupby("company_name")["reporting_scope"]
+        .apply(lambda s: set(s.dropna().unique()))
+        .to_dict()
+    )
+
+    # Build rows for (company, year) with no records
+    no_record_rows = []
+    for company in companies:
+        for year in years_all:
+            if (str(company), int(year)) in has_records:
+                continue
+
+            if year == pending_year:
+                scopes_reported = reported_in_last_three.get(company, set())
+                if scopes_reported:
+                    # Pending rows, one per scope reported in last three years
+                    for scope in scopes_reported:
+                        no_record_rows.append(
+                            {
+                                "company_name": company,
+                                "reporting_scope": scope,
+                                "reported_data_year": year,
+                                "reporting_status": "Pending Data Submission",
+                            }
+                        )
+                else:
+                    # No history for last three years → No Reporting for pending year
+                    no_record_rows.append(
+                        {
+                            "company_name": company,
+                            "reporting_scope": np.nan,
+                            "reported_data_year": year,
+                            "reporting_status": "No Reporting",
+                        }
+                    )
+            else:
+                # Non-pending years with no data → No Reporting
+                no_record_rows.append(
+                    {
+                        "company_name": company,
+                        "reporting_scope": np.nan,
+                        "reported_data_year": year,
+                        "reporting_status": "No Reporting",
+                    }
+                )
+
+    if no_record_rows:
+        reporting_df = pd.concat(
+            [reporting_df, pd.DataFrame(no_record_rows)], ignore_index=True
+        )
+
     reporting_df = (
         reporting_df[
             [
@@ -859,7 +906,9 @@ def load_reporting_data():
             ]
         ]
         .drop_duplicates(ignore_index=True)
-        .dropna()
+    )
+    reporting_df = reporting_df.dropna(
+        subset=["company_name", "reported_data_year", "reporting_status"]
     )
 
     return reporting_df

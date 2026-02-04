@@ -87,7 +87,7 @@ def create_reporting_bar_plot(df: pd.DataFrame) -> go.Figure:
         # Add reported data (solid color)
         scope_reported = grouped_df[
             (grouped_df["reporting_scope"] == scope)
-            & (grouped_df["reporting_status"] == "Reported")
+            & ~grouped_df["reporting_status"].isin(["No Reporting", "Pending Data Submission"])
         ]
         if not scope_reported.empty:
             fig.add_trace(
@@ -110,7 +110,7 @@ def create_reporting_bar_plot(df: pd.DataFrame) -> go.Figure:
         # Add pending data (striped/patterned version)
         scope_pending = grouped_df[
             (grouped_df["reporting_scope"] == scope)
-            & (grouped_df["reporting_status"] == "Pending data submission")
+            & (grouped_df["reporting_status"] == "Pending Data Submission")
         ]
         if not scope_pending.empty:
             base_color = REPORTING_SCOPE_COLORS[scope]
@@ -135,14 +135,14 @@ def create_reporting_bar_plot(df: pd.DataFrame) -> go.Figure:
                 go.Bar(
                     x=scope_pending["reported_data_year"],
                     y=scope_pending["num_companies"],
-                    name="Pending data submission",
+                    name="Pending Data Dubmission",
                     legendgroup=scope,
                     legendgrouptitle_text=scope,
                     marker_color=lighter_color,
                     width=bar_width,
                     # marker_pattern_type='\\',
                     customdata=[
-                        f"Pending data submission: {count}"
+                        f"Pending Data Submission: {count}"
                         for count in scope_pending["num_companies"]
                     ],
                     hovertemplate="%{customdata}<extra></extra>",
