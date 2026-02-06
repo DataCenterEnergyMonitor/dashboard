@@ -144,7 +144,7 @@ def create_app():
     waterprojections_df = (
         load_energyprojections_data()
     )  # TO DO: replace with the function to load water projections dataset
-    globalpolicies_df = load_gp_data()
+    gp_base_df, globalpolicies_df = load_gp_data()
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
@@ -236,7 +236,7 @@ def create_app():
     register_pue_wue_callbacks(app, pue_wue_df)
     register_energy_projections_callbacks(app, energyprojections_df)
     register_water_projections_callbacks(app, waterprojections_df)
-    register_gp_page_callbacks(app, globalpolicies_df)
+    register_gp_page_callbacks(app, gp_base_df, globalpolicies_df)
     register_gp_tab1_callbacks(app, globalpolicies_df)
     # Use the transposed dataframe (with attr_type/attr_value) for Tab 2 callbacks
     register_gp_tab2_callbacks(app, gp_transposed_df)
@@ -344,4 +344,5 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run_server(debug=True)
+    #app.run_server(debug=True)
+    app.run(debug=True)

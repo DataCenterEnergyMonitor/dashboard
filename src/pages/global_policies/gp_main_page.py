@@ -16,6 +16,7 @@ def create_gp_page(app, globalpolicies_df):
         {"label": "Cumulative Trends", "value": "tab-1"},
         {"label": "Jurisdictional Distribution", "value": "tab-2"},
         {"label": "Geographic Distribution", "value": "tab-3"},
+        {"label": "Policy Details", "value": "tab-4"},
     ]
 
     # Create bookmark-styled tabs component

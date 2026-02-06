@@ -261,11 +261,11 @@ def load_pue_wue_companies_data():
         if col in companies_df.columns:
             companies_df[col] = companies_df[col].str.strip()
 
-    # Set NaN values in year_founded to 2000
+    # Set NaN values in year_founded to 2000 (avoid chained assignment / inplace ops)
     companies_df["year_founded"] = pd.to_numeric(
         companies_df["year_founded"], errors="coerce"
     )
-    companies_df["year_founded"].fillna(2000, inplace=True)
+    companies_df["year_founded"] = companies_df["year_founded"].fillna(2000)
     companies_df["year_founded"] = companies_df["year_founded"].astype(int)
 
     # Go up one level and into data directory
@@ -297,14 +297,16 @@ def load_pue_wue_companies_data():
         ]
     ]
 
-    # Set NaN values in year_founded to 2000
+    # Set NaN values in year_founded to 2000 (avoid chained assignment / inplace ops)
     pue_wue_reporting_df["year_founded"] = pd.to_numeric(
         pue_wue_reporting_df["year_founded"], errors="coerce"
     )
-    pue_wue_reporting_df["year_founded"].fillna(2000, inplace=True)
-    pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df["year_founded"].astype(
-        int
-    )
+    pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df[
+        "year_founded"
+    ].fillna(2000)
+    pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df[
+        "year_founded"
+    ].astype(int)
 
     # Set reporting status to Company not established if year_founded > reporting year
     pue_wue_reporting_df.loc[
@@ -472,7 +474,6 @@ def load_energyprojections_data():
 
     return df
 
-
 def load_gp_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
@@ -504,6 +505,7 @@ def load_gp_data():
             "order_type",
             "status",
             "date_of_status",
+            "internal_url",
             "Measurement and Reporting",
             "Procurement standard",
             "Performance standard",
@@ -525,6 +527,67 @@ def load_gp_data():
         ]
     ]
 
+    date_columns = [
+                "date_introduced",
+                "date_of_amendment",
+                "date_enacted",
+                "date_killed",
+                "date_in_effect",
+                "date_of_status"
+    ]
+
+    gp_base_df = df.copy()
+
+    for col in date_columns:
+        gp_base_df[col] = pd.to_datetime(gp_base_df[col]).dt.strftime('%Y-%m-%d')
+        old_policy_columns = [
+                "policy_id",
+                "version",
+                "authors",
+                "offices_held",
+                "date_introduced",
+                "date_of_amendment",
+                "date_enacted",
+                "date_killed",
+                "date_in_effect",
+                "jurisdiction_level",
+                "city",
+                "county",
+                "state_province",
+                "country",
+                "supranational_policy_area",
+                "region",
+                "order_type",
+                "status",
+                "date_of_status",
+                "internal_url",
+    ]
+
+    policy_columns = [
+                "Policy Name/Number",
+                "Version",
+                "Authors",
+                "Offices Held",
+                "Date Introduced",
+                "Date Of Amendment",
+                "Date Enacted",
+                "Date Killed",
+                "Date In Effect",
+                "Jurisdiction Level",
+                "City",
+                "County",
+                "State/Province",
+                "Country",
+                "Supranational Policy Area",
+                "Region",
+                "Order Type",
+                "Status",
+                "Date Of Status",
+                "Source"
+    ]
+
+    gp_base_df.rename(columns=dict(zip(old_policy_columns, policy_columns)), inplace=True)
+    
     # pivot longer all instrument and objective columns
     instrument_columns = [
         "Measurement and Reporting",
@@ -604,7 +667,7 @@ def load_gp_data():
         to_datetime(clean_df["date_killed"])
     )
 
-    return clean_df
+    return gp_base_df, clean_df
 
 
 # transpose global policies data so that we get a DataFrame with one row per objective/instrument
