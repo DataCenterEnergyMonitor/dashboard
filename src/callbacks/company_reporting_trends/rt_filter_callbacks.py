@@ -34,6 +34,15 @@ DEFAULT_PW_STATUS = [
     "pending",
 ]
 
+# Default reporting status options for tab 2 (energy heatmap)
+DEFAULT_TAB2_REPORTING_STATUS = [
+    "No Reporting",
+    "Pending",
+    "Company Wide Electricity Use",
+    "Data Center Fuel Use",
+    "Data Center Electricity Use",
+]
+
 
 def register_rt_filter_callbacks(app):
     """Register all filter-related callbacks for the Company Reporting Trends page.
@@ -53,6 +62,7 @@ def register_rt_filter_callbacks(app):
             State("rt-to-year", "value"),
             State("rt-company-filter", "value"),
             State("pw_reporting_status", "value"),
+            State("rt_tab2_reporting_status", "value"),
             State("rt-sort-by", "value"),
             State("rt-sort-order", "value"),
             State(f"{ID_PREFIX}filter-store", "data"),
@@ -67,6 +77,7 @@ def register_rt_filter_callbacks(app):
         to_year,
         companies,
         pw_status,
+        tab2_reporting_status,
         sort_by,
         sort_order,
         current_store,
@@ -84,9 +95,11 @@ def register_rt_filter_callbacks(app):
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
         timestamp = time.time()
 
+        base = current_store.copy() if current_store else {}
+
         # Handle clear filters button
         if trigger_id == "rt-clear-filters-btn":
-            return {
+            out = {
                 "from_year": None,
                 "to_year": None,
                 "companies": None,
@@ -99,11 +112,19 @@ def register_rt_filter_callbacks(app):
                 "timestamp": timestamp,
             }
 
+            # For tab 2, reset status filter to its full default list on Clear.
+            # For other tabs, preserve whatever is currently in the store.
+            if active_tab == "tab-2":
+                out["tab2_reporting_status"] = DEFAULT_TAB2_REPORTING_STATUS
+            else:
+                out["tab2_reporting_status"] = base.get("tab2_reporting_status")
+
+            return out
+
         # Handle apply filters button
         # Only overwrite fields that are visible on the current tab; keep rest from store
         # so one Apply applies to all tabs (tab 1 = year only; 2-3 = year + company + sort; 4-5 = all)
         if trigger_id == "apply-filters-btn":
-            base = current_store.copy() if current_store else {}
             out = {
                 "from_year": int(from_year) if from_year else base.get("from_year"),
                 "to_year": int(to_year) if to_year else base.get("to_year"),
@@ -124,6 +145,17 @@ def register_rt_filter_callbacks(app):
                 out["pw_status"] = (
                     pw_status if pw_status is not None else base.get("pw_status")
                 )
+
+            # Tab-2 specific status filter: only update when we're on tab 2.
+            if active_tab == "tab-2":
+                out["tab2_reporting_status"] = (
+                    tab2_reporting_status
+                    if tab2_reporting_status is not None
+                    else DEFAULT_TAB2_REPORTING_STATUS
+                )
+            else:
+                out["tab2_reporting_status"] = base.get("tab2_reporting_status")
+
             return out
 
         raise dash.exceptions.PreventUpdate
@@ -136,6 +168,7 @@ def register_rt_filter_callbacks(app):
             Output("pw_reporting_status", "value", allow_duplicate=True),
             Output("rt-sort-by", "value", allow_duplicate=True),
             Output("rt-sort-order", "value", allow_duplicate=True),
+            Output("rt_tab2_reporting_status", "value", allow_duplicate=True),
         ],
         [Input("rt-clear-filters-btn", "n_clicks")],
         [State(f"{ID_PREFIX}active-tab-store", "data")],
@@ -157,6 +190,9 @@ def register_rt_filter_callbacks(app):
                 else [],  # pw_status
                 "company_name",  # sort_by
                 "asc",  # sort_order
+                DEFAULT_TAB2_REPORTING_STATUS
+                if active_tab == "tab-2"
+                else [],  # rt_tab2_reporting_status
             )
         return dash.no_update
 
@@ -166,6 +202,7 @@ def register_rt_filter_callbacks(app):
             Output("rt-sort-order", "value", allow_duplicate=True),
             Output("rt-company-filter", "value", allow_duplicate=True),
             Output("pw_reporting_status", "value", allow_duplicate=True),
+            Output("rt_tab2_reporting_status", "value", allow_duplicate=True),
         ],
         [Input(f"{ID_PREFIX}active-tab-store", "data")],
         [State(f"{ID_PREFIX}filter-store", "data")],
@@ -184,9 +221,19 @@ def register_rt_filter_callbacks(app):
         sort_order = filter_data.get("sort_order", "asc")
         companies = filter_data.get("companies")
         pw_status = filter_data.get("pw_status")
+        tab2_status = filter_data.get("tab2_reporting_status")
 
         # For tabs 4-5, ensure pw_status has default if not set
         if active_tab in ["tab-4", "tab-5"] and not pw_status:
             pw_status = DEFAULT_PW_STATUS
 
-        return sort_by, sort_order, companies, pw_status
+        # For tab-2, ensure reporting status has default if not set
+        if active_tab == "tab-2":
+            if not tab2_status:
+                tab2_status = DEFAULT_TAB2_REPORTING_STATUS
+        else:
+            # On other tabs keep it empty/hidden
+            if tab2_status is None:
+                tab2_status = []
+
+        return sort_by, sort_order, companies, pw_status, tab2_status

@@ -27,7 +27,7 @@ def create_sort_options_component(include_status=True):
     ]
 
     if include_status:
-        sort_by_options.append({"label": "Reporting Status", "value": "status"})
+        sort_by_options.append({"label": "Reporting Status", "value": "reporting_status"})
 
     return html.Div(
         [
@@ -73,8 +73,8 @@ def create_sort_options_component(include_status=True):
                             dcc.Dropdown(
                                 id="rt-sort-order",
                                 options=[
-                                    {"label": "A → Z", "value": "asc"},
-                                    {"label": "Z → A", "value": "desc"},
+                                    {"label": "Low to High", "value": "asc"},
+                                    {"label": "High to Low", "value": "desc"},
                                 ],
                                 value="asc",
                                 clearable=False,

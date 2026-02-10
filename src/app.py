@@ -95,6 +95,9 @@ from callbacks.company_reporting_trends.rt_page_callback import (
 from callbacks.company_reporting_trends.rt_tab1_callback import (
     register_rt_tab1_callbacks,
 )
+from callbacks.company_reporting_trends.rt_filter_callbacks import (
+    register_rt_filter_callbacks,
+)
 from callbacks.company_reporting_trends.rt_tab2_callback import (
     register_rt_tab2_callbacks,
 )
@@ -243,6 +246,8 @@ def create_app():
     register_gp_tab3_callbacks(app, gp_transposed_df)
     # Company Reporting Trends page callbacks
     register_rt_page_callbacks(app, reporting_df, pue_wue_companies_df)
+    # Centralized filter callbacks for Reporting Trends (all tabs)
+    register_rt_filter_callbacks(app)
     register_rt_tab1_callbacks(app, reporting_df)
     register_rt_tab2_callbacks(app, reporting_df, pue_wue_companies_df)
     register_rt_tab3_callbacks(app, reporting_df, pue_wue_companies_df)

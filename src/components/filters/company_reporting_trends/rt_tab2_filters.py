@@ -2,6 +2,7 @@ import dash
 from dash import Input, Output, dcc, html
 import dash_bootstrap_components as dbc
 from components.year_range import create_year_range_component
+from components.filters.company_reporting_trends.rt_sort_options import create_sort_options_component
 
 
 def create_rt_tab2_filters(df):
@@ -95,6 +96,7 @@ def create_rt_tab2_filters(df):
                                     ),
                                 ]
                             ),
+                            create_sort_options_component(include_status=True)
                         ],
                         style={
                             "flex": "1",

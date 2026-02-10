@@ -118,7 +118,8 @@ def create_energy_reporting_heatmap(
     FIXED_ROW_HEIGHT = 25  # pixels per row
 
     df_for_companies = original_df if original_df is not None else filtered_df
-    companies = sorted(df_for_companies["company_name"].unique())
+    #companies = sorted(df_for_companies["company_name"].unique())
+    companies = df_for_companies["company_name"].unique().tolist()
     years = sorted(filtered_df["reported_data_year"].unique())
 
     # Calculate dynamic left margin based on FILTERED companies
@@ -331,7 +332,9 @@ def create_energy_reporting_heatmap(
             "ticks": "outside",
             "tickfont": {"size": 12},
             "autorange": "reversed",
-            "fixedrange": False,  # Enable scrolling on y-axis
+            "fixedrange": False,  # enable scrolling on y-axis
+            "categoryorder": "array",
+            "categoryarray": companies_display  # the wrapped names list
         }
         show_legend = True if is_expanded else False
         legend_config = dict(

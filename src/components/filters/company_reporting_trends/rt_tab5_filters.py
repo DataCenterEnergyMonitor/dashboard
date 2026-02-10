@@ -2,6 +2,7 @@ import dash
 from dash import Input, Output, dcc, html
 import dash_bootstrap_components as dbc
 from components.year_range import create_year_range_component
+from components.filters.company_reporting_trends.rt_sort_options import create_hidden_sort_placeholders
 
 
 def create_rt_tab5_filters(df):
@@ -123,6 +124,7 @@ def create_rt_tab5_filters(df):
                                     ),
                                 ]
                             ),
+                            create_hidden_sort_placeholders()
                         ],
                         style={
                             "flex": "1",

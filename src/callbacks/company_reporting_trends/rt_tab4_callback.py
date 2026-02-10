@@ -275,35 +275,3 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
             internal_prefix="_internal_",
             n_clicks=n_clicks,
         )
-
-    # Callback to handle Clear All button - resets filter UI components
-    # The store is updated separately in rt_tab1_callback.py
-    @app.callback(
-        [
-            Output("rt-from-year", "value", allow_duplicate=True),
-            Output("rt-to-year", "value", allow_duplicate=True),
-            Output("rt-company-filter", "value", allow_duplicate=True),
-            Output("pw_reporting_status", "value", allow_duplicate=True),
-        ],
-        [Input("rt-clear-filters-btn", "n_clicks")],
-        prevent_initial_call=True,
-    )
-    def clear_all_filters(clear_clicks):
-        if clear_clicks:
-            # Clear all filter values - reset pw_status to default (all selected)
-            default_pw_status = [
-                "company not established",
-                "company Inactive",
-                "no reporting evident",
-                "individual data center values only",
-                "fleet-wide values only",
-                "both fleet-wide and individual data center values",
-                "pending",
-            ]
-            return (
-                None,
-                None,
-                None,
-                default_pw_status,
-            )
-        return dash.no_update

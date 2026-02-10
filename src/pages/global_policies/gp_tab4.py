@@ -6,41 +6,26 @@ import pandas as pd
 def create_gp_tab4(app, gp_base_df):
 
     # preprocess data
-    policy_columns = [
-                #"Policy Name/Number",
+    policy_group = [
                 "Version",
-                # "Authors",
-                # "Offices held",
-                # "Date introduced",
-                # "Date of amendment",
-                # "Date enacted",
-                # "Date killed",
-                # "Date in effect",
-                # "Jurisdiction level",
-                # "City",
-                # "County",
-                # "State/province",
-                # "Country",
-                # "Supranational policy area",
-                # "Region",
                 "Order Type",
                 "Status",
                 "Date Of Status",
     ]
 
-    policy_timeline_columns = [                
+    policy_timeline_group = [                
                 "Date Introduced",
                 "Date Of Amendment",
                 "Date Enacted",
                 "Date In Effect",
                 "Date Killed"]
     
-    author_columns = [
+    author_group = [
                 "Authors",
                 "Offices Held"
     ]
 
-    location_columns = [
+    location_group = [
                 "Region",
                 "Supranational Policy Area",
                 "Country",
@@ -49,7 +34,7 @@ def create_gp_tab4(app, gp_base_df):
                 "City",
     ]
 
-    instrument_columns = [
+    instruments_group = [
             "Measurement and Reporting",
             "Procurement standard",
             "Performance standard",
@@ -61,7 +46,7 @@ def create_gp_tab4(app, gp_base_df):
             "Other",
         ]
 
-    objective_columns = [
+    objectives_group = [
             "Energy",
             "Power",
             "Water",
@@ -74,19 +59,19 @@ def create_gp_tab4(app, gp_base_df):
         ]
     
 
-    gp_base_df['total_instruments'] = (gp_base_df[instrument_columns] == 'Yes').sum(axis=1)
-    gp_base_df['total_objectives'] = (gp_base_df[objective_columns] == 'Yes').sum(axis=1)
+    gp_base_df['total_instruments'] = (gp_base_df[instruments_group] == 'Yes').sum(axis=1)
+    gp_base_df['total_objectives'] = (gp_base_df[objectives_group] == 'Yes').sum(axis=1)
 
     columnDefs = [
         {"field": "Policy Name/Number", "wrapHeaderText": True,"autoHeaderHeight": True,"width": 180},
         *[{"field": policy,"wrapHeaderText": True,"autoHeaderHeight": True,"width": 140}
-           for policy in policy_columns],
+           for policy in policy_group],
         {
             "headerName": "Author Details",
             "marryChildren": True,
             "children": [
                 {"field":"Authors", "headerName": "Author(s)", "columnGroupShow": "closed"},
-                *[{"field": author, "columnGroupShow": "open"} for author in author_columns]
+                *[{"field": author, "columnGroupShow": "open"} for author in author_group]
             ],
         },
         {
@@ -94,7 +79,7 @@ def create_gp_tab4(app, gp_base_df):
             "marryChildren": True,
             "children": [
                 {"field":"Date Introduced", "width": 180, "columnGroupShow": "closed"},
-                *[{"field": date, "width": 180, "columnGroupShow": "open"} for date in policy_timeline_columns]
+                *[{"field": date, "width": 180, "columnGroupShow": "open"} for date in policy_timeline_group]
             ],
         },
         {"field":"Jurisdiction Level","wrapHeaderText": True,"autoHeaderHeight": True, "width": 140},
@@ -103,7 +88,7 @@ def create_gp_tab4(app, gp_base_df):
             "marryChildren": True,
             "children": [
                 {"field":"Region", "columnGroupShow": "closed", "width": 160},
-                *[{"field": location, "columnGroupShow": "open", "width": 140} for location in location_columns]
+                *[{"field": location, "columnGroupShow": "open", "width": 140} for location in location_group]
             ],
         },
         {
@@ -112,7 +97,7 @@ def create_gp_tab4(app, gp_base_df):
             "children": [
                 {"field":"total_instruments", "headerName": "Total Addressed", 'filter': False,"columnGroupShow": "closed", "width": 140},
                 *[{"field": objective, "columnGroupShow": "open","wrapHeaderText": True,"autoHeaderHeight": True,}
-                   for objective in objective_columns]
+                   for objective in objectives_group]
             ],
         },
         {
@@ -121,7 +106,7 @@ def create_gp_tab4(app, gp_base_df):
             "children": [
                 {"field":"total_objectives", "headerName": "Total Applied", 'filter': False,"columnGroupShow": "closed","width": 140},
                 *[{"field": instrument, "columnGroupShow": "open","wrapHeaderText": True,"autoHeaderHeight": True,}
-                   for instrument in instrument_columns]
+                   for instrument in instruments_group]
             ],
         },
         {

@@ -3,6 +3,7 @@ from pathlib import Path
 from dash import Input, Output, State, callback_context, html, dcc
 import json
 from datetime import datetime
+import pandas as pd
 from charts.energy_reporting_heatmap import create_energy_reporting_heatmap
 from components.excel_export import create_filtered_excel_download
 
@@ -56,6 +57,63 @@ def filter_data_by_companies(df, companies, company_col="company_name"):
         return df
     return df[df[company_col].isin(companies)]
 
+def get_processed_reporting_data(df, filter_data):
+    """
+    Centralized logic for filtering and weighted sorting.
+    Used by both the main chart and the modal.
+    """
+    if not filter_data:
+        return pd.DataFrame(columns=df.columns)
+
+    # 1. Extract values
+    from_year = int(filter_data.get("from_year")) if filter_data.get("from_year") else None
+    to_year = int(filter_data.get("to_year")) if filter_data.get("to_year") else None
+    companies = filter_data.get("companies")
+    tab2_reporting_status = filter_data.get("tab2_reporting_status")
+    sort_by = filter_data.get("sort_by", "company_name")
+    sort_order = filter_data.get("sort_order", "asc")
+
+    # 2. Sequential Filtering
+    filtered_df = filter_data_by_year_range(df, from_year, to_year)
+    filtered_df = filter_data_by_companies(filtered_df, companies)
+
+    # 3. "At Least Once" Status Filtering
+    if tab2_reporting_status and len(tab2_reporting_status) > 0:
+        data_status_values = [_TAB2_STATUS_TO_DATA.get(s, s) for s in tab2_reporting_status]
+        mask = filtered_df["reporting_status"].isin(data_status_values)
+        valid_companies = filtered_df[mask]["company_name"].unique()
+        filtered_df = filtered_df[filtered_df["company_name"].isin(valid_companies)]
+    else:
+        # Return empty if no status is selected (as per your current logic)
+        return pd.DataFrame(columns=df.columns)
+
+    # 4. Weighted Sorting
+    status_weights = {
+        "Data Center Electricity Use": 100,
+        "Data Center Fuel Use": 50,
+        "Company Wide Electricity Use": 25,
+        "Pending Data Submission": 10,
+        "No Reporting": 0
+    }
+
+    if not filtered_df.empty:
+        is_asc = (sort_order == "asc")
+        if sort_by == "reporting_status":
+            # Weighted sort
+            temp_df = filtered_df.copy()
+            temp_df['year_score'] = temp_df['reporting_status'].map(status_weights).fillna(0)
+            scores = temp_df.groupby("company_name")['year_score'].sum()
+            filtered_df['total_company_score'] = filtered_df['company_name'].map(scores)
+            
+            filtered_df = filtered_df.sort_values(
+                by=["total_company_score", "company_name"],
+                ascending=[is_asc, True]
+            )
+        else:
+            # Simple alphabetical sort
+            filtered_df = filtered_df.sort_values(by="company_name", ascending=is_asc)
+
+    return filtered_df
 
 # Map UI status labels (tab2 filter) to dataframe reporting_status values
 _TAB2_STATUS_TO_DATA = {
@@ -66,30 +124,15 @@ _TAB2_STATUS_TO_DATA = {
     "Data Center Electricity Use": "Data Center Electricity Use",
 }
 
-
-def filter_data_by_tab2_reporting_status(df, selected_statuses, status_col="reporting_status"):
-    """Filter dataframe by selected reporting statuses (tab 2 filter).
-
-    selected_statuses: list of UI labels (e.g. "Pending", "No Reporting", ...).
-    Maps "Pending" -> "Pending Data Submission" for the data column.
-    """
-    if df.empty or not selected_statuses:
-        return df
-    data_values = [
-        _TAB2_STATUS_TO_DATA.get(s, s) for s in selected_statuses
-    ]
-    return df[df[status_col].isin(data_values)]
-
-
 # ID prefix for this page's components
 ID_PREFIX = "rt-"
 
 
 def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
-    """Register callbacks for RT Tab 2 (energy reporting heatmap).
+    """Register callbacks for Tab2 of the company reporting trends page (energy reporting heatmap).
 
-    Filters are inside each tab. Filter values are synced via rt-filter-store
-    so that switching tabs preserves the user's selections.
+    Filters are inside each tab. Filter values are synced via rt-filter-store to preserve the user's selections
+    when switchng tabs.
     """
 
     # Callback to update chart when filters or tab changes
@@ -110,35 +153,8 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         # Only process if we're on tab-2 (allow None for initial load)
         if active_tab is not None and active_tab != "tab-2":
             raise dash.exceptions.PreventUpdate
-
-        # Get filter values from store - convert to Python int
-        from_year = None
-        to_year = None
-        companies = None
-        tab2_reporting_status = None
-
-        if filter_data:
-            from_year = (
-                int(filter_data.get("from_year"))
-                if filter_data.get("from_year")
-                else None
-            )
-            to_year = (
-                int(filter_data.get("to_year")) if filter_data.get("to_year") else None
-            )
-            companies = filter_data.get("companies")
-            tab2_reporting_status = filter_data.get("tab2_reporting_status")
-
-        # Filter data by year range
-        filtered_df = filter_data_by_year_range(df, from_year, to_year)
-
-        # Filter by companies if selected
-        filtered_df = filter_data_by_companies(filtered_df, companies)
-
-        # Filter by reporting status (tab 2) if selected
-        filtered_df = filter_data_by_tab2_reporting_status(
-            filtered_df, tab2_reporting_status
-        )
+        
+        filtered_df = get_processed_reporting_data(df, filter_data)
 
         # Create Header (legend and x-axis)
         header_fig = create_energy_reporting_heatmap(filtered_df, header_only=True)
@@ -160,27 +176,7 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
             },
         )
 
-        # # Create the chart figure
-        # rt_tab2_fig = create_energy_reporting_heatmap(filtered_df)
-
-        return header_card, body_card  # html.Div(
-        #     [
-        #         html.A(id="rt-tab2-nav"),
-        #         create_figure_card(
-        #             fig_id="rt-tab2-fig1",
-        #             title=title,
-        #             expand_id="expand-rt-tab2-fig1",
-        #             filename="reporting_trends_heatmap",
-        #             figure=rt_tab2_fig,
-        #             show_modebar=False,
-        #         ),
-        #     ],
-        #     style={"margin": "35px 0"},
-        # )
-
-    # NOTE: Filter sync callbacks (sync_filters_to_store, sync_store_to_filters)
-    # are shared across tabs and are defined in rt_tab1_callback.py only
-    # to avoid duplicate output errors.
+        return header_card, body_card 
 
     # Modal expand callback
     @app.callback(
@@ -193,7 +189,6 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         [Input("expand-rt-tab2-fig1", "n_clicks")],
         [
             State("rt-fig2-modal", "is_open"),
-            # State("rt-tab2-fig1", "figure"),
             State(f"{ID_PREFIX}filter-store", "data"),
         ],
         prevent_initial_call=True,
@@ -221,27 +216,14 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
             )
         else:
             modal_title = "Energy Reporting by Company Over Time"
-        # Re-filter data to get the fresh dataframe for the modal
-        from_year = filter_data.get("from_year") if filter_data else None
-        to_year = filter_data.get("to_year") if filter_data else None
-        companies = filter_data.get("companies") if filter_data else None
-        tab2_reporting_status = (
-            filter_data.get("tab2_reporting_status") if filter_data else None
-        )
 
-        filtered_df = filter_data_by_year_range(df, from_year, to_year)
-        filtered_df = filter_data_by_companies(filtered_df, companies)
-        filtered_df = filter_data_by_tab2_reporting_status(
-            filtered_df, tab2_reporting_status
-        )
-
-        # Generate specific figure for expanded view with LEGEND and X-AXIS
+        filtered_df = get_processed_reporting_data(df, filter_data)
         expanded_fig = create_energy_reporting_heatmap(
             filtered_df, header_only=False, is_expanded=True
         )
 
         num_rows = len(filtered_df["company_name"].unique())
-        calc_height = (num_rows * 25) + 120  # Added buffer for legend
+        calc_height = (num_rows * 25) + 120  # add buffer for legend
 
         modal_graph_style = {
             "height": f"min({calc_height}px, 85vh)",
