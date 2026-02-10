@@ -173,6 +173,12 @@ def create_rt_tab5_filters(df):
                     ),
                     # Hidden div to store applied filter state
                     html.Div(id="applied-filters-store", style={"display": "none"}),
+                    # Hidden placeholder for rt_tab2_reporting_status (used by tab 2 only)
+                    dcc.Checklist(
+                        id="rt_tab2_reporting_status",
+                        value=[],
+                        style={"display": "none"},
+                    ),
                 ],
                 style={
                     "width": "300px",

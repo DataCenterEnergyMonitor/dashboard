@@ -113,6 +113,11 @@ def create_rt_tab1_filters(df):
                         value=[],
                         style={"display": "none"},
                     ),
+                    dcc.Checklist(
+                        id="rt_tab2_reporting_status",
+                        value=[],
+                        style={"display": "none"},
+                    ),
                 ],
                 style={
                     "width": "300px",

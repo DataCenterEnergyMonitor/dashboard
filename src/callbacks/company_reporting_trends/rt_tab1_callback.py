@@ -130,8 +130,17 @@ def register_rt_tab1_callbacks(app, df):
             style={"margin": "35px 0"},
         )
 
+    # Default reporting status options for tab 2 (energy heatmap)
+    default_tab2_reporting_status = [
+        "No Reporting",
+        "Pending",
+        "Company Wide Electricity Use",
+        "Data Center Fuel Use",
+        "Data Center Electricity Use",
+    ]
+
     # Callback to sync filter component changes to the store
-    # This handles year filters (all tabs), company filter (tabs 2-5), and pw_status (tabs 4-5)
+    # This handles year filters (all tabs), company filter (tabs 2-5), tab2 status (tab 2), and pw_status (tabs 4-5)
     # Note: Uses pattern matching to handle optional components that may not exist on all tabs
     @app.callback(
         Output(f"{ID_PREFIX}filter-store", "data"),
@@ -144,6 +153,7 @@ def register_rt_tab1_callbacks(app, df):
             State("rt-to-year", "value"),
             State("rt-company-filter", "value"),
             State("pw_reporting_status", "value"),
+            State("rt_tab2_reporting_status", "value"),
             State(f"{ID_PREFIX}filter-store", "data"),
             State(f"{ID_PREFIX}active-tab-store", "data"),
         ],
@@ -156,6 +166,7 @@ def register_rt_tab1_callbacks(app, df):
         to_year,
         companies,
         pw_status,
+        tab2_reporting_status,
         current_store,
         active_tab,
     ):
@@ -185,7 +196,7 @@ def register_rt_tab1_callbacks(app, df):
 
         # Handle clear filters button
         if trigger_id == "rt-clear-filters-btn":
-            return {
+            out = {
                 "from_year": None,
                 "to_year": None,
                 "companies": None,
@@ -195,10 +206,19 @@ def register_rt_tab1_callbacks(app, df):
                 "source": "clear",
                 "timestamp": timestamp,
             }
+            if active_tab == "tab-2":
+                out["tab2_reporting_status"] = default_tab2_reporting_status
+            else:
+                out["tab2_reporting_status"] = (
+                    current_store.get("tab2_reporting_status")
+                    if current_store
+                    else None
+                )
+            return out
 
         # Handle apply filters button
         if trigger_id == "apply-filters-btn":
-            return {
+            out = {
                 "from_year": int(from_year) if from_year else None,
                 "to_year": int(to_year) if to_year else None,
                 "companies": companies if companies else None,
@@ -206,6 +226,17 @@ def register_rt_tab1_callbacks(app, df):
                 "source": "apply",
                 "timestamp": timestamp,
             }
+            if active_tab == "tab-2":
+                out["tab2_reporting_status"] = (
+                    tab2_reporting_status
+                    if tab2_reporting_status is not None
+                    else default_tab2_reporting_status
+                )
+            else:
+                out["tab2_reporting_status"] = (
+                    current_store.get("tab2_reporting_status") if current_store else None
+                )
+            return out
 
         raise dash.exceptions.PreventUpdate
 

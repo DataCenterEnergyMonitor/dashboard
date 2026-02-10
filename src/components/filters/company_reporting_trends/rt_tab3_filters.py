@@ -150,6 +150,12 @@ def create_rt_tab3_filters(df):
                         value=[],
                         style={"display": "none"},
                     ),
+                    # Hidden placeholder for rt_tab2_reporting_status (used by tab 2 only)
+                    dcc.Checklist(
+                        id="rt_tab2_reporting_status",
+                        value=[],
+                        style={"display": "none"},
+                    ),
                 ],
                 style={
                     "width": "300px",

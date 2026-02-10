@@ -57,6 +57,30 @@ def filter_data_by_companies(df, companies, company_col="company_name"):
     return df[df[company_col].isin(companies)]
 
 
+# Map UI status labels (tab2 filter) to dataframe reporting_status values
+_TAB2_STATUS_TO_DATA = {
+    "Pending": "Pending Data Submission",
+    "No Reporting": "No Reporting",
+    "Company Wide Electricity Use": "Company Wide Electricity Use",
+    "Data Center Fuel Use": "Data Center Fuel Use",
+    "Data Center Electricity Use": "Data Center Electricity Use",
+}
+
+
+def filter_data_by_tab2_reporting_status(df, selected_statuses, status_col="reporting_status"):
+    """Filter dataframe by selected reporting statuses (tab 2 filter).
+
+    selected_statuses: list of UI labels (e.g. "Pending", "No Reporting", ...).
+    Maps "Pending" -> "Pending Data Submission" for the data column.
+    """
+    if df.empty or not selected_statuses:
+        return df
+    data_values = [
+        _TAB2_STATUS_TO_DATA.get(s, s) for s in selected_statuses
+    ]
+    return df[df[status_col].isin(data_values)]
+
+
 # ID prefix for this page's components
 ID_PREFIX = "rt-"
 
@@ -91,6 +115,7 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         from_year = None
         to_year = None
         companies = None
+        tab2_reporting_status = None
 
         if filter_data:
             from_year = (
@@ -102,12 +127,18 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
                 int(filter_data.get("to_year")) if filter_data.get("to_year") else None
             )
             companies = filter_data.get("companies")
+            tab2_reporting_status = filter_data.get("tab2_reporting_status")
 
         # Filter data by year range
         filtered_df = filter_data_by_year_range(df, from_year, to_year)
 
         # Filter by companies if selected
         filtered_df = filter_data_by_companies(filtered_df, companies)
+
+        # Filter by reporting status (tab 2) if selected
+        filtered_df = filter_data_by_tab2_reporting_status(
+            filtered_df, tab2_reporting_status
+        )
 
         # Create Header (legend and x-axis)
         header_fig = create_energy_reporting_heatmap(filtered_df, header_only=True)
@@ -194,9 +225,15 @@ def register_rt_tab2_callbacks(app, df, pue_wue_companies_df=None):
         from_year = filter_data.get("from_year") if filter_data else None
         to_year = filter_data.get("to_year") if filter_data else None
         companies = filter_data.get("companies") if filter_data else None
+        tab2_reporting_status = (
+            filter_data.get("tab2_reporting_status") if filter_data else None
+        )
 
         filtered_df = filter_data_by_year_range(df, from_year, to_year)
         filtered_df = filter_data_by_companies(filtered_df, companies)
+        filtered_df = filter_data_by_tab2_reporting_status(
+            filtered_df, tab2_reporting_status
+        )
 
         # Generate specific figure for expanded view with LEGEND and X-AXIS
         expanded_fig = create_energy_reporting_heatmap(
