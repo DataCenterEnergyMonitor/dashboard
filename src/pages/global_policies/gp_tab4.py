@@ -119,7 +119,7 @@ def create_gp_tab4(app, gp_base_df):
             "headerName": "Instruments",
             "marryChildren": True,
             "children": [
-                {"field":"total_objectives", "headerName": "Total Addressed", 'filter': False,"columnGroupShow": "closed","width": 140},
+                {"field":"total_objectives", "headerName": "Total Applied", 'filter': False,"columnGroupShow": "closed","width": 140},
                 *[{"field": instrument, "columnGroupShow": "open","wrapHeaderText": True,"autoHeaderHeight": True,}
                    for instrument in instrument_columns]
             ],
