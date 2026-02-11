@@ -1,6 +1,10 @@
 from dash import dcc, html
 from layouts.base_layout import create_base_layout
 from components.bookmark_tabs import create_bookmark_tabs
+from callbacks.company_reporting_trends.rt_filter_callbacks import (
+    DEFAULT_PW_STATUS,
+    DEFAULT_TAB2_REPORTING_STATUS,
+)
 
 
 def create_rt_page(app, reporting_df, pue_wue_companies_df):
@@ -34,13 +38,21 @@ def create_rt_page(app, reporting_df, pue_wue_companies_df):
     )
 
     # Default values for Clear All (rt_filter_callbacks reads these from store).
+    # Include full initial filter state so chart and UI stay in sync after refresh.
     filter_store = dcc.Store(
         id="rt-filter-store",
         data={
-            "default_rt_from_year": rt_min_year, #tab 1-3
-            "default_rt_to_year": rt_max_year, #tab 1-3
-            "default_pw_from_year": pw_min_year, #tab 4-5
-            "default_pw_to_year": pw_max_year, #tab 4-5
+            "from_year": rt_min_year,
+            "to_year": rt_max_year,
+            "pw_from_year": pw_min_year,
+            "pw_to_year": pw_max_year,
+            "default_rt_from_year": rt_min_year,  # tab 1-3
+            "default_rt_to_year": rt_max_year,  # tab 1-3
+            "default_pw_from_year": pw_min_year,  # tab 4-5
+            "default_pw_to_year": pw_max_year,  # tab 4-5
+            "companies": None,
+            "pw_status": DEFAULT_PW_STATUS,
+            "tab2_reporting_status": DEFAULT_TAB2_REPORTING_STATUS,
             "sort_by": "company_name",
             "sort_order": "asc",
             "source": "initial",

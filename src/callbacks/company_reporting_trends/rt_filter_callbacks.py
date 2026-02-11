@@ -229,6 +229,8 @@ def register_rt_filter_callbacks(app):
 
     @app.callback(
         [
+            Output("rt-from-year", "value", allow_duplicate=True),
+            Output("rt-to-year", "value", allow_duplicate=True),
             Output("rt-sort-by", "value", allow_duplicate=True),
             Output("rt-sort-order", "value", allow_duplicate=True),
             Output("rt-company-filter", "value", allow_duplicate=True),
@@ -243,10 +245,18 @@ def register_rt_filter_callbacks(app):
         """Sync filter UI components from store when switching tabs.
 
         This ensures filter dropdowns show the correct values when switching
-        between tabs, rather than resetting to defaults.
+        between tabs and after refresh, so UI and chart stay in sync.
         """
         if not filter_data:
             raise dash.exceptions.PreventUpdate
+
+        # Year range: use store value or tab-appropriate default
+        if active_tab in ("tab-4", "tab-5"):
+            from_year = filter_data.get("pw_from_year") or filter_data.get("default_pw_from_year")
+            to_year = filter_data.get("pw_to_year") or filter_data.get("default_pw_to_year")
+        else:
+            from_year = filter_data.get("from_year") or filter_data.get("default_rt_from_year")
+            to_year = filter_data.get("to_year") or filter_data.get("default_rt_to_year")
 
         sort_by = filter_data.get("sort_by", "company_name")
         sort_order = filter_data.get("sort_order", "asc")
@@ -267,4 +277,4 @@ def register_rt_filter_callbacks(app):
             if tab2_status is None:
                 tab2_status = []
 
-        return sort_by, sort_order, companies, pw_status, tab2_status
+        return from_year, to_year, sort_by, sort_order, companies, pw_status, tab2_status

@@ -73,8 +73,6 @@ def create_rt_tab5_filters(df):
                                         id="rt-company-filter",
                                         options=sorted(df["company_name"].unique()),
                                         multi=True,
-                                        persistence=True,
-                                        persistence_type="session",
                                         placeholder="All companies",
                                         className="filter-box mb-3",
                                     ),
@@ -118,8 +116,6 @@ def create_rt_tab5_filters(df):
                                             },
                                         ],
                                         value=reporting_status,
-                                        persistence=True,
-                                        persistence_type="session",
                                         className="filter-box",
                                     ),
                                 ]
