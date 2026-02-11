@@ -768,7 +768,7 @@ button.accordion-button {
 .filter-label_disabled {
     font-size: 0.9rem;
     /*font-weight: bold;*/
-    display: block;
+    display: none; /* Hidden until ready to be added to UI */
     margin-bottom: 0.09rem;
     color: #aaa;
 }
@@ -809,6 +809,7 @@ button.accordion-button {
     margin: 5px;
     font-size: 0.85rem;
     color: #aaa;
+    display: none; /* Hidden until ready to be added to UI */
 }
 
 .horizontal-checklist label > input[type="checkbox"] {

@@ -14,6 +14,8 @@ REPORTING_SCOPE_COLORS = {
     "Company Wide Electricity Use": "rgba(23, 79, 138, 0.8)",
     "Data Center Electricity Use": "#3EBCD2",
 }
+# "Company Wide Electricity Use": "#395970",
+# "Data Center Electricity Use": "#88a9c3",
 
 
 def create_company_profile_bar_plot(df: pd.DataFrame) -> go.Figure:
@@ -75,6 +77,17 @@ def create_company_profile_bar_plot(df: pd.DataFrame) -> go.Figure:
                 .tolist()
             )
 
+        # Calculate dynamic bar width - narrower when few bars, wider when many
+        num_companies = len(companies_order)
+        if num_companies <= 3:
+            bar_width = 0.1  # Narrow bars for very few items
+        elif num_companies <= 6:
+            bar_width = 0.5  # Medium width
+        elif num_companies <= 10:
+            bar_width = 0.65  # Slightly wider
+        else:
+            bar_width = 0.8  # Full width when many items
+
         fig = go.Figure()
 
         # Add company-wide bars first
@@ -90,7 +103,7 @@ def create_company_profile_bar_plot(df: pd.DataFrame) -> go.Figure:
                     hovertemplate="<b>%{y}</b><br>"
                     + "Company Wide Usage: %{x:.1f}B kWh<br>"
                     + "<extra></extra>",
-                    width=0.8,
+                    width=bar_width,
                 )
             )
 
@@ -108,7 +121,7 @@ def create_company_profile_bar_plot(df: pd.DataFrame) -> go.Figure:
                     hovertemplate="<b>%{y}</b><br>"
                     + "Data Center Usage: %{x:.1f}B kWh<br>"
                     + "<extra></extra>",
-                    width=0.8,
+                    width=bar_width,
                 )
             )
 
@@ -120,7 +133,6 @@ def create_company_profile_bar_plot(df: pd.DataFrame) -> go.Figure:
         tick_interval = 5 if max_value > 50 else 2
 
         # Calculate dynamic height based on number of companies
-        num_companies = len(companies_order)
         min_height_per_company = 30  # Minimum pixels per company
         margin_height = 100  # Space for margins, title, etc.
         total_height = max(400, num_companies * min_height_per_company + margin_height)
@@ -190,6 +202,42 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
             pd.to_numeric(df["electricity_usage_kwh"], errors="coerce") / 1e9
         )
 
+        # Calculate dynamic settings based on number of years and traces
+        num_years = df["reported_data_year"].nunique()
+        num_traces = df["reporting_scope"].nunique()
+        min_year = df["reported_data_year"].min()
+        max_year = df["reported_data_year"].max()
+
+        # Use consistent bar width (0.8 total for all traces in a group)
+        # Divide by number of traces to prevent overlap
+        bar_width = 0.8 / max(num_traces, 1)
+
+        # Cap single bars so they don't get too wide, but allow wider bars for many years
+        if num_traces == 1:
+            if num_years <= 5:
+                bar_width = min(bar_width, 0.4)
+            elif num_years <= 10:
+                bar_width = min(bar_width, 0.5)
+            else:
+                bar_width = min(bar_width, 0.7)  # Allow wider bars when many years
+
+        # Dynamic x-axis padding based on number of years
+        # More padding for fewer years makes bars appear narrower relative to chart width
+        # Formula: fewer years = more padding to maintain consistent visual bar width
+        if num_years <= 2:
+            x_padding = 3.5  # Much more padding for 1-2 years
+        elif num_years <= 4:
+            x_padding = 1.5
+        elif num_years <= 7:
+            x_padding = 1.0
+        elif num_years <= 12:
+            x_padding = 0.7
+        else:
+            x_padding = 0.5
+
+        # Consistent bargap
+        bargap = 0.2
+
         # Create the figure
         fig = go.Figure()
 
@@ -203,7 +251,7 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                     y=scope_data["electricity_usage_billions"],
                     name=scope,
                     marker_color=REPORTING_SCOPE_COLORS.get(scope, "#999999"),
-                    width=0.4,  # Set fixed bar width
+                    width=bar_width,
                     hovertemplate=(
                         "<b>%{x}</b><br>"
                         "Usage: %{y:.1f}B kWh<br>"
@@ -221,8 +269,8 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
             plot_bgcolor="white",
             paper_bgcolor="white",
             barmode="group",
-            bargap=0.2,
-            bargroupgap=0,
+            bargap=bargap,
+            bargroupgap=0.1,
             showlegend=True,
             legend=dict(
                 orientation="h",
@@ -241,10 +289,7 @@ def create_company_energy_use_bar_plot(df: pd.DataFrame) -> go.Figure:
                 gridwidth=1,
                 gridcolor="lightgray",
                 tickmode="linear",
-                range=[
-                    df["reported_data_year"].min() - 0.5,
-                    df["reported_data_year"].max() + 0.5,
-                ],  # Add padding to x-axis
+                range=[min_year - x_padding, max_year + x_padding],
             ),
             yaxis=dict(
                 showgrid=True,

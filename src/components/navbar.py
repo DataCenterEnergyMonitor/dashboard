@@ -63,7 +63,6 @@ def create_navbar():
             style={"marginLeft": "30px", "marginRight": "30px", "position": "relative"},
         ),
         color="light",
-        light=True,
         expand="lg",
     )
 

@@ -9,7 +9,7 @@ from charts.global_policies.gp_treemap_chart import (
     create_treemap_fig,
 )
 from components.excel_export import create_filtered_excel_download
-from components.tabs.global_policies.gp_tab1 import create_chart_row
+from pages.global_policies.gp_tab1 import create_chart_row
 
 def apply_multi_value_filter(df, column, selected_values):
     """Helper function to apply multi-value string matching filter"""
@@ -90,7 +90,7 @@ def register_gp_tab2_callbacks(app, df):
             Input("gp_tab2_objective", "value"),
             Input("gp_tab2_clear-filters-btn", "n_clicks"),  # Add clear button as input
         ],
-        [State("active-tab-store", "data")],
+        [State("gp-active-tab-store", "data")],
     )
     def update_filters(
         gp_tab2_order_type,
@@ -266,7 +266,7 @@ def register_gp_tab2_callbacks(app, df):
             State("gp_tab2_status", "value"),
             State("gp_tab2_instrument", "value"),
             State("gp_tab2_objective", "value"),
-            State("active-tab-store", "data"),
+            State("gp-active-tab-store", "data"),
         ],
         prevent_initial_call=False,
     )
@@ -432,7 +432,7 @@ def register_gp_tab2_callbacks(app, df):
         [
             State("treemap-graph-modal", "is_open"),
             State("gp-treemap-fig", "figure"),
-            State("active-tab-store", "data"),
+            State("gp-active-tab-store", "data"),
         ],
         prevent_initial_call=True,
     )
@@ -482,7 +482,7 @@ def register_gp_tab2_callbacks(app, df):
             State("gp-treemap-store", "data"),
             State("gp-treemap-fig", "figure"),
             State("gp-treemap-expanded-leaf", "data"),
-            State("active-tab-store", "data"),
+            State("gp-active-tab-store", "data"),
         ],
         prevent_initial_call=True,
     )

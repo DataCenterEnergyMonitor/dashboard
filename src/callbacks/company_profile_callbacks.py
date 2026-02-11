@@ -4,7 +4,7 @@ import traceback
 import pandas as pd
 from dash.exceptions import PreventUpdate
 from charts.company_profile_barchart import create_company_energy_use_bar_plot
-from components.collapsible_table import create_category_section
+from components.company_profile_table import create_category_section
 
 _company_profile_callback_registered = False
 

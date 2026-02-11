@@ -15,31 +15,6 @@ import time
 # load support functions
 from helpers.geocode_locations import add_coordinates_from_cache
 
-# def update_metadata(excel_path, json_path="data/metadata.json"):
-
-#     mtime = os.path.getmtime(excel_path)
-#     last_modified = datetime.fromtimestamp(mtime).isoformat()
-
-#     # Get the current file's directory (src folder)
-#     current_dir = Path(__file__).parent
-#     json_path=current_dir.parent / "data" / "metadata.json"
-
-#     # read existing JSON or initialize
-#     try:
-#         with open(json_path, "r") as f:
-#             data = json.load(f)
-#     except FileNotFoundError:
-#         data = {"metadata": {}}
-
-#     data["metadata"].update({
-#         "source_file": os.path.basename(excel_path),
-#         "last_updated": last_modified
-#     })
-
-#     with open(json_path, "w") as f:
-#         json.dump(data, f, indent=2)
-
-
 def load_pue_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
@@ -66,11 +41,6 @@ def load_pue_data():
     pue_df["metric"] = "pue"
     pue_df.rename(columns={"pue_type": "metric_type"}, inplace=True)
     pue_df.rename(columns={"pue_value": "metric_value"}, inplace=True)
-    # pue_df.rename(columns={'facility_scope_evident_': 'facility_scope_evident'}, inplace=True)
-    # pue_df.rename(columns={'geographical_scope_stated_': 'geographical_scope_stated'}, inplace=True)
-    # pue_df.rename(columns={'assigned_climate_zone_s_': 'assigned_climate_zones'}, inplace=True)
-    # pue_df.rename(columns={'default_climate_zone_s_': 'default_climate_zones'}, inplace=True)
-    # pue_df.rename(columns={'is_pue_self_reported_': 'self_reported'}, inplace=True)
 
     return pue_df
 
@@ -103,12 +73,6 @@ def load_wue_data():
     # clean column names
     wue_df.rename(
         columns={
-            # "category_1_water_input_s_": "category_1_water_inputs",
-            # "facility_scope_evident_": "facility_scope_evident",
-            # "geographical_scope_stated_": "geographical_scope_stated",
-            # "assigned_climate_zone_s_": "assigned_climate_zones",
-            # "default_climate_zone_s_": "default_climate_zones",
-            # "is_wue_self_reported_": "self_reported",
             "wue_type": "metric_type",
             "wue_value": "metric_value",
         },
@@ -128,13 +92,6 @@ def create_pue_wue_data(pue_df, wue_df):
     """
     pue_df = pue_df.copy()
     wue_df = wue_df.copy()
-
-    # # DEBUG: list of columns
-    # print("PUE columns:", pue_df.columns.tolist())
-    # print("\nWUE columns:", wue_df.columns.tolist())
-
-    # print("\nClimate zones in PUE:", "assigned_climate_zones" in pue_df.columns)
-    # print("Climate zones in WUE:", "assigned_climate_zones" in wue_df.columns)
 
     wue_selected = wue_df[
         [
@@ -199,16 +156,16 @@ def create_pue_wue_data(pue_df, wue_df):
     return pue_wue_df
 
 
-def fill_inactive_company_years(df):
+def fill_inactive_status(df):
     """
-    For companies marked as 'company Inactive', fill all subsequent years
+    For companies marked as 'company inactive', fill all subsequent years
     """
     all_years = sorted(df["year"].unique())
     filled_rows = []
 
     for company, company_data in df.groupby("company"):
         # find the rows where a company became inactive
-        inactive_rows = company_data[company_data["reports_pue"] == "company Inactive"]
+        inactive_rows = company_data[company_data["reports_pue"] == "company inactive"]
 
         if not inactive_rows.empty:
             # extract the metadata from the first recorded inactive year
@@ -230,8 +187,8 @@ def fill_inactive_company_years(df):
                         {
                             "company": company,
                             "year": year,
-                            "reports_pue": "company Inactive",
-                            "reports_wue": "company Inactive",
+                            "reports_pue": "company inactive",
+                            "reports_wue": "company inactive",
                             "successor_entity": successor,
                             "status_effective_date": status_date,
                         }
@@ -242,6 +199,41 @@ def fill_inactive_company_years(df):
 
     return df
 
+def blackfill_not_established_status(df):
+    """
+    For companies marked as 'company not established', fill all years prior to year_founded
+    """
+    all_years = sorted(df["year"].unique())
+    filled_rows = []
+
+    # mark existing rows where the reporting year is before year_founded
+    df.loc[
+        df["year"] < df["year_founded"], ["reports_pue", "reports_wue"]
+    ] = "company not established"
+
+    for company, company_data in df.groupby("company"):
+        year_founded = int(company_data["year_founded"].iloc[0])
+
+        # create a set of years that already have data for this company
+        existing_years = set(company_data["year"])
+
+        # append missing rows with "company not established" status to the
+        # company details for years prior to year_founded
+        for year in all_years:
+            if year < year_founded and year not in existing_years:
+                filled_rows.append(
+                    {
+                        "company": company,
+                        "year": year,
+                        "reports_pue": "company not established",
+                        "reports_wue": "company not established",
+                    }
+                )
+
+    if filled_rows:
+        return pd.concat([df, pd.DataFrame(filled_rows)], ignore_index=True)
+
+    return df
 
 # load companies list data for pue and wue reporting
 def load_pue_wue_companies_data():
@@ -256,16 +248,16 @@ def load_pue_wue_companies_data():
     companies_df = companies_df.clean_names()
 
     # Clean string columns
-    string_columns = ["company", "entity_status", "successor_entity", "year_founded"]
+    string_columns = ["company", "entity_status", "successor_entity"]
     for col in string_columns:
         if col in companies_df.columns:
             companies_df[col] = companies_df[col].str.strip()
 
-    # Set NaN values in year_founded to 2000
+    # Set NaN values in year_founded to 2000 (avoid chained assignment / inplace ops)
     companies_df["year_founded"] = pd.to_numeric(
         companies_df["year_founded"], errors="coerce"
     )
-    companies_df["year_founded"].fillna(2000, inplace=True)
+    companies_df["year_founded"] = companies_df["year_founded"].fillna(2000)
     companies_df["year_founded"] = companies_df["year_founded"].astype(int)
 
     # Go up one level and into data directory
@@ -301,30 +293,29 @@ def load_pue_wue_companies_data():
     pue_wue_reporting_df["year_founded"] = pd.to_numeric(
         pue_wue_reporting_df["year_founded"], errors="coerce"
     )
-    pue_wue_reporting_df["year_founded"].fillna(2000, inplace=True)
-    pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df["year_founded"].astype(
-        int
-    )
-
-    # Set reporting status to Company not established if year_founded > reporting year
-    pue_wue_reporting_df.loc[
-        pue_wue_reporting_df["year"] < pue_wue_reporting_df["year_founded"],
-        ["reports_pue", "reports_wue"],
-    ] = "company not established"
-
-    # handle Pending Data status
-    # current_date = datetime.today()
-    # current_year = current_date.year
-    # pue_wue_reporting_df.loc[
-    #     (pue_wue_reporting_df['year'] == current_year) &
-    #     (pue_wue_reporting_df[['entity_status']].eq(
-    #         'no reporting evident').all(axis=1)), ['reports_pue', 'reports_wue']] = 'not yet released'
+    pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df[
+        "year_founded"
+    ].fillna(2000)
+    pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df[
+        "year_founded"
+    ].astype(int)
+    
     cols_to_check = ["reports_pue", "reports_wue"]
-    current_year = datetime.today().year
+    # account for the delay in reporting 
+    current_date = datetime.today()
+    # Assumption: reports for year X are typically released by Aug 31st of year X+1
+    reporting_release_cutoff = datetime(current_date.year, 8, 31)
+
+    if current_date < reporting_release_cutoff:
+        # last year's data is pending
+        reporting_year = current_date.year - 1
+    else:
+        # last year's data is release, current year data is pending
+        reporting_year = current_date.year
 
     # iterate and update each column separately
     for col in cols_to_check:
-        mask = (pue_wue_reporting_df["year"] == current_year) & (
+        mask = (pue_wue_reporting_df["year"] == reporting_year) & (
             pue_wue_reporting_df[col].isna()
             | pue_wue_reporting_df[col].eq("")
             | pue_wue_reporting_df[col].eq("no reporting evident")
@@ -334,7 +325,8 @@ def load_pue_wue_companies_data():
         # Apply update to this column only
         pue_wue_reporting_df.loc[mask, col] = "pending"
 
-    pue_wue_reporting_df = fill_inactive_company_years(pue_wue_reporting_df)
+    pue_wue_reporting_df = fill_inactive_status(pue_wue_reporting_df)
+    pue_wue_reporting_df = blackfill_not_established_status(pue_wue_reporting_df)
     pue_wue_reporting_df.rename(columns={"company": "company_name"}, inplace=True)
 
     return pue_wue_reporting_df
@@ -462,7 +454,6 @@ def load_energyprojections_data():
 
     return df
 
-
 def load_gp_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
@@ -494,6 +485,7 @@ def load_gp_data():
             "order_type",
             "status",
             "date_of_status",
+            "internal_url",
             "Measurement and Reporting",
             "Procurement standard",
             "Performance standard",
@@ -515,6 +507,67 @@ def load_gp_data():
         ]
     ]
 
+    date_columns = [
+                "date_introduced",
+                "date_of_amendment",
+                "date_enacted",
+                "date_killed",
+                "date_in_effect",
+                "date_of_status"
+    ]
+
+    gp_base_df = df.copy()
+
+    for col in date_columns:
+        gp_base_df[col] = pd.to_datetime(gp_base_df[col]).dt.strftime('%Y-%m-%d')
+        old_policy_columns = [
+                "policy_id",
+                "version",
+                "authors",
+                "offices_held",
+                "date_introduced",
+                "date_of_amendment",
+                "date_enacted",
+                "date_killed",
+                "date_in_effect",
+                "jurisdiction_level",
+                "city",
+                "county",
+                "state_province",
+                "country",
+                "supranational_policy_area",
+                "region",
+                "order_type",
+                "status",
+                "date_of_status",
+                "internal_url",
+    ]
+
+    policy_columns = [
+                "Policy Name/Number",
+                "Version",
+                "Authors",
+                "Offices Held",
+                "Date Introduced",
+                "Date Of Amendment",
+                "Date Enacted",
+                "Date Killed",
+                "Date In Effect",
+                "Jurisdiction Level",
+                "City",
+                "County",
+                "State/Province",
+                "Country",
+                "Supranational Policy Area",
+                "Region",
+                "Order Type",
+                "Status",
+                "Date Of Status",
+                "Source"
+    ]
+
+    gp_base_df.rename(columns=dict(zip(old_policy_columns, policy_columns)), inplace=True)
+    
     # pivot longer all instrument and objective columns
     instrument_columns = [
         "Measurement and Reporting",
@@ -594,7 +647,7 @@ def load_gp_data():
         to_datetime(clean_df["date_killed"])
     )
 
-    return clean_df
+    return gp_base_df, clean_df
 
 
 # transpose global policies data so that we get a DataFrame with one row per objective/instrument
@@ -741,20 +794,40 @@ def load_energyforecast_data():
 
 
 def load_reporting_data():
+    """Load energy reporting data and build reporting_status per (company, year).
+
+    reporting_scope is only ever one of the three original values from the sheets:
+    - Company Wide Electricity Use
+    - Data Center Electricity Use
+    - Data Center Fuel Use
+
+    Rules:
+    - If a (company, year) has at least one record in the source data, keep those rows
+      with reporting_scope as above and reporting_status = reporting_scope.
+    - If a (company, year) has no records:
+      * For the pending year only: if the company reported a given scope at least once
+        in the last three years (pending_year-3 to pending_year-1), create one row per
+        such scope with that reporting_scope and reporting_status = "Pending Data Submission".
+        Example: Feb 2026 → pending_year=2025; Company A reported Company Wide Electricity Use
+        in 2022–2024 → add (Company A, 2025, Company Wide Electricity Use, Pending Data Submission).
+      * If pending year but company reported no scope in last three years, or if not
+        pending year: one row with reporting_scope = NaN, reporting_status = "No Reporting".
+
+    Pending year: reports for year X typically released by Aug 31 of year X+1.
+    If today < Aug 31 of current year → pending_year = current_year - 1.
+    If today >= Aug 31 of current year → pending_year = current_year.
+    """
     current_dir = Path(__file__).parent
     data_path = current_dir.parent / "data" / "modules.xlsx"
 
-    # import and clean energy consumption data
-    # import and clean energy consumption data
+    # Base data from modules.xlsx
     company_total_ec_df = pd.read_excel(
         data_path, sheet_name="Company Total Electricity Use", skiprows=1
     )
     company_total_ec_df = company_total_ec_df.clean_names()
     company_total_ec_df.rename(columns={"company": "company_name"}, inplace=True)
     company_total_ec_df = company_total_ec_df[["company_name", "reported_data_year"]]
-    company_total_ec_df = company_total_ec_df.dropna(
-        subset=["reported_data_year"]
-    )  # remove rows with no data
+    company_total_ec_df = company_total_ec_df.dropna(subset=["reported_data_year"])
 
     dc_ec_df = pd.read_excel(
         data_path, sheet_name="Data Center Electricity Use ", skiprows=1
@@ -768,77 +841,104 @@ def load_reporting_data():
     dc_fuel_df = dc_fuel_df.clean_names()
     dc_fuel_df = dc_fuel_df[["company_name", "reported_data_year"]]
 
-    # dc_water_df = pd.read_excel(data_path, sheet_name='Data Center Water Use ', skiprows=1)
-    # dc_water_df = dc_water_df.clean_names()
-    # dc_water_df = dc_water_df[['company_name', 'reported_data_year']]
-
-    # add a reporting_scope column to each DataFrame
+    # Add reporting_scope column to each DataFrame
     company_total_ec_df.loc[:, "reporting_scope"] = "Company Wide Electricity Use"
     dc_ec_df.loc[:, "reporting_scope"] = "Data Center Electricity Use"
     dc_fuel_df.loc[:, "reporting_scope"] = "Data Center Fuel Use"
-    # dc_water_df.loc[:, 'reporting_scope'] = 'Data Center Water Use'
 
-    # combine all the dfs into one - maintaining the original columns
+    # Combine all the dfs into one
     reporting_df = pd.concat([company_total_ec_df, dc_ec_df, dc_fuel_df], axis=0)
     reporting_df["reported_data_year"] = reporting_df["reported_data_year"].astype(int)
 
-    # strip whitespace from all string columns
+    # Clean strings
     for col in reporting_df.select_dtypes(include="object").columns:
-        reporting_df[col] = reporting_df[col].str.strip()
-
-    # companies report the data one year later than the current year
-    current_reporting_year = datetime.now().year - 1
-    previous_reporting_year = current_reporting_year - 1
-
-    # Strip whitespace from the 'company_name' and 'reporting_scope' columns
-    reporting_df["company_name"] = reporting_df["company_name"].str.strip()
-    reporting_df["reporting_scope"] = reporting_df["reporting_scope"].str.strip()
-
-    # Create a unique DataFrame with necessary columns
-    unique_companies_and_scopes = (
-        reporting_df[["company_name", "reporting_scope", "reported_data_year"]]
-        .drop_duplicates(ignore_index=True)
-        .dropna()
-    )
-
-    # Identify combinations of company_name and reporting_scope with reported_data_year == 2024
-    combinations_to_remove = unique_companies_and_scopes[
-        unique_companies_and_scopes["reported_data_year"] == current_reporting_year
-    ][["company_name", "reporting_scope"]]
-
-    # Filter out the combinations to remove using merge
-    unique_companies_and_scopes = unique_companies_and_scopes.merge(
-        combinations_to_remove,
-        on=["company_name", "reporting_scope"],
-        how="left",
-        indicator=True,
-    )
-    unique_companies_and_scopes = unique_companies_and_scopes[
-        unique_companies_and_scopes["_merge"] == "left_only"
-    ].drop(columns="_merge")
-
-    # Filter out the combinations of company_name and reporting_scope with reported_data_year == previous_year
-    unique_companies_and_scopes = unique_companies_and_scopes[
-        unique_companies_and_scopes["reported_data_year"] == previous_reporting_year
-    ][["company_name", "reporting_scope"]]
-
-    # Set the reported_data_year to the current year and add reporting_status
-    unique_companies_and_scopes = unique_companies_and_scopes.assign(
-        reported_data_year=current_reporting_year,
-        reporting_status="Pending data submission",
-    ).drop_duplicates(ignore_index=True)
-
-    # Prepare reporting_df
-    reporting_df["reporting_status"] = "Reported"
-
-    # Replace 'Samgung' with 'Samsung' in the entire DataFrame
+        reporting_df[col] = reporting_df[col].astype(str).str.strip()
     reporting_df.replace("Samgung", "Samsung", inplace=True)
-    reporting_df.dropna(inplace=True)
-
-    # Add unique_companies_and_scopes to the reporting_df
-    reporting_df = pd.concat(
-        [reporting_df, unique_companies_and_scopes], ignore_index=True
+    reporting_df = reporting_df.dropna(
+        subset=["company_name", "reported_data_year", "reporting_scope"]
     )
+
+    # Pending year logic: reports for year X typically released by Aug 31 of year X+1
+    current_date = datetime.today()
+    reporting_release_cutoff = datetime(current_date.year, 8, 31)
+    if current_date < reporting_release_cutoff:
+        pending_year = current_date.year - 1
+    else:
+        pending_year = current_date.year
+
+    # Last three years relative to pending year (inclusive): e.g. pending_year=2025 → 2022–2024
+    last_three_years = {pending_year - 3, pending_year - 2, pending_year - 1}
+
+    # Existing records: status = scope
+    reporting_df["reporting_status"] = reporting_df["reporting_scope"]
+
+    # Companies and years present
+    companies = reporting_df["company_name"].unique()
+    years_in_data = sorted(reporting_df["reported_data_year"].unique())
+    years_all = sorted(set(years_in_data) | {pending_year})
+
+    # (company, year) pairs that already have data
+    has_records = set(
+        zip(
+            reporting_df["company_name"].astype(str),
+            reporting_df["reported_data_year"].astype(int),
+        )
+    )
+
+    # For each company, which scopes they reported in the last three years
+    reported_in_last_three = (
+        reporting_df[reporting_df["reported_data_year"].isin(last_three_years)]
+        .groupby("company_name")["reporting_scope"]
+        .apply(lambda s: set(s.dropna().unique()))
+        .to_dict()
+    )
+
+    # Build rows for (company, year) with no records
+    no_record_rows = []
+    for company in companies:
+        for year in years_all:
+            if (str(company), int(year)) in has_records:
+                continue
+
+            if year == pending_year:
+                scopes_reported = reported_in_last_three.get(company, set())
+                if scopes_reported:
+                    # Pending rows, one per scope reported in last three years
+                    for scope in scopes_reported:
+                        no_record_rows.append(
+                            {
+                                "company_name": company,
+                                "reporting_scope": scope,
+                                "reported_data_year": year,
+                                "reporting_status": "Pending Data Submission",
+                            }
+                        )
+                else:
+                    # No history for last three years → No Reporting for pending year
+                    no_record_rows.append(
+                        {
+                            "company_name": company,
+                            "reporting_scope": np.nan,
+                            "reported_data_year": year,
+                            "reporting_status": "No Reporting",
+                        }
+                    )
+            else:
+                # Non-pending years with no data → No Reporting
+                no_record_rows.append(
+                    {
+                        "company_name": company,
+                        "reporting_scope": np.nan,
+                        "reported_data_year": year,
+                        "reporting_status": "No Reporting",
+                    }
+                )
+
+    if no_record_rows:
+        reporting_df = pd.concat(
+            [reporting_df, pd.DataFrame(no_record_rows)], ignore_index=True
+        )
+
     reporting_df = (
         reporting_df[
             [
@@ -849,7 +949,9 @@ def load_reporting_data():
             ]
         ]
         .drop_duplicates(ignore_index=True)
-        .dropna()
+    )
+    reporting_df = reporting_df.dropna(
+        subset=["company_name", "reported_data_year", "reporting_status"]
     )
 
     return reporting_df

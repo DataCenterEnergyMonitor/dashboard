@@ -8,7 +8,7 @@ from charts.global_policies.gp_stacked_area_chart import (
     create_gp_stacked_area_plot,
 )
 from components.excel_export import create_filtered_excel_download
-from components.tabs.global_policies.gp_tab1 import create_chart_row
+from pages.global_policies.gp_tab1 import create_chart_row
 
 
 def apply_multi_value_filter(df, column, selected_values):
@@ -270,7 +270,7 @@ def register_gp_tab1_callbacks(app, df):
             Input("gp_objective", "value"),
             Input("gp_clear-filters-btn", "n_clicks"),  # Add clear button as input
         ],
-        [State("active-tab-store", "data")],
+        [State("gp-active-tab-store", "data")],
         prevent_initial_call=False,
     )
     def update_filters(
@@ -567,7 +567,7 @@ def register_gp_tab1_callbacks(app, df):
             State("gp_status", "value"),
             State("gp_instrument", "value"),
             State("gp_objective", "value"),
-            State("active-tab-store", "data"),
+            State("gp-active-tab-store", "data"),
         ],
         prevent_initial_call=False,
     )

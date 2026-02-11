@@ -3,40 +3,73 @@ import plotly.io as pio
 
 # Update color palette with green shades and better contrast
 REPORTING_SCOPE_COLORS = {
-    "no reporting evident": "#F5B9BF",
-    "individual data center values only": "#6EC259",
-    "fleet-wide values only": "#337F1A",
-    "both fleet-wide and individual data center values": "#1A6210",
-    "company not established": "#D9DDDC",
-    "company inactive": "#D9DDDC",
-    "pending": "#EBF4DF",
+    "No Reporting": "#D9DDDC",  # Light gray
+    "Pending": "#EBF4DF",  # Chetwode Green
+    "Company Wide Electricity Use": "#6EC259",  # Gin Green
+    "Data Center Fuel Use": "#337F1A",  # Granny Smith
+    "Data Center Electricity Use": "#1A6210",  # Avocado Green
 }
 
 
-def create_pue_wue_reporting_heatmap_plot(
+def _display_value_for_year_data(year_data):
+    """Map (company, year) rows to a single display value and heatmap z value.
+
+    Display is driven by reporting_status so we never show a scope as reported
+    when its status is "Pending Data Submission".
+
+    - If any row has reporting_status equal to a scope
+      ("Data Center Electricity Use", "Data Center Fuel Use",
+      "Company Wide Electricity Use"), treat that as reported and show the
+      highest-priority scope (Data Center Electricity > Fuel > Company Wide).
+    - Else if any row has reporting_status == "Pending Data Submission",
+      show Pending.
+    - Else show No Reporting.
+    """
+    statuses = set(year_data["reporting_status"].dropna().unique())
+
+    # Reported scopes: only where status equals the scope (not Pending / No Reporting)
+    reported_scopes = statuses & {
+        "Data Center Electricity Use",
+        "Data Center Fuel Use",
+        "Company Wide Electricity Use",
+    }
+    if reported_scopes:
+        if "Data Center Electricity Use" in reported_scopes:
+            return 1.0, "Data Center Electricity Use"
+        if "Data Center Fuel Use" in reported_scopes:
+            return 0.7, "Data Center Fuel Use"
+        if "Company Wide Electricity Use" in reported_scopes:
+            return 0.4, "Company Wide Electricity Use"
+        return 0, "No Reporting"
+
+    # No reported scopes: check for pending / no reporting
+    if "Pending Data Submission" in statuses:
+        return 0.1, "Pending Data Submission"
+    if "No Reporting" in statuses:
+        return 0, "No Reporting"
+    return 0, "No Reporting"
+
+
+def create_energy_reporting_heatmap(
     filtered_df,
     original_df=None,
     filters_applied=False,
     header_only=False,
     is_expanded=False,
-    reporting_column="reports_pue",
 ):
-    """Create a heatmap showing pue reporting patterns over time.
+    """Create a heatmap showing companies' reporting patterns over time.
 
     Args:
         filtered_df: The filtered dataframe for the current view
         original_df: Optional full dataframe to ensure all companies are shown
+        filters_applied: If True, indicates filters have been applied
         header_only: If True, creates a minimal chart with just legend and x-axis at top
-        is_expanded: If True, show legend and x-axis in modal with fixed row height (no stretch)
-        reporting_column: The column name to use for the reporting data "reports_pue" or "reports_wue"
     """
-
     pio.templates.default = "simple_white"
     filtered_df = filtered_df.copy()
 
     if filtered_df.empty:
         if header_only:
-            # Return completely empty figure for header (nothing displayed)
             return {
                 "data": [],
                 "layout": {
@@ -73,11 +106,6 @@ def create_pue_wue_reporting_heatmap_plot(
                 },
             }
 
-    df_for_companies = original_df if original_df is not None else filtered_df
-    #companies = sorted(df_for_companies["company_name"].unique())
-    companies = df_for_companies["company_name"].unique().tolist()
-    years = sorted(filtered_df["year"].unique())
-
     # Helper function to wrap company names at parentheses
     def wrap_company_name(name):
         """Wrap company name by moving parenthetical content to new line"""
@@ -88,6 +116,11 @@ def create_pue_wue_reporting_heatmap_plot(
 
     # FIXED ROW HEIGHT - do not scale with container
     FIXED_ROW_HEIGHT = 25  # pixels per row
+
+    df_for_companies = original_df if original_df is not None else filtered_df
+    #companies = sorted(df_for_companies["company_name"].unique())
+    companies = df_for_companies["company_name"].unique().tolist()
+    years = sorted(filtered_df["reported_data_year"].unique())
 
     # Calculate dynamic left margin based on FILTERED companies
     if len(filtered_df) > 0:
@@ -121,95 +154,40 @@ def create_pue_wue_reporting_heatmap_plot(
         hover_texts = []
         companies_display_wrapped = []
 
-        for company_name in companies:
+        for company in companies:
             row_data = []
             row_hover = []
 
             for year in years:
                 year_data = filtered_df[
-                    (filtered_df["company_name"] == company_name)
-                    & (filtered_df["year"] == year)
+                    (filtered_df["company_name"] == company)
+                    & (filtered_df["reported_data_year"] == year)
                 ]
 
-                # No row for this (company, year) = missing in source (data gap)
-                # Callback passes chart data without status filter, so empty = missing only
                 if year_data.empty:
-                    value = float("nan")
-                    text = f"{company_name} ({year})<br>No Data"
-                    row_data.append(value)
-                    row_hover.append(text)
-                    continue
-
-                scopes = set(year_data[reporting_column].dropna().unique())
-
-                if "company not established" in scopes:
-                    value = 0.06
-                    text = f"{company_name} ({year})<br>Company not established"
-                # elif "company Inactive" in scopes:
-                #     value = 0.01
-                #     text = f"{company_name} ({year})<br>Company inactive"
-                elif "company inactive" in scopes:
-                    value = 0.01
-
-                    inactive_row = year_data[
-                        year_data[reporting_column] == "company inactive"
-                    ]
-
-                    if not inactive_row.empty:
-                        row = inactive_row.iloc[0]
-                        successor_entity = row.get("successor_entity", "")
-                        status_effective_date = row.get("status_effective_date", "")
-
-                        if status_effective_date and hasattr(
-                            status_effective_date, "strftime"
-                        ):
-                            status_effective_date = status_effective_date.strftime(
-                                "%Y-%m-%d"
-                            )
-
-                        successor_info = (
-                            f"<br>Reports under {successor_entity} as of {status_effective_date}"
-                            if successor_entity
-                            else ""
-                        )
-                    else:
-                        successor_info = ""
-
-                    text = (
-                        f"{company_name} ({year})<br>Company inactive{successor_info}"
-                    )
-                elif "no reporting evident" in scopes:
-                    value = 0.21
-                    text = f"{company_name} ({year})<br>No reporting"
-                elif "pending" in scopes:
-                    value = 0.35
-                    text = f"{company_name} ({year})<br>Pending"
-                elif "both fleet-wide and individual data center values" in scopes:
-                    value = 0.95
-                    text = f"{company_name} ({year})<br>Reporting: fleet-wide and individual data center values"
-                elif "fleet-wide values only" in scopes:
-                    value = 0.8
-                    text = (
-                        f"{company_name} ({year})<br>Reporting: fleet-wide values only"
-                    )
-                elif "individual data center values only" in scopes:
-                    value = 0.55
-                    text = f"{company_name} ({year})<br>Reporting: individual data center values only"
+                    value, display_label = 0, "No Reporting"
                 else:
-                    # Row exists but status unrecognized = unknown / data glitch
-                    value = 0.21
-                    text = f"{company_name} ({year})<br>No Data"
+                    value, display_label = _display_value_for_year_data(year_data)
+
+                if display_label in (
+                    "Data Center Electricity Use",
+                    "Data Center Fuel Use",
+                    "Company Wide Electricity Use",
+                ):
+                    text = f"{company} ({year})<br>Reporting: {display_label}"
+                else:
+                    text = f"{company} ({year})<br>{display_label}"
 
                 row_data.append(value)
                 row_hover.append(text)
 
             z_data.append(row_data)
             hover_texts.append(row_hover)
-            companies_display_wrapped.append(wrap_company_name(company_name))
+            companies_display_wrapped.append(wrap_company_name(company))
 
         companies_display = companies_display_wrapped
 
-    # Create the heatmap trace
+    # Create the heatmap trace with cell borders
     heatmap = go.Heatmap(
         z=z_data,
         x=years,
@@ -220,30 +198,22 @@ def create_pue_wue_reporting_heatmap_plot(
         zmin=0.0,
         zmax=1.0,
         colorscale=[
-            [0.0, REPORTING_SCOPE_COLORS["company not established"]],
-            [0.09, REPORTING_SCOPE_COLORS["company not established"]],
-            [0.09, REPORTING_SCOPE_COLORS["company inactive"]],
-            [0.12, REPORTING_SCOPE_COLORS["company inactive"]],
-            [0.12, REPORTING_SCOPE_COLORS["no reporting evident"]],
-            [0.30, REPORTING_SCOPE_COLORS["no reporting evident"]],
-            [0.30, REPORTING_SCOPE_COLORS["pending"]],
-            [0.40, REPORTING_SCOPE_COLORS["pending"]],
-            [0.40, REPORTING_SCOPE_COLORS["individual data center values only"]],
-            [0.70, REPORTING_SCOPE_COLORS["individual data center values only"]],
-            [0.70, REPORTING_SCOPE_COLORS["fleet-wide values only"]],
-            [0.90, REPORTING_SCOPE_COLORS["fleet-wide values only"]],
+            [0.0, REPORTING_SCOPE_COLORS["No Reporting"]],  # No reporting
+            [0.05, REPORTING_SCOPE_COLORS["No Reporting"]],
+            [0.05, REPORTING_SCOPE_COLORS["Pending"]],  # Pending
+            [0.15, REPORTING_SCOPE_COLORS["Pending"]],
             [
-                0.90,
-                REPORTING_SCOPE_COLORS[
-                    "both fleet-wide and individual data center values"
-                ],
-            ],
+                0.15,
+                REPORTING_SCOPE_COLORS["Company Wide Electricity Use"],
+            ],  # Energy Use
+            [0.45, REPORTING_SCOPE_COLORS["Company Wide Electricity Use"]],
+            [0.45, REPORTING_SCOPE_COLORS["Data Center Fuel Use"]],  # Electricity Use
+            [0.75, REPORTING_SCOPE_COLORS["Data Center Fuel Use"]],
             [
-                1.0,
-                REPORTING_SCOPE_COLORS[
-                    "both fleet-wide and individual data center values"
-                ],
-            ],
+                0.75,
+                REPORTING_SCOPE_COLORS["Data Center Electricity Use"],
+            ],  # Data Center
+            [1.0, REPORTING_SCOPE_COLORS["Data Center Electricity Use"]],
         ],
         showscale=False,
         xgap=0.5,
@@ -251,18 +221,17 @@ def create_pue_wue_reporting_heatmap_plot(
         opacity=0 if header_only else 1,
     )
 
-    # Create legend traces (Not established and Company inactive share one entry/same color)
+    # Create legend traces
     legend_items = {
-        "Not established/inactive": REPORTING_SCOPE_COLORS["company not established"],
-        "No reporting": REPORTING_SCOPE_COLORS["no reporting evident"],
-        "Individual DC only": REPORTING_SCOPE_COLORS[
-            "individual data center values only"
+        "No Reporting": REPORTING_SCOPE_COLORS["No Reporting"],
+        "Pending Data Submission": REPORTING_SCOPE_COLORS["Pending"],
+        "Company Wide Electricity Use": REPORTING_SCOPE_COLORS[
+            "Company Wide Electricity Use"
         ],
-        "Fleet-wide only": REPORTING_SCOPE_COLORS["fleet-wide values only"],
-        "Fleet vs Individual DC": REPORTING_SCOPE_COLORS[
-            "both fleet-wide and individual data center values"
+        "Data Center Fuel Use": REPORTING_SCOPE_COLORS["Data Center Fuel Use"],
+        "Data Center Electricity Use": REPORTING_SCOPE_COLORS[
+            "Data Center Electricity Use"
         ],
-        "Pending data submission": REPORTING_SCOPE_COLORS["pending"],
     }
 
     legend_traces = [
@@ -277,11 +246,18 @@ def create_pue_wue_reporting_heatmap_plot(
         for name, color in legend_items.items()
     ]
 
+    # Combine traces
     fig = go.Figure(data=[heatmap] + legend_traces)
 
     if header_only:
-        fig_height = 120
+        fig_height = 120  # Cahnged from 180
         margin_config = dict(l=shared_left_margin, r=50, t=80, b=10)
+        # margin_config = dict(
+        #     l=shared_left_margin,
+        #     r=50,
+        #     t=110,
+        #     b=40,
+        # )
         xaxis_config = {
             "side": "bottom",
             "tickmode": "array",
@@ -322,10 +298,10 @@ def create_pue_wue_reporting_heatmap_plot(
             tracegroupgap=5,
         )
     else:
-        # Fixed row height: body uses minimal top/bottom; expanded adds space for legend
+        # Minimal top margin
+        # Calculate height based on actual number of filtered companies
         num_companies = len(companies_display)
-        fig_height = num_companies * FIXED_ROW_HEIGHT + (120 if is_expanded else 40)
-
+        fig_height = (num_companies * FIXED_ROW_HEIGHT) + 40
         margin_config = dict(l=shared_left_margin, r=50, t=10, b=30)
         xaxis_config = {
             "side": "bottom",
@@ -335,7 +311,7 @@ def create_pue_wue_reporting_heatmap_plot(
             "type": "category",
             "showgrid": False,
             "showticklabels": True if is_expanded else False,
-            "showline": False,
+            "showline": True if is_expanded else False,
             "ticks": "outside" if is_expanded else "",
             "tickfont": {"size": 12},
             "tickangle": 0,
@@ -349,11 +325,11 @@ def create_pue_wue_reporting_heatmap_plot(
             "ticks": "outside",
             "tickfont": {"size": 12},
             "autorange": "reversed",
-            "fixedrange": False,
+            "fixedrange": False,  # enable scrolling on y-axis
             "categoryorder": "array",
-            "categoryarray": companies_display 
+            "categoryarray": companies_display  # the wrapped names list
         }
-        show_legend = is_expanded
+        show_legend = True if is_expanded else False
         legend_config = dict(
             orientation="h",
             yanchor="bottom",

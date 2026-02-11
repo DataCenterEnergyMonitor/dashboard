@@ -288,7 +288,7 @@ def create_gp_stacked_area_plot(filtered_df, full_df=None, filters_applied=False
         labels={
             "cumulative_policies": "Number of Policies",
             "year_introduced": "Year Introduced",
-            "area_group_label": "Geographic Scope - Jurisdiction Level (Policy Count)",
+            "area_group_label": "Location - Jurisdiction (Policy Count)",
         },
         # facet_col="jurisdiction_level",  # optional — separate panels for national/city
         # title="Cumulative Number of Policies Over Time",

@@ -2,7 +2,7 @@ import dash
 from dash import Input, Output, dcc, html
 import dash_bootstrap_components as dbc
 
-def create_pue_wue_filters(df1, df2):
+def create_pue_wue_filters(df):
     return html.Div([
         # Sidebar container
         html.Div([
@@ -31,7 +31,7 @@ def create_pue_wue_filters(df1, df2):
                     html.Label("Company/Organization Name:", className="filter-label"),
                     dcc.Dropdown(
                         id='company_name', 
-                        options=sorted(df2['company_name'].unique()), 
+                        options=sorted(df['company_name'].unique()), 
                         multi=True, 
                         persistence=True,
                         persistence_type="session",
@@ -42,7 +42,7 @@ def create_pue_wue_filters(df1, df2):
                     html.Label("Time Period Category:", className="filter-label"),
                     dcc.Checklist(
                         id='time_period_category', 
-                        options=[{'label': str(val), 'value': val} for val in sorted(df1['time_period_category'].dropna().unique())],
+                        options=[{'label': str(val), 'value': val} for val in sorted(df['time_period_category'].dropna().unique())],
                         value=[],
                         persistence=True,
                         persistence_type="session",
@@ -52,7 +52,7 @@ def create_pue_wue_filters(df1, df2):
                     html.Label("Measurement Category:", className="filter-label"),
                     dcc.Checklist(
                         id='measurement_category', 
-                        options=[{'label': str(val), 'value': val} for val in sorted(df1['measurement_category'].dropna().unique())], 
+                        options=[{'label': str(val), 'value': val} for val in sorted(df['measurement_category'].dropna().unique())], 
                         value=[],
                         persistence=True,
                         persistence_type="session",
@@ -62,7 +62,7 @@ def create_pue_wue_filters(df1, df2):
                     html.Label("PUE/WUE Type:", className="filter-label"),
                     dcc.Checklist(
                         id='metric_type', 
-                        options=[{'label': str(val), 'value': val} for val in sorted(df1['metric_type'].dropna().unique())], 
+                        options=[{'label': str(val), 'value': val} for val in sorted(df['metric_type'].dropna().unique())], 
                         value=[],
                         persistence=True,
                         persistence_type="session",
@@ -72,7 +72,7 @@ def create_pue_wue_filters(df1, df2):
                     html.Label("Facility Scope:", className="filter-label"),
                     dcc.Checklist(
                         id='facility_scope', 
-                        options=[{'label': str(val), 'value': val} for val in sorted(df1['facility_scope'].dropna().unique())],  
+                        options=[{'label': str(val), 'value': val} for val in sorted(df['facility_scope'].dropna().unique())],  
                         value=[],
                         persistence=True,
                         persistence_type="session",
@@ -183,8 +183,8 @@ def create_pue_wue_filters(df1, df2):
                         persistence_type="session",
                         className="filter-box mb-2"
                     ),
-                    
-                    html.Label("Default Climate Zone:", className="filter-label"),
+                    # temporarily hidden
+                    html.Label("Default Climate Zone:", className="filter-label_disabled"),
                     dcc.Dropdown(
                         id='default_climate_zones', 
                         options=[], 
@@ -192,10 +192,10 @@ def create_pue_wue_filters(df1, df2):
                         placeholder="Select climate zones", 
                         persistence=True,
                         persistence_type="session",
-                        className="filter-box mb-2"
+                        className="filter-box-disabled mb-2"
                     ),
-                    
-                    html.Label("Cooling Technology (coming soon):", className="filter-label_disabled"),
+                    # temporarily hidden
+                    html.Label("Cooling Technology (hidden):", className="filter-label_disabled"),
                     dcc.Dropdown(
                         id='cooling_technologies', 
                         options=[], 
@@ -248,7 +248,7 @@ def create_pue_wue_filters(df1, df2):
             
         ], style={
             "width": "300px",
-            "height": "calc(100vh - 100px)",  # ✅ Subtract navbar height
+            "height": "calc(100vh - 100px)", 
             "position": "fixed",
             "left": "0",
             "top": "100px", 

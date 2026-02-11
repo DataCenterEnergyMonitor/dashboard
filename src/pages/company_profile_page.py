@@ -5,7 +5,7 @@ from components.filter_manager import FilterManager, FilterConfig
 from components.filter_panel import create_filter_panel
 from components.download_button import create_download_button
 from layouts.base_layout import create_base_layout
-from components.collapsible_table import create_category_section
+from components.company_profile_table import create_category_section
 
 current_reporting_year = datetime.now().year - 1
 previous_reporting_year = current_reporting_year - 1

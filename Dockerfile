@@ -17,7 +17,7 @@ RUN conda init bash
 SHELL ["/bin/bash", "-c"]
 
 # Make RUN commands use the new environment
-RUN echo "conda activate dcmonitor" >> ~/.bashrc
+RUN echo "conda activate dcewm" >> ~/.bashrc
 
 # Copy the entire application code into the container
 COPY . .
@@ -29,4 +29,4 @@ EXPOSE 8050
 SHELL ["/bin/bash", "-c"]
 
 # Command to run the application with the conda environment activated
-CMD ["conda", "run", "--no-capture-output", "-n", "dcmonitor", "python", "-u", "src/server.py"]
+CMD ["conda", "run", "--no-capture-output", "-n", "dcewm", "python", "-u", "src/server.py"]

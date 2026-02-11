@@ -1,23 +1,13 @@
-import dash
-from dash import Input, Output, dcc, html
+from dash import dcc, html
 import dash_bootstrap_components as dbc
-from layouts.base_layout import create_base_layout
-from components.bookmark_bar import create_bookmark_bar
-from components.filters.energy_projections_filters import (
-    create_energy_projections_filters,
-)
-
+from components.filters.global_policies.gp_tab2_filters import create_gp_tab2_filters
 
 # define bookmark sections
-sections = [
-    # {"id": "energy-projections", "title": "Energy Projections"},
-    # {"id": "power-projections", "title": "Power Projections"},
-]
+sections = []
 
 subnav_items = [
-    {"id": "pue-subnav", "title": "Methodology", "href": "/pue-methodology"},
-    # {"id": "wue-subnav", "title": "WUE", "href": "/wue-methodology"},
-    {"id": "wue-subnav", "title": "Dataset"},
+    # {"id": "pue-subnav", "title": "Methodology", "href": "/pue-methodology"},
+    # {"id": "wue-subnav", "title": "Dataset"},
 ]
 
 
@@ -88,7 +78,6 @@ def create_chart_row(
         "margin": {"l": 60, "r": 120, "t": 20, "b": 60},
         "height": None,
     }
-    # description_style = {"textAlign": "center", "backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "5px", "font-size": "0.8rem"}
 
     # if accordion_children:
     accordion_element = html.Div(
@@ -105,8 +94,6 @@ def create_chart_row(
             style={"width": "80%"},
         ),
     )
-    # else:
-    #     accordion_element = None
 
     return dbc.Row(
         [
@@ -176,7 +163,9 @@ def create_chart_row(
                                         id=chart_id,
                                         config=chart_config,
                                         style=graph_style,
-                                        figure=figure if figure is not None else {"layout": graph_layout},
+                                        figure=figure
+                                        if figure is not None
+                                        else {"layout": graph_layout},
                                     )
                                 ],
                                 style=card_body_style,
@@ -196,49 +185,22 @@ def create_chart_row(
     )
 
 
-def create_energy_projections_page(app, energy_projections_df):
+def create_gp_tab2(app, gp_transposed_df):
     content = html.Div(
         [
             # Sticky sidebar wrapper
-            create_energy_projections_filters(energy_projections_df),
+            create_gp_tab2_filters(gp_transposed_df),
             html.Div(
                 [
-                    # Sticky bookmark bar
-                    # Desktop bookmark bar (hidden on mobile/tablet)
-                    html.Div(
-                        [
-                            create_bookmark_bar(
-                                sections,
-                                data_page_parent="energy_projections",
-                                subnav_items=None,
-                            )
-                        ],
-                        className="d-none d-lg-block",  # Hide on <992px, show on ≥992px
-                        style={
-                            "position": "fixed",
-                            "top": "100px",
-                            "left": "320px",
-                            "right": "0",
-                            "zIndex": "1000",
-                            "backgroundColor": "white",
-                            "padding": "8px 20px",
-                            "height": "80px",
-                        },
-                    ),
-                    # Mobile bookmark bar (hidden on desktop)
+                    # Mobile navigation kept for mobile devices
                     html.Div(
                         [
                             # Simplified mobile navigation
                             dbc.Nav(
                                 [
                                     dbc.NavLink(
-                                        "Energy Projections",
-                                        href="#energy-projections-section",
-                                        className="px-2",
-                                    ),
-                                    dbc.NavLink(
-                                        "Power Projections",
-                                        href="#power-projections-section",
+                                        "Global Policies",
+                                        href="#global-policies-jurisdictional-distribution-section",
                                         className="px-2",
                                     ),
                                 ],
@@ -261,17 +223,22 @@ def create_energy_projections_page(app, energy_projections_df):
                             "overflow": "hidden",
                         },
                     ),
-                    dbc.Container(                                            [
+                    dbc.Container(
+                        [
                             # Single chart container is updated by callback
-                            html.Div(id="chart-container"),
+                            html.Div(id="gp-treemap-chart-container"),
+                            # Store for treemap state (clicked node, data, etc.)
+                            dcc.Store(id="gp-treemap-store", data={}),
+                            # Store to track currently expanded leaf node
+                            dcc.Store(id="gp-treemap-expanded-leaf", data=None),
                         ],
                         fluid=True,
                     ),
                 ],
                 style={
                     "marginLeft": "320px",  # Sidebar width (300px) + padding (20px)
-                    "marginTop": "20px",
-                    "padding": "20px",
+                    "marginTop": "0px",
+                    "padding": "0px",
                     "minHeight": "calc(100vh - 90px)",
                     "backgroundColor": "white",
                 },
@@ -279,11 +246,11 @@ def create_energy_projections_page(app, energy_projections_df):
             # Modal for expanded view
             dbc.Modal(
                 [
-                    dbc.ModalHeader(dbc.ModalTitle(id="energy-modal-title")),
+                    dbc.ModalHeader(dbc.ModalTitle(id="treemap-modal-title")),
                     dbc.ModalBody(
                         [
                             dcc.Graph(
-                                id="energy-expanded-graph",
+                                id="treemap-expanded-graph",
                                 style={
                                     "height": "calc(100vh - 56px)",  # 56px = header height
                                     "width": "100vw",
@@ -295,8 +262,7 @@ def create_energy_projections_page(app, energy_projections_df):
                         style={"padding": "0", "margin": "0"},
                     ),
                 ],
-                id="energy-graph-modal",
-                # size="xl",
+                id="treemap-graph-modal",
                 fullscreen=True,
                 is_open=False,
                 style={
@@ -309,7 +275,88 @@ def create_energy_projections_page(app, energy_projections_df):
                     "left": "0",
                 },
             ),
+            # Modal for policy details (final node click) - positioned over treemap
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(
+                        html.Div(
+                            [
+                                # Main title: Attr_type: Attr_value
+                                html.H4(
+                                    id="policy-details-modal-title",
+                                    style={
+                                        "marginBottom": "8px",
+                                        "color": "#2c3e50",
+                                        "fontWeight": "600",
+                                    },
+                                ),
+                                # Navigation path below title
+                                html.Div(
+                                    [
+                                        html.I(
+                                            className="fas fa-map-marker-alt",
+                                            style={
+                                                "marginRight": "8px",
+                                                "color": "#6c757d",
+                                                "fontSize": "0.85rem",
+                                            },
+                                        ),
+                                        html.Span(
+                                            id="policy-details-modal-subtitle",
+                                            style={
+                                                "fontSize": "0.9rem",
+                                                "color": "#6c757d",
+                                            },
+                                        ),
+                                    ],
+                                    style={"display": "flex", "alignItems": "center"},
+                                ),
+                            ],
+                            style={"width": "100%"},
+                        ),
+                        close_button=True,
+                        style={"padding": "16px 20px"},
+                    ),
+                    dbc.ModalBody(
+                        [
+                            html.Div(id="policy-details-modal-content"),
+                        ],
+                        style={
+                            "maxHeight": "50vh",
+                            "overflowY": "auto",
+                            "padding": "16px 20px",
+                        },
+                    ),
+                    dbc.ModalFooter(
+                        dbc.Button(
+                            [
+                                html.I(
+                                    className="fas fa-times",
+                                    style={"marginRight": "6px"},
+                                ),
+                                "Close",
+                            ],
+                            id="policy-details-modal-close",
+                            className="ms-auto",
+                            color="secondary",
+                            size="sm",
+                            n_clicks=0,
+                        ),
+                        style={
+                            "borderTop": "1px solid #dee2e6",
+                            "padding": "12px 20px",
+                        },
+                    ),
+                ],
+                id="policy-details-modal",
+                is_open=False,
+                size="lg",
+                scrollable=True,
+                centered=False,
+                className="policy-details-modal-overlay",
+                backdrop="static",
+            ),
         ]
     )
 
-    return create_base_layout(content)
+    return content

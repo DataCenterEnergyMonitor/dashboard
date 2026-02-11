@@ -38,7 +38,14 @@ from pages.energy_projections_methods_page import (
     create_energy_projections_methodology_page,
 )
 from pages.energy_projections_data_page import create_energy_projections_data_page
-from pages.global_policies_page import create_gp_page
+
+from pages.water_projections_page import create_water_projections_page
+from pages.water_projections_methods_page import (
+    create_water_projections_methodology_page,
+)
+from pages.water_projections_data_page import create_water_projections_data_page
+from pages.global_policies.gp_main_page import create_gp_page
+from pages.company_reporting_trends.rt_main_page import create_rt_page
 from pages.company_profile_page import create_company_profile_page
 from pages.home_page import create_home_page
 from pages.about_page import create_about_page
@@ -69,17 +76,40 @@ from callbacks.company_profile_callbacks import (
     create_company_profile_callback,
     create_company_profile_download_callback,
 )
-from callbacks.pue_wue_page_callback import register_pue_wue_callbacks
-from callbacks.energy_projections_page_callback import (
+from callbacks.pue_wue_page_callbacks import register_pue_wue_callbacks
+from callbacks.energy_projections_page_callbacks import (
     register_energy_projections_callbacks,
 )
-
+from callbacks.water_projections_page_callbacks import (
+    register_water_projections_callbacks,
+)
 from callbacks.global_policies.gp_page_callback import (
     register_gp_page_callbacks,
 )
 from callbacks.global_policies.gp_tab1_callback import register_gp_tab1_callbacks
 from callbacks.global_policies.gp_tab2_callback import register_gp_tab2_callbacks
 from callbacks.global_policies.gp_tab3_callback import register_gp_tab3_callbacks
+from callbacks.company_reporting_trends.rt_page_callback import (
+    register_rt_page_callbacks,
+)
+from callbacks.company_reporting_trends.rt_filter_callbacks import (
+    register_rt_filter_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab1_callback import (
+    register_rt_tab1_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab2_callback import (
+    register_rt_tab2_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab3_callback import (
+    register_rt_tab3_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab4_callback import (
+    register_rt_tab4_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab5_callback import (
+    register_rt_tab5_callbacks,
+)
 from components.kpi_data_cards import create_kpi_cards
 
 
@@ -113,13 +143,18 @@ def create_app():
     wue_df = load_wue_data()
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
     pue_wue_companies_df = load_pue_wue_companies_data()
+    print("Companies", pue_wue_companies_df[pue_wue_companies_df["company_name"].isin(["LY Corporation", "SDC SpaceNet", "Quantum Switch Tamasuk","Quantum Switch"])][["company_name","year_founded", "year","reports_pue", "reports_wue"]])
     energyprojections_df = load_energyprojections_data()
-    globalpolicies_df = load_gp_data()
+    waterprojections_df = (
+        load_energyprojections_data()
+    )  # TO DO: replace with the function to load water projections dataset
+    gp_base_df, globalpolicies_df = load_gp_data()
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
-    print("TEST-TEST: transposed_df columns")
-    print(gp_transposed_df.columns)
     forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
+    print("Test-Tets: Reporting_df")
+    print(reporting_df["reporting_status"].unique())
+    print(reporting_df[reporting_df["reporting_status"] == "Pending Data Submission"].head(10))
     energy_use_df = load_energy_use_data()
     company_profile_df = load_company_profile_data()
 
@@ -160,28 +195,6 @@ def create_app():
 
     # Define chart configurations
     chart_configs = {
-        # "pue-scatter": {
-        #     "base_id": "pue",
-        #     "chart_id": "pue-scatter-chart",
-        #     "chart_creator": create_pue_scatter_plot,
-        #     "filename": "pue-data.csv",
-        #     "filters": [
-        #         "facility_scope",
-        #         "company",
-        #         "iea_region",
-        #         "iecc_climate_zone_s_",
-        #         "pue_measurement_level",
-        #     ],
-        #     "download_id": "download-pue-data",  # Add download button ID
-        # },
-        # "wue-scatter": {
-        #     "base_id": "wue",
-        #     "chart_id": "wue-scatter-chart",
-        #     "chart_creator": create_wue_scatter_plot,
-        #     "filename": "wue-data.csv",
-        #     "filters": ["facility_scope", "company"],
-        #     "download_id": "download-wue-data",  # Add download button ID
-        # },
         "forecast-scatter": {
             "base_id": "forecast",
             "chart_id": "forecast-scatter-chart",
@@ -224,13 +237,23 @@ def create_app():
     }
 
     # Initialize callbacks
-    register_pue_wue_callbacks(app, pue_wue_df, pue_wue_companies_df)
+    register_pue_wue_callbacks(app, pue_wue_df)
     register_energy_projections_callbacks(app, energyprojections_df)
-    register_gp_page_callbacks(app, globalpolicies_df)
+    register_water_projections_callbacks(app, waterprojections_df)
+    register_gp_page_callbacks(app, gp_base_df, globalpolicies_df)
     register_gp_tab1_callbacks(app, globalpolicies_df)
     # Use the transposed dataframe (with attr_type/attr_value) for Tab 2 callbacks
     register_gp_tab2_callbacks(app, gp_transposed_df)
     register_gp_tab3_callbacks(app, gp_transposed_df)
+    # Company Reporting Trends page callbacks
+    register_rt_page_callbacks(app, reporting_df, pue_wue_companies_df)
+    # Centralized filter callbacks for Reporting Trends (all tabs)
+    register_rt_filter_callbacks(app)
+    register_rt_tab1_callbacks(app, reporting_df)
+    register_rt_tab2_callbacks(app, reporting_df, pue_wue_companies_df)
+    register_rt_tab3_callbacks(app, reporting_df, pue_wue_companies_df)
+    register_rt_tab4_callbacks(app, pue_wue_companies_df)
+    register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df)
     forecast_callback = create_chart_callback(
         app, data_dict, chart_configs["forecast-scatter"]
     )
@@ -257,18 +280,14 @@ def create_app():
         "pue": pue_df,
         "wue": wue_df,
         "company_name": pue_wue_df,
-        "energy_projections_studies": energyprojections_df,
+        "energy_projections_studies": energyprojections_df,  # TO DO: add water projections studies to the KPIs count
     }
 
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
     def display_page(pathname):
         print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
-        # if pathname == "/pue":
-        #     return create_pue_page(app, pue_df)
-        # elif pathname == "/wue":
-        #     return create_wue_page(app, wue_df)
         if pathname == "/pue_wue":
-            return create_pue_wue_page(app, pue_wue_df, pue_wue_companies_df)
+            return create_pue_wue_page(app, pue_wue_df)
         elif pathname == "/pue-methodology":
             return create_pue_methodology_page()
         elif pathname == "/wue-methodology":
@@ -283,13 +302,22 @@ def create_app():
             return create_energy_projections_methodology_page()
         elif pathname == "/energy-projections-data":
             return create_energy_projections_data_page()
+        elif pathname == "/water-projections":
+            return create_water_projections_page(app, waterprojections_df)
+        elif pathname == "/water-projections-methodology":
+            return create_water_projections_methodology_page()
+        elif pathname == "/water-projections-data":
+            return create_water_projections_data_page()
         elif pathname == "/global-policies":
             return create_gp_page(app, globalpolicies_df)
         elif pathname == "/forecast":
             print("Creating forecast page")  # Debug print
             return create_forecast_page(app, forecast_df)
+        # TO DO: delete after refactoring company reporting trends
+        # elif pathname == "/reporting":
+        #     return create_reporting_page(app, reporting_df, data_dict, chart_configs)
         elif pathname == "/reporting":
-            return create_reporting_page(app, reporting_df, data_dict, chart_configs)
+            return create_rt_page(app, reporting_df, pue_wue_companies_df)
         elif pathname == "/energy-use":
             return create_energy_use_page(app, energy_use_df)
         elif pathname == "/company-profile":
@@ -322,4 +350,5 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run_server(debug=True)
+    #app.run_server(debug=True)
+    app.run(debug=True)
