@@ -99,19 +99,32 @@ def get_processed_reporting_data(df, filter_data):
     if not filtered_df.empty:
         is_asc = (sort_order == "asc")
         if sort_by == "reporting_status":
-            # Weighted sort
-            temp_df = filtered_df.copy()
-            temp_df['year_score'] = temp_df['reporting_status'].map(status_weights).fillna(0)
-            scores = temp_df.groupby("company_name")['year_score'].sum()
-            filtered_df['total_company_score'] = filtered_df['company_name'].map(scores)
-            
-            filtered_df = filtered_df.sort_values(
-                by=["total_company_score", "company_name"],
-                ascending=[is_asc, True]
-            )
+                # Weighted sort: total_company_score then company_name (case-insensitive)
+                temp_df = filtered_df.copy()
+                temp_df["year_score"] = (
+                    temp_df["reporting_status"].map(status_weights).fillna(0)
+                )
+                scores = temp_df.groupby("company_name")["year_score"].sum()
+                filtered_df["total_company_score"] = filtered_df["company_name"].map(
+                    scores
+                )
+                filtered_df["company_name_lower"] = (
+                    filtered_df["company_name"].str.lower()
+                )
+                filtered_df = filtered_df.sort_values(
+                    by=["total_company_score", "company_name_lower"],
+                    ascending=[is_asc, True],
+                    kind="mergesort",
+                )
+                filtered_df = filtered_df.drop(columns=["company_name_lower"])
         else:
-            # Simple alphabetical sort
-            filtered_df = filtered_df.sort_values(by="company_name", ascending=is_asc)
+                # Simple alphabetical sort (case-insensitive)
+                filtered_df = filtered_df.sort_values(
+                    by="company_name",
+                    key=lambda s: s.str.lower(),
+                    ascending=is_asc,
+                    kind="mergesort",
+                )
 
     return filtered_df
 

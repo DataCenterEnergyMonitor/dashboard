@@ -92,11 +92,11 @@ from callbacks.global_policies.gp_tab3_callback import register_gp_tab3_callback
 from callbacks.company_reporting_trends.rt_page_callback import (
     register_rt_page_callbacks,
 )
-from callbacks.company_reporting_trends.rt_tab1_callback import (
-    register_rt_tab1_callbacks,
-)
 from callbacks.company_reporting_trends.rt_filter_callbacks import (
     register_rt_filter_callbacks,
+)
+from callbacks.company_reporting_trends.rt_tab1_callback import (
+    register_rt_tab1_callbacks,
 )
 from callbacks.company_reporting_trends.rt_tab2_callback import (
     register_rt_tab2_callbacks,
@@ -143,6 +143,7 @@ def create_app():
     wue_df = load_wue_data()
     pue_wue_df = create_pue_wue_data(pue_df, wue_df)
     pue_wue_companies_df = load_pue_wue_companies_data()
+    print("Companies", pue_wue_companies_df[pue_wue_companies_df["company_name"].isin(["LY Corporation", "SDC SpaceNet", "Quantum Switch Tamasuk","Quantum Switch"])][["company_name","year_founded", "year","reports_pue", "reports_wue"]])
     energyprojections_df = load_energyprojections_data()
     waterprojections_df = (
         load_energyprojections_data()
@@ -316,7 +317,7 @@ def create_app():
         # elif pathname == "/reporting":
         #     return create_reporting_page(app, reporting_df, data_dict, chart_configs)
         elif pathname == "/reporting":
-            return create_rt_page(app, reporting_df)
+            return create_rt_page(app, reporting_df, pue_wue_companies_df)
         elif pathname == "/energy-use":
             return create_energy_use_page(app, energy_use_df)
         elif pathname == "/company-profile":

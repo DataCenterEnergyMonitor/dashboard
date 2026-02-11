@@ -15,31 +15,6 @@ import time
 # load support functions
 from helpers.geocode_locations import add_coordinates_from_cache
 
-# def update_metadata(excel_path, json_path="data/metadata.json"):
-
-#     mtime = os.path.getmtime(excel_path)
-#     last_modified = datetime.fromtimestamp(mtime).isoformat()
-
-#     # Get the current file's directory (src folder)
-#     current_dir = Path(__file__).parent
-#     json_path=current_dir.parent / "data" / "metadata.json"
-
-#     # read existing JSON or initialize
-#     try:
-#         with open(json_path, "r") as f:
-#             data = json.load(f)
-#     except FileNotFoundError:
-#         data = {"metadata": {}}
-
-#     data["metadata"].update({
-#         "source_file": os.path.basename(excel_path),
-#         "last_updated": last_modified
-#     })
-
-#     with open(json_path, "w") as f:
-#         json.dump(data, f, indent=2)
-
-
 def load_pue_data():
     # Get the current file's directory (src folder)
     current_dir = Path(__file__).parent
@@ -66,11 +41,6 @@ def load_pue_data():
     pue_df["metric"] = "pue"
     pue_df.rename(columns={"pue_type": "metric_type"}, inplace=True)
     pue_df.rename(columns={"pue_value": "metric_value"}, inplace=True)
-    # pue_df.rename(columns={'facility_scope_evident_': 'facility_scope_evident'}, inplace=True)
-    # pue_df.rename(columns={'geographical_scope_stated_': 'geographical_scope_stated'}, inplace=True)
-    # pue_df.rename(columns={'assigned_climate_zone_s_': 'assigned_climate_zones'}, inplace=True)
-    # pue_df.rename(columns={'default_climate_zone_s_': 'default_climate_zones'}, inplace=True)
-    # pue_df.rename(columns={'is_pue_self_reported_': 'self_reported'}, inplace=True)
 
     return pue_df
 
@@ -103,12 +73,6 @@ def load_wue_data():
     # clean column names
     wue_df.rename(
         columns={
-            # "category_1_water_input_s_": "category_1_water_inputs",
-            # "facility_scope_evident_": "facility_scope_evident",
-            # "geographical_scope_stated_": "geographical_scope_stated",
-            # "assigned_climate_zone_s_": "assigned_climate_zones",
-            # "default_climate_zone_s_": "default_climate_zones",
-            # "is_wue_self_reported_": "self_reported",
             "wue_type": "metric_type",
             "wue_value": "metric_value",
         },
@@ -128,13 +92,6 @@ def create_pue_wue_data(pue_df, wue_df):
     """
     pue_df = pue_df.copy()
     wue_df = wue_df.copy()
-
-    # # DEBUG: list of columns
-    # print("PUE columns:", pue_df.columns.tolist())
-    # print("\nWUE columns:", wue_df.columns.tolist())
-
-    # print("\nClimate zones in PUE:", "assigned_climate_zones" in pue_df.columns)
-    # print("Climate zones in WUE:", "assigned_climate_zones" in wue_df.columns)
 
     wue_selected = wue_df[
         [
@@ -199,16 +156,16 @@ def create_pue_wue_data(pue_df, wue_df):
     return pue_wue_df
 
 
-def fill_inactive_company_years(df):
+def fill_inactive_status(df):
     """
-    For companies marked as 'company Inactive', fill all subsequent years
+    For companies marked as 'company inactive', fill all subsequent years
     """
     all_years = sorted(df["year"].unique())
     filled_rows = []
 
     for company, company_data in df.groupby("company"):
         # find the rows where a company became inactive
-        inactive_rows = company_data[company_data["reports_pue"] == "company Inactive"]
+        inactive_rows = company_data[company_data["reports_pue"] == "company inactive"]
 
         if not inactive_rows.empty:
             # extract the metadata from the first recorded inactive year
@@ -230,8 +187,8 @@ def fill_inactive_company_years(df):
                         {
                             "company": company,
                             "year": year,
-                            "reports_pue": "company Inactive",
-                            "reports_wue": "company Inactive",
+                            "reports_pue": "company inactive",
+                            "reports_wue": "company inactive",
                             "successor_entity": successor,
                             "status_effective_date": status_date,
                         }
@@ -242,6 +199,41 @@ def fill_inactive_company_years(df):
 
     return df
 
+def blackfill_not_established_status(df):
+    """
+    For companies marked as 'company not established', fill all years prior to year_founded
+    """
+    all_years = sorted(df["year"].unique())
+    filled_rows = []
+
+    # mark existing rows where the reporting year is before year_founded
+    df.loc[
+        df["year"] < df["year_founded"], ["reports_pue", "reports_wue"]
+    ] = "company not established"
+
+    for company, company_data in df.groupby("company"):
+        year_founded = int(company_data["year_founded"].iloc[0])
+
+        # create a set of years that already have data for this company
+        existing_years = set(company_data["year"])
+
+        # append missing rows with "company not established" status to the
+        # company details for years prior to year_founded
+        for year in all_years:
+            if year < year_founded and year not in existing_years:
+                filled_rows.append(
+                    {
+                        "company": company,
+                        "year": year,
+                        "reports_pue": "company not established",
+                        "reports_wue": "company not established",
+                    }
+                )
+
+    if filled_rows:
+        return pd.concat([df, pd.DataFrame(filled_rows)], ignore_index=True)
+
+    return df
 
 # load companies list data for pue and wue reporting
 def load_pue_wue_companies_data():
@@ -256,7 +248,7 @@ def load_pue_wue_companies_data():
     companies_df = companies_df.clean_names()
 
     # Clean string columns
-    string_columns = ["company", "entity_status", "successor_entity", "year_founded"]
+    string_columns = ["company", "entity_status", "successor_entity"]
     for col in string_columns:
         if col in companies_df.columns:
             companies_df[col] = companies_df[col].str.strip()
@@ -297,7 +289,7 @@ def load_pue_wue_companies_data():
         ]
     ]
 
-    # Set NaN values in year_founded to 2000 (avoid chained assignment / inplace ops)
+    # Set NaN values in year_founded to 2000
     pue_wue_reporting_df["year_founded"] = pd.to_numeric(
         pue_wue_reporting_df["year_founded"], errors="coerce"
     )
@@ -307,20 +299,7 @@ def load_pue_wue_companies_data():
     pue_wue_reporting_df["year_founded"] = pue_wue_reporting_df[
         "year_founded"
     ].astype(int)
-
-    # Set reporting status to Company not established if year_founded > reporting year
-    pue_wue_reporting_df.loc[
-        pue_wue_reporting_df["year"] < pue_wue_reporting_df["year_founded"],
-        ["reports_pue", "reports_wue"],
-    ] = "company not established"
-
-    # handle Pending Data status
-    # current_date = datetime.today()
-    # current_year = current_date.year
-    # pue_wue_reporting_df.loc[
-    #     (pue_wue_reporting_df['year'] == current_year) &
-    #     (pue_wue_reporting_df[['entity_status']].eq(
-    #         'no reporting evident').all(axis=1)), ['reports_pue', 'reports_wue']] = 'not yet released'
+    
     cols_to_check = ["reports_pue", "reports_wue"]
     # account for the delay in reporting 
     current_date = datetime.today()
@@ -346,7 +325,8 @@ def load_pue_wue_companies_data():
         # Apply update to this column only
         pue_wue_reporting_df.loc[mask, col] = "pending"
 
-    pue_wue_reporting_df = fill_inactive_company_years(pue_wue_reporting_df)
+    pue_wue_reporting_df = fill_inactive_status(pue_wue_reporting_df)
+    pue_wue_reporting_df = blackfill_not_established_status(pue_wue_reporting_df)
     pue_wue_reporting_df.rename(columns={"company": "company_name"}, inplace=True)
 
     return pue_wue_reporting_df

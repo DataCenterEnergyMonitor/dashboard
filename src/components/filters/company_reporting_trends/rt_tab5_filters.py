@@ -2,7 +2,7 @@ import dash
 from dash import Input, Output, dcc, html
 import dash_bootstrap_components as dbc
 from components.year_range import create_year_range_component
-from components.filters.company_reporting_trends.rt_sort_options import create_hidden_sort_placeholders
+from components.filters.company_reporting_trends.rt_sort_options import create_sort_options_component
 
 
 def create_rt_tab5_filters(df):
@@ -11,7 +11,7 @@ def create_rt_tab5_filters(df):
     min_year, max_year = int(min(years)), int(max(years))
     reporting_status = [
         "company not established",
-        "company Inactive",
+        "company inactive",
         "no reporting evident",
         "individual data center values only",
         "fleet-wide values only",
@@ -93,19 +93,19 @@ def create_rt_tab5_filters(df):
                                                 "value": "company not established",
                                             },
                                             {
-                                                "label": "Company inactive",
-                                                "value": "company Inactive",
+                                                "label": "Company Inactive",
+                                                "value": "company inactive",
                                             },
                                             {
-                                                "label": "No reporting",
+                                                "label": "No Reporting",
                                                 "value": "no reporting evident",
                                             },
                                             {
-                                                "label": "Individual Data Centers only",
+                                                "label": "Individual Data Centers Only",
                                                 "value": "individual data center values only",
                                             },
                                             {
-                                                "label": "Fleet-wide only",
+                                                "label": "Fleet-wide Only",
                                                 "value": "fleet-wide values only",
                                             },
                                             {
@@ -113,7 +113,7 @@ def create_rt_tab5_filters(df):
                                                 "value": "both fleet-wide and individual data center values",
                                             },
                                             {
-                                                "label": "Pending data submission",
+                                                "label": "Pending Data Submission",
                                                 "value": "pending",
                                             },
                                         ],
@@ -124,7 +124,7 @@ def create_rt_tab5_filters(df):
                                     ),
                                 ]
                             ),
-                            create_hidden_sort_placeholders()
+                            create_sort_options_component(include_status=True)
                         ],
                         style={
                             "flex": "1",

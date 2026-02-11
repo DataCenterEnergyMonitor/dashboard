@@ -8,7 +8,7 @@ REPORTING_SCOPE_COLORS = {
     "fleet-wide values only": "#337F1A",
     "both fleet-wide and individual data center values": "#1A6210",
     "company not established": "#D9DDDC",
-    "company Inactive": "#D9DDDC",
+    "company inactive": "#D9DDDC",
     "pending": "#EBF4DF",
 }
 
@@ -74,7 +74,8 @@ def create_pue_wue_reporting_heatmap_plot(
             }
 
     df_for_companies = original_df if original_df is not None else filtered_df
-    companies = sorted(df_for_companies["company_name"].unique())
+    #companies = sorted(df_for_companies["company_name"].unique())
+    companies = df_for_companies["company_name"].unique().tolist()
     years = sorted(filtered_df["year"].unique())
 
     # Helper function to wrap company names at parentheses
@@ -147,11 +148,11 @@ def create_pue_wue_reporting_heatmap_plot(
                 # elif "company Inactive" in scopes:
                 #     value = 0.01
                 #     text = f"{company_name} ({year})<br>Company inactive"
-                elif "company Inactive" in scopes:
+                elif "company inactive" in scopes:
                     value = 0.01
 
                     inactive_row = year_data[
-                        year_data[reporting_column] == "company Inactive"
+                        year_data[reporting_column] == "company inactive"
                     ]
 
                     if not inactive_row.empty:
@@ -221,8 +222,8 @@ def create_pue_wue_reporting_heatmap_plot(
         colorscale=[
             [0.0, REPORTING_SCOPE_COLORS["company not established"]],
             [0.09, REPORTING_SCOPE_COLORS["company not established"]],
-            [0.09, REPORTING_SCOPE_COLORS["company Inactive"]],
-            [0.12, REPORTING_SCOPE_COLORS["company Inactive"]],
+            [0.09, REPORTING_SCOPE_COLORS["company inactive"]],
+            [0.12, REPORTING_SCOPE_COLORS["company inactive"]],
             [0.12, REPORTING_SCOPE_COLORS["no reporting evident"]],
             [0.30, REPORTING_SCOPE_COLORS["no reporting evident"]],
             [0.30, REPORTING_SCOPE_COLORS["pending"]],
@@ -349,6 +350,8 @@ def create_pue_wue_reporting_heatmap_plot(
             "tickfont": {"size": 12},
             "autorange": "reversed",
             "fixedrange": False,
+            "categoryorder": "array",
+            "categoryarray": companies_display 
         }
         show_legend = is_expanded
         legend_config = dict(

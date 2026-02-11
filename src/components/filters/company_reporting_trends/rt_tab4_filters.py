@@ -11,7 +11,7 @@ def create_rt_tab4_filters(df):
     min_year, max_year = int(min(years)), int(max(years))
     reporting_status = [
         "company not established",
-        "company Inactive",
+        "company inactive",
         "no reporting evident",
         "individual data center values only",
         "fleet-wide values only",
@@ -89,12 +89,12 @@ def create_rt_tab4_filters(df):
                                         id="pw_reporting_status",
                                         options=[
                                             {
-                                                "label": "Not established",
+                                                "label": "Not Established",
                                                 "value": "company not established",
                                             },
                                             {
-                                                "label": "Company inactive",
-                                                "value": "company Inactive",
+                                                "label": "Company Inactive",
+                                                "value": "company inactive",
                                             },
                                             {
                                                 "label": "No reporting",
@@ -105,7 +105,7 @@ def create_rt_tab4_filters(df):
                                                 "value": "individual data center values only",
                                             },
                                             {
-                                                "label": "Fleet-wide only",
+                                                "label": "Fleet-wide Only",
                                                 "value": "fleet-wide values only",
                                             },
                                             {
@@ -113,7 +113,7 @@ def create_rt_tab4_filters(df):
                                                 "value": "both fleet-wide and individual data center values",
                                             },
                                             {
-                                                "label": "Pending data submission",
+                                                "label": "Pending Data Submission",
                                                 "value": "pending",
                                             },
                                         ],

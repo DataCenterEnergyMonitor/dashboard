@@ -7,11 +7,12 @@ This module handles all filter-related callbacks including:
 - Resetting filter UI components
 
 The filter store (rt-filter-store) is shared across all tabs and contains:
-- from_year, to_year: shared across all tabs
+- from_year, to_year: current year range
+- default_rt_from_year, default_rt_to_year: Clear All defaults for tabs 1-3 (from rt_main_page)
+- default_pw_from_year, default_pw_to_year: Clear All defaults for tabs 4-5 (from rt_main_page)
 - companies: shared across tabs 2-5
 - pw_status: shared across tabs 4-5
-- sort_by: sorting option for heatmaps (tabs 2-5)
-- sort_order: ascending or descending
+- sort_by, sort_order: heatmap sorting (tabs 2-5)
 - timestamp: for cache busting
 """
 
@@ -26,7 +27,7 @@ ID_PREFIX = "rt-"
 # Default pw_status values for tabs 4-5 (all statuses selected by default)
 DEFAULT_PW_STATUS = [
     "company not established",
-    "company Inactive",
+    "company inactive",
     "no reporting evident",
     "individual data center values only",
     "fleet-wide values only",
@@ -97,28 +98,34 @@ def register_rt_filter_callbacks(app):
 
         base = current_store.copy() if current_store else {}
 
-        # Handle clear filters button
+        # Handle clear filters button — reset to defaults from store (set in rt_main_page).
+        # Tabs 1–3: reporting year range; tabs 4–5: PUE/WUE year range.
         if trigger_id == "rt-clear-filters-btn":
+            if active_tab in ("tab-1", "tab-2", "tab-3"):
+                from_year = base.get("default_rt_from_year")
+                to_year = base.get("default_rt_to_year")
+            else:
+                from_year = base.get("default_pw_from_year")
+                to_year = base.get("default_pw_to_year")
             out = {
-                "from_year": None,
-                "to_year": None,
+                "from_year": from_year,
+                "to_year": to_year,
+                "default_rt_from_year": base.get("default_rt_from_year"),
+                "default_rt_to_year": base.get("default_rt_to_year"),
+                "default_pw_from_year": base.get("default_pw_from_year"),
+                "default_pw_to_year": base.get("default_pw_to_year"),
                 "companies": None,
+                "tab2_reporting_status": DEFAULT_TAB2_REPORTING_STATUS
+                if active_tab == "tab-2"
+                else base.get("tab2_reporting_status"),
                 "pw_status": DEFAULT_PW_STATUS
                 if active_tab in ["tab-4", "tab-5"]
-                else None,
+                else base.get("pw_status"),
                 "sort_by": "company_name",
                 "sort_order": "asc",
                 "source": "clear",
                 "timestamp": timestamp,
             }
-
-            # For tab 2, reset status filter to its full default list on Clear.
-            # For other tabs, preserve whatever is currently in the store.
-            if active_tab == "tab-2":
-                out["tab2_reporting_status"] = DEFAULT_TAB2_REPORTING_STATUS
-            else:
-                out["tab2_reporting_status"] = base.get("tab2_reporting_status")
-
             return out
 
         # Handle apply filters button
@@ -128,6 +135,10 @@ def register_rt_filter_callbacks(app):
             out = {
                 "from_year": int(from_year) if from_year else base.get("from_year"),
                 "to_year": int(to_year) if to_year else base.get("to_year"),
+                "default_rt_from_year": base.get("default_rt_from_year"),
+                "default_rt_to_year": base.get("default_rt_to_year"),
+                "default_pw_from_year": base.get("default_pw_from_year"),
+                "default_pw_to_year": base.get("default_pw_to_year"),
                 "companies": base.get("companies"),
                 "pw_status": base.get("pw_status"),
                 "sort_by": base.get("sort_by", "company_name"),
@@ -146,7 +157,6 @@ def register_rt_filter_callbacks(app):
                     pw_status if pw_status is not None else base.get("pw_status")
                 )
 
-            # Tab-2 specific status filter: only update when we're on tab 2.
             if active_tab == "tab-2":
                 out["tab2_reporting_status"] = (
                     tab2_reporting_status
@@ -171,19 +181,29 @@ def register_rt_filter_callbacks(app):
             Output("rt_tab2_reporting_status", "value", allow_duplicate=True),
         ],
         [Input("rt-clear-filters-btn", "n_clicks")],
-        [State(f"{ID_PREFIX}active-tab-store", "data")],
+        [
+            State(f"{ID_PREFIX}active-tab-store", "data"),
+            State(f"{ID_PREFIX}filter-store", "data"),
+        ],
         prevent_initial_call=True,
     )
-    def clear_filter_ui_components(clear_clicks, active_tab):
+    def clear_filter_ui_components(clear_clicks, active_tab, current_store):
         """Reset filter UI components when Clear All is clicked.
 
         This callback handles the visual reset of filter components.
         The store update is handled separately by sync_filters_to_store.
+        Year range: tabs 1–3 use default_rt_*; tabs 4–5 use default_pw_* from store.
         """
-        if clear_clicks:
+        if clear_clicks and current_store:
+            if active_tab in ("tab-1", "tab-2", "tab-3"):
+                default_from = current_store.get("default_rt_from_year")
+                default_to = current_store.get("default_rt_to_year")
+            else:
+                default_from = current_store.get("default_pw_from_year")
+                default_to = current_store.get("default_pw_to_year")
             return (
-                None,  # from_year
-                None,  # to_year
+                default_from,  # from_year
+                default_to,  # to_year
                 None,  # companies
                 DEFAULT_PW_STATUS
                 if active_tab in ["tab-4", "tab-5"]
@@ -193,6 +213,17 @@ def register_rt_filter_callbacks(app):
                 DEFAULT_TAB2_REPORTING_STATUS
                 if active_tab == "tab-2"
                 else [],  # rt_tab2_reporting_status
+            )
+        if clear_clicks:
+            # Fallback if store not yet available (year inputs stay empty)
+            return (
+                None,
+                None,
+                None,
+                DEFAULT_PW_STATUS if active_tab in ["tab-4", "tab-5"] else [],
+                "company_name",
+                "asc",
+                DEFAULT_TAB2_REPORTING_STATUS if active_tab == "tab-2" else [],
             )
         return dash.no_update
 

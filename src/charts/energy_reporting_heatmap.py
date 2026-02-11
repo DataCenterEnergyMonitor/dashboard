@@ -303,13 +303,6 @@ def create_energy_reporting_heatmap(
         num_companies = len(companies_display)
         fig_height = (num_companies * FIXED_ROW_HEIGHT) + 40
         margin_config = dict(l=shared_left_margin, r=50, t=10, b=30)
-        # fig_height = num_companies * FIXED_ROW_HEIGHT + 100
-        # margin_config = dict(
-        #     l=shared_left_margin,
-        #     r=50,
-        #     t=60,
-        #     b=40,
-        # )
         xaxis_config = {
             "side": "bottom",
             "tickmode": "array",
