@@ -22,7 +22,7 @@ RUN echo "conda activate dcewm" >> ~/.bashrc
 # Copy the entire application code into the container
 COPY . .
 
-# Expose the port that the app runs ondcmonitor
+# Expose the port that the app runs on
 EXPOSE 8050
 
 # Set SHELL to bash with conda environment activated

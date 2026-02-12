@@ -67,8 +67,8 @@ from datetime import datetime
 
 current_path = Path(os.getcwd())
 project_root = current_path.parents[2]
-json_path = project_root / "data" / "metadata.json"
-target_file = "DCEWM-PUEDataset.xlsx"
+json_path = project_root / "data" / "dependencies"/ "metadata.json"
+target_file = "Companies_list.xlsx"
 
 with open(json_path) as f:
     data = json.load(f)
