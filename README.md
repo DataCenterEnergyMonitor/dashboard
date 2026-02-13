@@ -60,34 +60,65 @@ Place supporting files such as geocoding cache, GeoJSON, and metadata under `dat
 
 High-level layout of the DCEWM dashboard. Build artifacts (`__pycache__`, `.pyc`), temp files (`~$*`), and archive copies are omitted.
 
+**Shared vs feature-specific** — Changes to **shared** files affect the whole app or many features; coordinate with teammates and notify before editing (see [Code Change Process Flow](#code-change-process-flow)). **Feature-specific** areas can be owned by one person per feature; less coordination needed as long as one lead per feature.
+
+#### Shared files (central registration)
+
+These files contain the code that connects **all** features to the app (imports, routes, menu, data loading). They are updated whenever a new feature is added and are the main source of merge conflicts. **Notify the team before editing** and follow the practices below.
+
+| File | Why it's central | What you add for a new feature |
+|------|------------------|---------------------------------|
+| **`src/app.py`** | Single entry point: imports every page and callback, loads all datasets, registers callbacks, defines routing | New `from pages...` / `from callbacks...` imports; new `load_*()` calls and variables; new entries in `data_dict` and `chart_configs` (if the feature has charts); new `register_*_callbacks(...)`; new `elif pathname == "/your-route"` in `display_page`; optionally `kpi_data_sources`. |
+| **`src/data_loader.py`** | All dataset loading and metadata live here | New `load_*()` function for the feature’s data; `update_metadata()` will pick up new Excel files in `data/` automatically. |
+| **`menu_structure.yaml`** | Single definition of navbar, landing cards, and KPI cards | New item under `navbar.main.left-menu` (or right); new entry in `landing_page_cards`; optionally `kpi_cards` or `data_page` section. |
+
+**How to update shared files without causing conflicts**
+
+**When working alone (no collaborators):** A simple cycle is: pull main → create feature branch → develop with frequent commits → push feature branch → open PR → merge to main → pull main and repeat. You only need to "merge main into your branch" (step 2 below) if main has new commits while you're on the feature branch (e.g. a long-lived branch or after you merged another PR).
+
+1. **Communicate before editing** — In your PR and team channel, state that you will touch `app.py` / `data_loader.py` / `menu_structure.yaml` and for which feature. Avoid two people editing the same central file at the same time.
+2. **Merge main first** — Before changing any shared file, update main and bring it into your branch. **New to Git: use merge.** Run: `git checkout main && git pull && git checkout <your-branch> && git merge main`. (Use rebase only if you're comfortable with rewriting history and force-pushing: `git fetch origin && git rebase origin/main`.) Whichever path you apply, resolve any conflicts in your branch right away so others don’t hit the same conflicts.
+3. **One feature, minimal central changes** — Keep the feature logic in its own modules (e.g. `pages/`, `callbacks/`, `charts/`). In the central files, add only what's needed to register the feature: one new loader in `data_loader.py`, one new route and callback registration in `app.py`, one new menu/card block in `menu_structure.yaml`. Smaller diffs merge more easily.
+4. **Register the feature first, then build** — Add the feature to the central files first with minimal changes (e.g. new loader stub in `data_loader.py`, new menu entry and route in `menu_structure.yaml` and `app.py`, route returning a placeholder page). Push so the structure is on the branch and others can see or adjust shared files if needed. Then implement the feature end-to-end in feature-specific files (pages, callbacks, charts). This avoids everyone editing the same central files at once and keeps coordination clear.
+5. **Collaboration option: request Admin to add central registration** — When working with others, a cleaner approach is: in the PR (or before), the feature author requests an **Admin** (or designated person) to add all necessary central-file changes—imports, routes, menu entry, data loader—and push. Once that is on the branch, the author (and others) can work on feature-specific files without touching `app.py`, `data_loader.py`, or `menu_structure.yaml`. Only one person commits to those files, so conflict risk drops. Consider adding this as a step in your [Code Change Process Flow](#code-change-process-flow) when collaborating.
+
+| Shared (coordinate with team) | Feature-specific (one lead per feature, any time) |
+|------------------------------|---------------------------------------------------|
+| `app.py`, `data_loader.py`, `server.py` | `callbacks/company_reporting_trends/`, `callbacks/global_policies/` |
+| `menu_structure.yaml` | `callbacks/*_callbacks.py` (per-feature, e.g. reporting, pue_wue) |
+| `layouts/`, `components/` (navbar, footer, filter_panel, figure_card, etc.) | `components/filters/company_reporting_trends/`, `components/filters/global_policies/`, other `filters/*.py` |
+| `callbacks/base_chart_callback.py`, `charts/styles.py` | `charts/global_policies/`, and per-feature charts (`pue_chart`, `wue_chart`, etc.) |
+| `helpers/`, `assets/styles.css` | `pages/company_reporting_trends/`, `pages/global_policies/`, and other `pages/*_page.py` per feature |
+| `data/`, `scripts/` | `src/static_pages/` (Quarto) per section |
+
 ```
 dashboard/
 ├── Dockerfile
 ├── README.md
 ├── environment.yml
-├── menu_structure.yaml
+├── menu_structure.yaml              ← shared
 │
 ├── assets/
-│   ├── *.png, *.svg          # Logos, icons
-│   ├── styles.css
-│   ├── previews/             # Page preview images
-│   └── static_pages/         # Rendered HTML (companies, energy_projections, pue_wue, index)
+│   ├── *.png, *.svg
+│   ├── styles.css                   ← shared
+│   ├── previews/
+│   └── static_pages/
 │
-├── data/
-│   ├── *.xlsx, *.csv         # Main datasets
-│   ├── dependencies/         # location_coords_cache.csv, metadata.json, geojson
-│   └── archive/              # Historical dataset snapshots
+├── data/                            ← shared
+│   ├── *.xlsx, *.csv
+│   ├── dependencies/
+│   └── archive/
 │
-├── scripts/
+├── scripts/                         ← shared
 │   └── update_geocoding_cache.py
 │
 └── src/
-    ├── app.py
-    ├── server.py
-    ├── data_loader.py
+    ├── app.py                       ← shared
+    ├── server.py                    ← shared
+    ├── data_loader.py               ← shared
     │
-    ├── callbacks/                    # Dash callbacks by feature
-    │   ├── base_chart_callback.py
+    ├── callbacks/
+    │   ├── base_chart_callback.py   ← shared
     │   ├── chart_callbacks.py
     │   ├── company_profile_callbacks.py
     │   ├── energy_projections_page_callbacks.py
@@ -96,32 +127,29 @@ dashboard/
     │   ├── reporting_callbacks.py
     │   ├── water_projections_page_callbacks.py
     │   ├── wue_callbacks.py
-    │   ├── company_reporting_trends/  # Company reporting section callbacks
-    │   └── global_policies/           # Global policies section callbacks
+    │   ├── company_reporting_trends/   ← feature-specific
+    │   └── global_policies/             ← feature-specific
     │
-    ├── charts/                        # Plotly chart builders
-    │   ├── styles.py
-    │   ├── *_chart.py, *_barchart.py, *_heatmap.py  # PUE, WUE, energy, reporting, etc.
-    │   └── global_policies/           # Global policies section figures 
+    ├── charts/
+    │   ├── styles.py                ← shared
+    │   ├── *_chart.py, *_barchart.py, *_heatmap.py
+    │   └── global_policies/         ← feature-specific
     │
-    ├── components/                    # Reusable UI (navbar, footer, filter_panel, etc.)
-    │   ├── filters/                   # Feature-specific filter UIs
-    │   │   ├── company_reporting_trends/  # Company reporting section filters
-    │   │   ├── global_policies/           # Global policies section filters
-    │   │   ├── energy_projections_filters.py
-    │   │   ├── pue_wue_filters*.py
-    │   │   └── water_projections_filters.py
-    │   
+    ├── components/                  # shared except filters/* (feature-specific)
+    │   └── filters/
+    │       ├── company_reporting_trends/   ← feature-specific
+    │       ├── global_policies/             ← feature-specific
+    │       └── *.py
     │
-    ├── helpers/                      # geocode_locations, geojson_cache, export_json_for_quarto
-    ├── layouts/                      # base_layout, data_page_layout
+    ├── helpers/                     ← shared
+    ├── layouts/                     ← shared
     │
-    ├── pages/                         # Page modules (one per route)
-    │   ├── *_page.py                  # about, companies, company_profile, contact, etc.
-    │   ├── company_reporting_trends/  # rt_main_page, rt_tab1–5
-    │   └── global_policies/           # gp_main_page, gp_tab1–4
+    ├── pages/
+    │   ├── *_page.py
+    │   ├── company_reporting_trends/   ← feature-specific
+    │   └── global_policies/             ← feature-specific
     │
-    └── static_pages/                  # Quarto source (qmd, params, _quarto.yml, references.bib)
+    └── static_pages/                # per-section (feature-specific)
         ├── companies/, energy_projections/, pue_wue/
 ```
 
@@ -147,9 +175,11 @@ dashboard/
    git checkout -b <branch-name>
    ```
 
-3. **Update code** — Implement your changes; follow the existing project structure when adding or modifying files.
+3. **When collaborating: optional — request Admin to add feature to central files** — If your feature needs changes in `app.py`, `data_loader.py`, or `menu_structure.yaml`, ask an Admin (or designated person) to add the minimal registration (imports, route, menu entry, data loader) and push to the branch. Then you can work only on feature-specific files (pages, callbacks, charts) and avoid conflicts on shared files.
 
-4. **Commit, push, request review** — When done, commit with a clear message, push the branch, and request a code review.
+4. **Update code** — Implement your changes; follow the existing project structure when adding or modifying files.
+
+5. **Commit, push, request review** — When done, commit with a clear message, push the branch, and request a code review.
    - **Commit message format**: `<feat> Brief summary` with a body listing the main changes.
    ```bash
    git add .
@@ -158,16 +188,16 @@ dashboard/
    ```
    **Note:** Commit frequently so your work is not lost.
 
-5. **Notify reviewer** — Ensure the assigned reviewer is notified to perform the code review.
+6. **Notify reviewer** — Ensure the assigned reviewer is notified to perform the code review.
 
-6. **Merge** — If approved, the approver merges the PR and notifies the author. Use the **Squash and merge** option to combine commits; update the merge commit message. This keeps history clean and easier for collaborators to follow.
+7. **Merge** — If approved, the approver merges the PR and notifies the author. Use the **Squash and merge** option to combine commits; update the merge commit message. This keeps history clean and easier for collaborators to follow.
 
-7. **Clean up** — After merge, delete the branch remotely (e.g. in the PR UI) and locally:
+8. **Clean up** — After merge, delete the branch remotely (e.g. in the PR UI) and locally:
    ```bash
    git checkout main && git pull && git branch -d <branch-name>
    ```
 
-8. **Update local main** — Ensure your local `main` is up to date and remove references to deleted remote branches:
+9. **Update local main** — Ensure your local `main` is up to date and remove references to deleted remote branches:
    ```bash
    git checkout main && git pull
    git remote prune origin
