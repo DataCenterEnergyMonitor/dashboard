@@ -1,16 +1,30 @@
 ## Installation
 
-1. Create the conda environment:
+1. **Copy the repo to your machine** — Clone the repository so you have the project locally.
+
+   **Using SSH** (preferred; requires SSH key setup—see [Adding a new SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)):
+   ```bash
+   git clone git@github.com:DataCenterEnergyMonitor/dashboard.git
+   cd dashboard
+   ```
+
+   **Using HTTPS** (no SSH key required):
+   ```bash
+   git clone https://github.com/DataCenterEnergyMonitor/dashboard.git
+   cd dashboard
+   ```
+
+2. **Create the conda environment** — From the project root:
    ```bash
    conda env create -f environment.yml
    ```
 
-2. Activate the environment:
+3. **Activate the environment**:
    ```bash
    conda activate dcewm
    ```
 
-3. (Optional) Register the Jupyter kernel for notebooks:
+4. (Optional) **Register the Jupyter kernel** for use with Jupyter notebooks and Quarto (.qmd) files with built-in python code chunks:
    ```bash
    python -m ipykernel install --user --name dcewm --display-name "dcewm"
    ```
