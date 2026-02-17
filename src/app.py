@@ -19,68 +19,59 @@ from data_loader import (
     load_energyprojections_data,
     load_gp_data,
     transpose_gp_data,
-    load_energyforecast_data,
     load_reporting_data,
     load_energy_use_data,
     load_company_profile_data,
     update_metadata,
 )
 
-from pages.pue_page import create_pue_page
-from pages.wue_page import create_wue_page
-from pages.pue_wue_page import create_pue_wue_page
-from pages.pue_methods_page import create_pue_methodology_page
-from pages.wue_methods_page import create_wue_methodology_page
-from pages.pue_data_page import create_pue_data_page
-from pages.wue_data_page import create_wue_data_page
-from pages.energy_projections_page import create_energy_projections_page
-from pages.energy_projections_methods_page import (
+from pages.pue_wue.pue_wue_page import create_pue_wue_page
+from pages.pue_wue.pue_methods_page import create_pue_methodology_page
+from pages.pue_wue.wue_methods_page import create_wue_methodology_page
+from pages.pue_wue.pue_data_page import create_pue_data_page
+from pages.pue_wue.wue_data_page import create_wue_data_page
+from pages.energy_projections.energy_projections import create_energy_projections_page
+from pages.energy_projections.energy_projections_methods import (
     create_energy_projections_methodology_page,
 )
-from pages.energy_projections_data_page import create_energy_projections_data_page
+from pages.energy_projections.energy_projections_data import create_energy_projections_data_page
 
-from pages.water_projections_page import create_water_projections_page
-from pages.water_projections_methods_page import (
+from pages.water_projections.water_projections_page import create_water_projections_page
+from pages.water_projections.water_projections_methods_page import (
     create_water_projections_methodology_page,
 )
-from pages.water_projections_data_page import create_water_projections_data_page
+from pages.water_projections.water_projections_data_page import create_water_projections_data_page
 from pages.global_policies.gp_main_page import create_gp_page
-from pages.company_reporting_trends.rt_main_page import create_rt_page
-from pages.company_profile_page import create_company_profile_page
-from pages.home_page import create_home_page
-from pages.about_page import create_about_page
-from pages.companies_page import create_companies_page
-from pages.contact_page import create_contact_page
-from pages.energy_forecast_page import create_forecast_page
-from pages.reporting_page import create_reporting_page
-from pages.data_centers_101_page import create_data_centers_101_page
+from pages.reporting_trends.rt_main_page import create_rt_page
+from pages.company_profile.company_profile import create_company_profile_page
+from pages.home import create_home_page
+from pages.common.about import create_about_page
+from pages.common.companies import create_companies_page
+from pages.common.contact import create_contact_page
+from pages.learn.data_centers_101 import create_data_centers_101_page
 from pages.energy_use_page import create_energy_use_page
 
-from charts.pue_chart import create_pue_scatter_plot
-from charts.wue_chart import create_wue_scatter_plot
-from charts.forecast_chart import create_forecast_scatter_plot
-from charts.reporting_barchart import create_reporting_bar_plot
-from charts.timeline_chart import create_timeline_bar_plot
-from charts.energy_use_barchart import create_energy_use_bar_plot
-from charts.company_profile_barchart import create_company_profile_bar_plot
+from figures.pue_wue.pue_chart import create_pue_scatter_plot
+from figures.pue_wue.wue_chart import create_wue_scatter_plot
+
+from figures.reporting_trends.reporting_barchart import create_reporting_bar_plot
+from figures.timeline_chart import create_timeline_bar_plot
+from figures.company_profile.energy_use_barchart import create_energy_use_bar_plot
+from figures.company_profile.company_profile_barchart import create_company_profile_bar_plot
 from callbacks.base_chart_callback import create_chart_callback
-from callbacks.reporting_callbacks import (
-    create_reporting_callback,
-    create_reporting_download_callback,
-)
 from callbacks.energy_use_callbacks import (
     create_energy_use_callback,
     create_energy_use_download_callback,
 )
-from callbacks.company_profile_callbacks import (
+from callbacks.company_profile.company_profile_callbacks import (
     create_company_profile_callback,
     create_company_profile_download_callback,
 )
-from callbacks.pue_wue_page_callbacks import register_pue_wue_callbacks
-from callbacks.energy_projections_page_callbacks import (
+from callbacks.pue_wue.pue_wue_page_callbacks import register_pue_wue_callbacks
+from callbacks.energy_projections.ep_page_callbacks import (
     register_energy_projections_callbacks,
 )
-from callbacks.water_projections_page_callbacks import (
+from callbacks.water_projections.water_projections_page_callbacks import (
     register_water_projections_callbacks,
 )
 from callbacks.global_policies.gp_page_callback import (
@@ -89,25 +80,25 @@ from callbacks.global_policies.gp_page_callback import (
 from callbacks.global_policies.gp_tab1_callback import register_gp_tab1_callbacks
 from callbacks.global_policies.gp_tab2_callback import register_gp_tab2_callbacks
 from callbacks.global_policies.gp_tab3_callback import register_gp_tab3_callbacks
-from callbacks.company_reporting_trends.rt_page_callback import (
+from callbacks.reporting_trends.rt_page_callback import (
     register_rt_page_callbacks,
 )
-from callbacks.company_reporting_trends.rt_filter_callbacks import (
+from callbacks.reporting_trends.rt_filter_callbacks import (
     register_rt_filter_callbacks,
 )
-from callbacks.company_reporting_trends.rt_tab1_callback import (
+from callbacks.reporting_trends.rt_tab1_callback import (
     register_rt_tab1_callbacks,
 )
-from callbacks.company_reporting_trends.rt_tab2_callback import (
+from callbacks.reporting_trends.rt_tab2_callback import (
     register_rt_tab2_callbacks,
 )
-from callbacks.company_reporting_trends.rt_tab3_callback import (
+from callbacks.reporting_trends.rt_tab3_callback import (
     register_rt_tab3_callbacks,
 )
-from callbacks.company_reporting_trends.rt_tab4_callback import (
+from callbacks.reporting_trends.rt_tab4_callback import (
     register_rt_tab4_callbacks,
 )
-from callbacks.company_reporting_trends.rt_tab5_callback import (
+from callbacks.reporting_trends.rt_tab5_callback import (
     register_rt_tab5_callbacks,
 )
 from components.kpi_data_cards import create_kpi_cards
@@ -150,7 +141,6 @@ def create_app():
     )  # TO DO: replace with the function to load water projections dataset
     gp_base_df, globalpolicies_df = load_gp_data()
     gp_transposed_df = transpose_gp_data(globalpolicies_df)
-    forecast_df, forecast_avg = load_energyforecast_data()
     reporting_df = load_reporting_data()
     print("Test-Tets: Reporting_df")
     print(reporting_df["reporting_status"].unique())
@@ -183,9 +173,6 @@ def create_app():
 
     # Create data dictionary for charts
     data_dict = {
-        # "pue-scatter": {"df": pue_df, "industry_avg": None},
-        # "wue-scatter": {"df": wue_df, "industry_avg": None},
-        "forecast-scatter": {"df": forecast_df, "industry_avg": None},
         "reporting-bar": {"df": reporting_df},
         "timeline-bar": {"df": reporting_df},
         "energy-use-bar": {"df": energy_use_df},
@@ -195,14 +182,6 @@ def create_app():
 
     # Define chart configurations
     chart_configs = {
-        "forecast-scatter": {
-            "base_id": "forecast",
-            "chart_id": "forecast-scatter-chart",
-            "chart_creator": create_forecast_scatter_plot,
-            "filename": "forecast-data.csv",
-            "filters": ["geographic_scope", "peer_reviewed_", "author_type_s_"],
-            "download_id": "download-forecast-data",  # Add download button ID
-        },
         "reporting-bar": {
             "base_id": "reporting",
             "chart_id": "reporting-bar-chart",
@@ -254,11 +233,7 @@ def create_app():
     register_rt_tab3_callbacks(app, reporting_df, pue_wue_companies_df)
     register_rt_tab4_callbacks(app, pue_wue_companies_df)
     register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df)
-    forecast_callback = create_chart_callback(
-        app, data_dict, chart_configs["forecast-scatter"]
-    )
-    reporting_callback = create_reporting_callback(app, data_dict, chart_configs)
-    reporting_download_callback = create_reporting_download_callback(app, data_dict)
+
     energy_use_callback = create_energy_use_callback(
         app, data_dict, chart_configs["energy-use-bar"]
     )
@@ -286,7 +261,7 @@ def create_app():
     @app.callback(Output("page-content", "children"), Input("url", "pathname"))
     def display_page(pathname):
         print(f"\nRouting request for pathname: '{pathname}'")  # Debug print
-        if pathname == "/pue_wue":
+        if pathname == "/pue-wue":
             return create_pue_wue_page(app, pue_wue_df)
         elif pathname == "/pue-methodology":
             return create_pue_methodology_page()
@@ -310,13 +285,7 @@ def create_app():
             return create_water_projections_data_page()
         elif pathname == "/global-policies":
             return create_gp_page(app, globalpolicies_df)
-        elif pathname == "/forecast":
-            print("Creating forecast page")  # Debug print
-            return create_forecast_page(app, forecast_df)
-        # TO DO: delete after refactoring company reporting trends
-        # elif pathname == "/reporting":
-        #     return create_reporting_page(app, reporting_df, data_dict, chart_configs)
-        elif pathname == "/reporting":
+        elif pathname == "/reporting-trends":
             return create_rt_page(app, reporting_df, pue_wue_companies_df)
         elif pathname == "/energy-use":
             return create_energy_use_page(app, energy_use_df)

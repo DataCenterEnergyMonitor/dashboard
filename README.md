@@ -92,8 +92,8 @@ These files contain the code that connects **all** features to the app (imports,
 
 1. **Communicate before editing** — In your PR and team channel, state that you will touch `app.py` / `data_loader.py` / `menu_structure.yaml` and for which feature. Avoid two people editing the same central file at the same time.
 2. **Merge main first** — Before changing any shared file, update main and bring it into your branch. **New to Git: use merge.** Run: `git checkout main && git pull && git checkout <your-branch> && git merge main`. (Use rebase only if you're comfortable with rewriting history and force-pushing: `git fetch origin && git rebase origin/main`.) Whichever path you apply, resolve any conflicts in your branch right away so others don’t hit the same conflicts.
-3. **One feature, minimal central changes** — Keep the feature logic in its own modules (e.g. `pages/`, `callbacks/`, `charts/`). In the central files, add only what's needed to register the feature: one new loader in `data_loader.py`, one new route and callback registration in `app.py`, one new menu/card block in `menu_structure.yaml`. Smaller diffs merge more easily.
-4. **Register the feature first, then build** — Add the feature to the central files first with minimal changes (e.g. new loader stub in `data_loader.py`, new menu entry and route in `menu_structure.yaml` and `app.py`, route returning a placeholder page). Push so the structure is on the branch and others can see or adjust shared files if needed. Then implement the feature end-to-end in feature-specific files (pages, callbacks, charts). This avoids everyone editing the same central files at once and keeps coordination clear.
+3. **One feature, minimal central changes** — Keep the feature logic in its own modules (e.g. `pages/`, `callbacks/`, `figures/`). In the central files, add only what's needed to register the feature: one new loader in `data_loader.py`, one new route and callback registration in `app.py`, one new menu/card block in `menu_structure.yaml`. Smaller diffs merge more easily.
+4. **Register the feature first, then build** — Add the feature to the central files first with minimal changes (e.g. new loader stub in `data_loader.py`, new menu entry and route in `menu_structure.yaml` and `app.py`, route returning a placeholder page). Push so the structure is on the branch and others can see or adjust shared files if needed. Then implement the feature end-to-end in feature-specific files (pages, callbacks, figures). This avoids everyone editing the same central files at once and keeps coordination clear.
 5. **Collaboration option: request Admin to add central registration** — When working with others, a cleaner approach is: in the PR (or before), the feature author requests an **Admin** (or designated person) to add all necessary central-file changes—imports, routes, menu entry, data loader—and push. Once that is on the branch, the author (and others) can work on feature-specific files without touching `app.py`, `data_loader.py`, or `menu_structure.yaml`. Only one person commits to those files, so conflict risk drops. Consider adding this as a step in your [Code Change Process Flow](#code-change-process-flow) when collaborating.
 
 | Shared (coordinate with team) | Feature-specific (one lead per feature, any time) |
@@ -101,7 +101,7 @@ These files contain the code that connects **all** features to the app (imports,
 | `app.py`, `data_loader.py`, `server.py` | `callbacks/company_reporting_trends/`, `callbacks/global_policies/` |
 | `menu_structure.yaml` | `callbacks/*_callbacks.py` (per-feature, e.g. reporting, pue_wue) |
 | `layouts/`, `components/` (navbar, footer, filter_panel, figure_card, etc.) | `components/filters/company_reporting_trends/`, `components/filters/global_policies/`, other `filters/*.py` |
-| `callbacks/base_chart_callback.py`, `charts/styles.py` | `charts/global_policies/`, and per-feature charts (`pue_chart`, `wue_chart`, etc.) |
+| `callbacks/base_chart_callback.py`, `figures/styles.py` | `figures/global_policies/`, and per-feature figures (`pue_chart`, `wue_chart`, etc.) |
 | `helpers/`, `assets/styles.css` | `pages/company_reporting_trends/`, `pages/global_policies/`, and other `pages/*_page.py` per feature |
 | `data/`, `scripts/` | `src/static_pages/` (Quarto) per section |
 
@@ -135,7 +135,7 @@ dashboard/
     │   ├── base_chart_callback.py   ← shared
     │   ├── chart_callbacks.py
     │   ├── company_profile_callbacks.py
-    │   ├── energy_projections_page_callbacks.py
+    │   ├── ep_page_callbacks.py
     │   ├── energy_use_callbacks.py
     │   ├── pue_wue_page_callbacks.py
     │   ├── reporting_callbacks.py
@@ -144,7 +144,7 @@ dashboard/
     │   ├── company_reporting_trends/   ← feature-specific
     │   └── global_policies/             ← feature-specific
     │
-    ├── charts/
+    ├── figures/
     │   ├── styles.py                ← shared
     │   ├── *_chart.py, *_barchart.py, *_heatmap.py
     │   └── global_policies/         ← feature-specific
@@ -173,8 +173,8 @@ dashboard/
 |------|--------|
 | `src/app.py` | Dash app entry and routing |
 | `src/data_loader.py` | Dataset loading, processing and caching |
-| `src/callbacks/` | Backend logic for filters and charts |
-| `src/charts/` | Plotly figure creation |
+| `src/callbacks/` | Backend logic for filters and figures |
+| `src/figures/` | Plotly figure creation |
 | `src/components/` | Layout and filter UI building blocks |
 | `src/pages/` | Page layouts and composition |
 | `menu_structure.yaml` | Navigation / menu definition |
@@ -189,7 +189,7 @@ dashboard/
    git checkout -b <branch-name>
    ```
 
-3. **When collaborating: optional — request Admin to add feature to central files** — If your feature needs changes in `app.py`, `data_loader.py`, or `menu_structure.yaml`, ask an Admin (or designated person) to add the minimal registration (imports, route, menu entry, data loader) and push to the branch. Then you can work only on feature-specific files (pages, callbacks, charts) and avoid conflicts on shared files.
+3. **When collaborating: optional — request Admin to add feature to central files** — If your feature needs changes in `app.py`, `data_loader.py`, or `menu_structure.yaml`, ask an Admin (or designated person) to add the minimal registration (imports, route, menu entry, data loader) and push to the branch. Then you can work only on feature-specific files (pages, callbacks, figures) and avoid conflicts on shared files.
 
 4. **Update code** — Implement your changes; follow the existing project structure when adding or modifying files.
 

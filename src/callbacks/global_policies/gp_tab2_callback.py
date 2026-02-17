@@ -4,7 +4,7 @@ from dash import Input, Output, State, html
 import pandas as pd
 import json
 from datetime import datetime
-from charts.global_policies.gp_treemap_chart import (
+from figures.global_policies.gp_treemap_chart import (
     build_treemap_data,
     create_treemap_fig,
 )

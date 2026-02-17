@@ -6,7 +6,7 @@ format:
     toc-title: " "
 other-links:
   - text: "📊 Explore PUE/WUE Data"
-    href: "/pue_wue"
+    href: "/pue-wue"
     # icon: "fas fa-chart-bar"
 author:
   - name: "Eric Masanet"

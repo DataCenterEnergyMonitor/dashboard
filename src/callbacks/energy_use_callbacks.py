@@ -13,7 +13,7 @@ def create_energy_use_callback(app, data_dict, chart_configs):
     
     # Create the chart configuration if it doesn't exist
     if 'energy-use-bar' not in chart_configs:
-        from charts.energy_use_barchart import create_energy_use_bar_plot
+        from figures.company_profile.energy_use_barchart import create_energy_use_bar_plot
         chart_configs['energy-use-bar'] = {
             'chart_creator': create_energy_use_bar_plot,
             'df': data_dict['energy-use-bar']['df']

@@ -4,7 +4,7 @@ from dash import Input, Output, State, html
 import pandas as pd
 import json
 from datetime import datetime
-from charts.global_policies.gp_choropleth_map import (
+from figures.global_policies.gp_choropleth_map import (
     create_gp_choropleth_map,
 )
 from components.excel_export import create_filtered_excel_download

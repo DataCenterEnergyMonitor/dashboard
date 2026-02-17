@@ -3,8 +3,8 @@ from dash.dependencies import Output, Input, State
 from dash import callback, Input, Output, ALL, MATCH, callback_context, no_update
 from dash import dcc
 from typing import List
-from charts.timeline_chart import create_timeline_bar_plot
-from .reporting_callbacks import register_reporting_callbacks
+#from figures.timeline_chart import create_timeline_bar_plot
+#from .reporting_callbacks import register_reporting_callbacks
 
 
 class ChartCallbackManager:
