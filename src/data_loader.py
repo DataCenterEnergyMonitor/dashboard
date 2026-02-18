@@ -759,40 +759,6 @@ def transpose_gp_data(df):
 
     return transposed_df
 
-
-def load_energyforecast_data():
-    # Get the current file's directory (src folder)
-    current_dir = Path(__file__).parent
-    # Go up one level and into data directory
-    data_path = (
-        current_dir.parent
-        / "data"
-        / "AI_Data_Center_Studies_CentralTable_28012025.xlsx"
-    )
-
-    forecast_df = pd.read_excel(data_path, sheet_name="Central Table", skiprows=1)
-    forecast_df = forecast_df.clean_names()
-
-    # Clean string columns
-    string_columns = [
-        "publisher_company",
-        "annual_electricity_consumption_twh_",
-        "geographic_scope",
-        "author_type_s_",
-        "year",
-        "results_replicable_",
-        "peer_reviewed_",
-        "prediction_year",
-    ]
-    for col in string_columns:
-        if col in forecast_df.columns:
-            forecast_df[col] = forecast_df[col].astype(str).str.strip()
-
-    # forecast average  values annually
-    forecast_avg = forecast_df["annual_electricity_consumption_twh_"]
-    return forecast_df, forecast_avg
-
-
 def load_reporting_data():
     """Load energy reporting data and build reporting_status per (company, year).
 

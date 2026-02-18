@@ -4,7 +4,7 @@ from dash import Dash, Input, Output, State, callback, dcc, html, callback_conte
 import pandas as pd
 import json
 from datetime import datetime
-from charts.global_policies.gp_stacked_area_chart import (
+from figures.global_policies.gp_stacked_area_chart import (
     create_gp_stacked_area_plot,
 )
 from components.excel_export import create_filtered_excel_download
@@ -741,7 +741,7 @@ def register_gp_tab1_callbacks(app, df):
     )
     def download_gp_data(n_clicks):
         # Get the project root directory (2 levels up from callbacks directory)
-        root_dir = Path(__file__).parent.parent.parent
+        root_dir = Path(__file__).parent.parent.parent.parent
         input_path = root_dir / "data" / "DCEWM-GlobalPolicies.xlsx"
 
         # Debug print

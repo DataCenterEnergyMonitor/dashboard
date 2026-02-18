@@ -9,9 +9,9 @@ navbar:
     left-menu:
       Explore Data:
         PUE/WUE:
-          route: /pue_wue
+          route: /pue-wue
         Company Reporting Trends:
-          route: /reporting
+          route: /reporting-trends
         Company Reported Data:
           route: /company-profile
         Energy Demand Estimates and Projections:
@@ -81,11 +81,11 @@ navbar:
 # Landing Page Cards Configuration
 landing_page_cards:
   PUE/WUE:
-    route: /pue_wue
+    route: /pue-wue
     preview: assets/previews/pue_preview.png
     description: 200+ PUE and WUE values by company, region, and operator type
   Company Reporting Trends:
-    route: /reporting
+    route: /reporting-trends
     preview: assets/previews/reporting_trends_preview.png
     description: Review who has reported, and who hasn't, since 2007
   Company Reported Data:

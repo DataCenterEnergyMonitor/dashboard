@@ -1099,3 +1099,16 @@ a[id$="-section"] {
         transform: translateX(-50%) !important;
     }
 }
+
+/* ── Company Profile – Reporting Profile AG Grid ────────────────────── */
+
+.cp-reporting-profile-grid .ag-header-cell-label {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+.cp-reporting-profile-grid .ag-cell {
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+}
