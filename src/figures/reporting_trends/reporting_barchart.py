@@ -5,10 +5,6 @@ from ..styles import get_bar_chart_layout
 
 # Define color palette for reporting scopes
 REPORTING_SCOPE_COLORS = {
-    # 'Company Wide Electricity Use': 'rgba(23, 79, 138, 0.8)',
-    # 'Data Center Electricity Use': '#C16597',
-    # 'Data Center Fuel Use': '#AACE63',
-    # #'Data Center Water Use': '#23CDC6'
     "Company Wide Electricity Use": "#00588D",
     "Data Center Electricity Use": "#3EBCD2",
     "Data Center Fuel Use": "#AD7291",
@@ -56,7 +52,7 @@ def create_reporting_bar_plot(df: pd.DataFrame) -> go.Figure:
     # Dynamic x-axis padding based on number of years
     # More padding for fewer years makes bars appear narrower relative to chart width
     if num_years <= 2:
-        x_padding = 3.5  # Much more padding for 1-2 years
+        x_padding = 3.5  # allocate more padding for 1-2 years
     elif num_years <= 4:
         x_padding = 1.5
     elif num_years <= 7:
@@ -66,10 +62,10 @@ def create_reporting_bar_plot(df: pd.DataFrame) -> go.Figure:
     else:
         x_padding = 0.5
 
-    # For stacked bars, all traces share the same x position, so use consistent width
+    # For stacked bars apply consistent width (all traces share the same x position)
     # Cap based on number of years
     if num_years <= 5:
-        bar_width = 0.4  # Same width for 1-5 years
+        bar_width = 0.4  # same width for 1-5 years
     elif num_years <= 10:
         bar_width = 0.5
     else:
@@ -155,7 +151,7 @@ def create_reporting_bar_plot(df: pd.DataFrame) -> go.Figure:
     # Update layout using common style
     fig.update_layout(get_bar_chart_layout())
 
-    # Improve legend layout with grouping
+    # Add groupping to legend
     fig.update_layout(
         legend=dict(
             groupclick="togglegroup",  # clicking on group name toggles all items

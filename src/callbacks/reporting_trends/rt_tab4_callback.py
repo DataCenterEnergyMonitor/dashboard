@@ -280,7 +280,7 @@ def register_rt_tab4_callbacks(app, pue_wue_companies_df):
     )
     def download_rt_tab4_data(n_clicks):
         """Download the PUE companies data as Excel"""
-        root_dir = Path(__file__).parent.parent.parent
+        root_dir = Path(__file__).parent.parent.parent.parent
         input_path = root_dir / "data" / "Companies_list.xlsx"
 
         return create_filtered_excel_download(

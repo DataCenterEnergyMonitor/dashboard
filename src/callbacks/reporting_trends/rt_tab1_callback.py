@@ -182,7 +182,7 @@ def register_rt_tab1_callbacks(app, df):
     )
     def download_rt_tab1_data(n_clicks):
         """Download the reporting data as Excel"""
-        root_dir = Path(__file__).parent.parent.parent
+        root_dir = Path(__file__).parent.parent.parent.parent
         input_path = root_dir / "data" / "DCEWM-Reporting.xlsx"
 
         return create_filtered_excel_download(

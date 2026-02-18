@@ -86,7 +86,7 @@ landing_page_cards:
     description: 200+ PUE and WUE values by company, region, and operator type
   Company Reporting Trends:
     route: /reporting-trends
-    preview: assets/previews/reporting-trends_trends_preview.png
+    preview: assets/previews/reporting_trends_preview.png
     description: Review who has reported, and who hasn't, since 2007
   Company Reported Data:
     route: /company-profile

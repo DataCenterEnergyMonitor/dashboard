@@ -1675,7 +1675,7 @@ def register_energy_projections_callbacks(app, df):
     )
     def download_energy_projections_data(n_clicks):
         # Get the project root directory (2 levels up from callbacks directory)
-        root_dir = Path(__file__).parent.parent.parent
+        root_dir = Path(__file__).parent.parent.parent.parent
         input_path = root_dir / "data" / "DCEWM-PUEDataset.xlsx"
 
         # Debug print
@@ -1701,7 +1701,7 @@ def register_energy_projections_callbacks(app, df):
     )
     def download_power_projections_data(n_clicks):
         # Get the project root directory (2 levels up from callbacks directory)
-        root_dir = Path(__file__).parent.parent.parent
+        root_dir = Path(__file__).parent.parent.parent.parent
         input_path = root_dir / "data" / "DCEWM-WUEDataset.xlsx"
 
         # Debug print

@@ -741,7 +741,7 @@ def register_gp_tab1_callbacks(app, df):
     )
     def download_gp_data(n_clicks):
         # Get the project root directory (2 levels up from callbacks directory)
-        root_dir = Path(__file__).parent.parent.parent
+        root_dir = Path(__file__).parent.parent.parent.parent
         input_path = root_dir / "data" / "DCEWM-GlobalPolicies.xlsx"
 
         # Debug print

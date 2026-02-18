@@ -43,30 +43,18 @@ from pages.water_projections.water_projections_methods_page import (
 from pages.water_projections.water_projections_data_page import create_water_projections_data_page
 from pages.global_policies.gp_main_page import create_gp_page
 from pages.reporting_trends.rt_main_page import create_rt_page
-from pages.company_profile.company_profile import create_company_profile_page
+from pages.company_profile.cp_main_page import create_cp_page
 from pages.home import create_home_page
 from pages.common.about import create_about_page
 from pages.common.companies import create_companies_page
 from pages.common.contact import create_contact_page
 from pages.learn.data_centers_101 import create_data_centers_101_page
-from pages.energy_use_page import create_energy_use_page
 
-from figures.pue_wue.pue_chart import create_pue_scatter_plot
-from figures.pue_wue.wue_chart import create_wue_scatter_plot
-
-from figures.reporting_trends.reporting_barchart import create_reporting_bar_plot
-from figures.timeline_chart import create_timeline_bar_plot
-from figures.company_profile.energy_use_barchart import create_energy_use_bar_plot
-from figures.company_profile.company_profile_barchart import create_company_profile_bar_plot
-from callbacks.base_chart_callback import create_chart_callback
-from callbacks.energy_use_callbacks import (
-    create_energy_use_callback,
-    create_energy_use_download_callback,
-)
-from callbacks.company_profile.company_profile_callbacks import (
-    create_company_profile_callback,
-    create_company_profile_download_callback,
-)
+from callbacks.company_profile.cp_page_callback import register_cp_page_callbacks
+from callbacks.company_profile.cp_filter_callbacks import register_cp_filter_callbacks
+from callbacks.company_profile.cp_tab1_callback import register_cp_tab1_callbacks
+from callbacks.company_profile.cp_tab2_callback import register_cp_tab2_callbacks
+from callbacks.company_profile.cp_tab3_callback import register_cp_tab3_callbacks
 from callbacks.pue_wue.pue_wue_page_callbacks import register_pue_wue_callbacks
 from callbacks.energy_projections.ep_page_callbacks import (
     register_energy_projections_callbacks,
@@ -169,52 +157,6 @@ def create_app():
 
     pprint.pprint(metadata)
 
-    ######
-
-    # Create data dictionary for charts
-    data_dict = {
-        "reporting-bar": {"df": reporting_df},
-        "timeline-bar": {"df": reporting_df},
-        "energy-use-bar": {"df": energy_use_df},
-        "company-profile-bar": {"df": energy_use_df},
-        "company-profile-table": {"df": company_profile_df},
-    }
-
-    # Define chart configurations
-    chart_configs = {
-        "reporting-bar": {
-            "base_id": "reporting",
-            "chart_id": "reporting-bar-chart",
-            "chart_creator": create_reporting_bar_plot,
-            "filename": "reporting-data.csv",
-            "filters": ["from_year", "to_year"],
-            "download_id": "download-reporting-data",  # Add download button ID
-        },
-        "timeline-bar": {  # Add timeline chart config
-            "base_id": "reporting",
-            "chart_id": "timeline-bar-chart",
-            "chart_creator": create_timeline_bar_plot,
-            "filename": "reporting-data.csv",
-            "filters": ["from_year", "to_year"],
-        },
-        "energy-use-bar": {
-            "base_id": "energy-use-bar",
-            "chart_id": "energy-use-bar-chart",
-            "chart_creator": create_energy_use_bar_plot,
-            "filename": "energy-use-data.csv",
-            "filters": ["reported_data_year", "reporting_scope", "company_name"],
-            "download_id": "download-energy-use-data",
-        },
-        "company-profile-bar": {
-            "base_id": "company-profile",
-            "chart_id": "company-profile-bar-chart",
-            "chart_creator": create_company_profile_bar_plot,
-            "filename": "company-profile-data.csv",
-            "filters": ["company_name"],
-            "download_id": "download-company-profile-data",
-        },
-    }
-
     # Initialize callbacks
     register_pue_wue_callbacks(app, pue_wue_df)
     register_energy_projections_callbacks(app, energyprojections_df)
@@ -234,16 +176,14 @@ def create_app():
     register_rt_tab4_callbacks(app, pue_wue_companies_df)
     register_rt_tab5_callbacks(app, reporting_df, pue_wue_companies_df)
 
-    energy_use_callback = create_energy_use_callback(
-        app, data_dict, chart_configs["energy-use-bar"]
-    )
-    energy_use_download_callback = create_energy_use_download_callback(app, data_dict)
-    company_profile_callback = create_company_profile_callback(
-        app, data_dict, chart_configs["company-profile-bar"]
-    )
-    company_profile_download_callback = create_company_profile_download_callback(
-        app, data_dict
-    )
+    # Company Profile page callbacks (new tab-based structure)
+    cp_companies = sorted(energy_use_df["company_name"].unique())
+    cp_default_company = cp_companies[0] if cp_companies else None
+    register_cp_page_callbacks(app, cp_companies, cp_default_company)
+    register_cp_filter_callbacks(app)
+    register_cp_tab1_callbacks(app, company_profile_df)
+    register_cp_tab2_callbacks(app, energy_use_df)
+    register_cp_tab3_callbacks(app, energy_use_df)
 
     # URL Routing
     app.layout = html.Div(
@@ -287,10 +227,8 @@ def create_app():
             return create_gp_page(app, globalpolicies_df)
         elif pathname == "/reporting-trends":
             return create_rt_page(app, reporting_df, pue_wue_companies_df)
-        elif pathname == "/energy-use":
-            return create_energy_use_page(app, energy_use_df)
         elif pathname == "/company-profile":
-            return create_company_profile_page(app, company_profile_df, energy_use_df)
+            return create_cp_page(app, company_profile_df, energy_use_df)
         elif pathname == "/about":
             return create_about_page()
         elif pathname == "/companies":

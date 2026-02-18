@@ -1549,7 +1549,7 @@ def register_water_projections_callbacks(app, df):
     )
     def download_water_projections_data(n_clicks):
         # Get the project root directory (2 levels up from callbacks directory)
-        root_dir = Path(__file__).parent.parent.parent
+        root_dir = Path(__file__).parent.parent.parent.parent
         input_path = root_dir / "data" / "DCEWM-PUEDataset.xlsx"
 
         # Debug print
