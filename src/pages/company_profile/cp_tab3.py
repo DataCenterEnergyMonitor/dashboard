@@ -1,9 +1,9 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.company_profile.cp_filters import create_cp_sidebar_filters
+from components.filters.company_profile.cp_tab3_filters import create_cp_tab3_filters
 
 
-def create_cp_tab3(companies, default_company=None):
+def create_cp_tab3(energy_use_df, default_company=None):
     """
     Create Tab 3 content: Energy Comparison.
     Shows a horizontal bar chart comparing electricity usage across all
@@ -11,7 +11,7 @@ def create_cp_tab3(companies, default_company=None):
     """
     content = html.Div(
         [
-            create_cp_sidebar_filters(companies, default_company),
+            create_cp_tab3_filters(energy_use_df, default_company),
             html.Div(
                 [
                     dbc.Container(

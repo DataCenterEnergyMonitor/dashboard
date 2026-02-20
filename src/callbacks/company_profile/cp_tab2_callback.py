@@ -4,7 +4,7 @@ from pathlib import Path
 from dash import Input, Output, State, html
 import traceback
 from dash.exceptions import PreventUpdate
-from figures.company_profile.company_energy_use_barchart import (
+from figures.company_profile.energy_by_year_bar import (
     create_company_energy_use_bar_plot,
 )
 from components.figure_card import create_figure_card
@@ -38,7 +38,7 @@ def create_empty_chart(message):
 
 
 def register_cp_tab2_callbacks(app, energy_use_df):
-    """Register callbacks for Tab 2 – Energy Trends chart."""
+    """Register callbacks for Tab 2 - Energy Trends chart."""
     global _registered
     if _registered:
         return
@@ -122,7 +122,7 @@ def register_cp_tab2_callbacks(app, energy_use_df):
             raise PreventUpdate
         return (
             not is_open,
-            "Energy Consumption Over Time — Expanded View",
+            "Energy Consumption Over Time",
             current_figure or {},
         )
 

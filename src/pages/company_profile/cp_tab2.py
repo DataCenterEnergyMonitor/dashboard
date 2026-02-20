@@ -1,6 +1,6 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from components.filters.company_profile.cp_filters import create_cp_sidebar_filters
+from components.filters.company_profile.cp_store_filters import create_cp_sidebar_filters
 
 
 def create_cp_tab2(companies, default_company=None):

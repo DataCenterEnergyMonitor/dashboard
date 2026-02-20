@@ -1,15 +1,17 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 
-# ID prefix for company profile page components
 ID_PREFIX = "cp-"
 
 
 def create_cp_sidebar_filters(companies, default_company=None):
     """
-    Create the left sidebar filter panel for the Company Profile page.
-    Contains the shared company dropdown that persists across all tabs
-    via cp-filter-store.
+    Create the left sidebar filter panel for Company Profile tabs 1, 2, 4.
+
+    Contains the shared company dropdown and Apply Filters / Clear All
+    buttons matching the pattern on the Company Reporting Trends page.
+    Hidden placeholders are included for tab-3-only filter IDs so that
+    the centralised filter callback can reference them without errors.
 
     Args:
         companies: sorted list of company names for the dropdown
@@ -86,6 +88,58 @@ def create_cp_sidebar_filters(companies, default_company=None):
                             "position": "relative",
                             "zIndex": "10",
                         },
+                    ),
+                    html.Div(
+                        [
+                            dbc.ButtonGroup(
+                                [
+                                    dbc.Button(
+                                        "Apply Filters",
+                                        id=f"{ID_PREFIX}apply-filters-btn",
+                                        color="primary",
+                                        size="sm",
+                                        n_clicks=0,
+                                        className="mb-2",
+                                        style={
+                                            "width": "100%",
+                                            "borderRadius": "5px",
+                                        },
+                                    ),
+                                    dbc.Button(
+                                        "Clear All",
+                                        id=f"{ID_PREFIX}clear-filters-btn",
+                                        color="outline-secondary",
+                                        size="sm",
+                                        n_clicks=0,
+                                        style={
+                                            "width": "100%",
+                                            "borderRadius": "5px",
+                                        },
+                                    ),
+                                ],
+                                vertical=True,
+                                className="w-100",
+                            )
+                        ],
+                        style={
+                            "position": "sticky",
+                            "bottom": "0",
+                            "flexShrink": "0",
+                            "backgroundColor": "#f8f9fa",
+                            "padding": "15px 0",
+                            "marginTop": "20px",
+                            "borderTop": "1px solid #dee2e6",
+                        },
+                    ),
+                    dcc.Dropdown(
+                        id=f"{ID_PREFIX}benchmark-companies-dropdown",
+                        value=[],
+                        multi=True,
+                        style={"display": "none"},
+                    ),
+                    dcc.Dropdown(
+                        id=f"{ID_PREFIX}year-dropdown",
+                        style={"display": "none"},
                     ),
                 ],
                 style={

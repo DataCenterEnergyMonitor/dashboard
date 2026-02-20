@@ -13,7 +13,7 @@ _cp_page_callbacks_registered = False
 ID_PREFIX = "cp-"
 
 
-def register_cp_page_callbacks(app, companies, default_company):
+def register_cp_page_callbacks(app, companies, default_company, energy_use_df):
     """Registers the tab-switching callback for the Company Profile page.
 
     Args:
@@ -73,7 +73,7 @@ def register_cp_page_callbacks(app, companies, default_company):
         elif active_tab == "tab-2":
             content = create_cp_tab2(companies, selected_company)
         elif active_tab == "tab-3":
-            content = create_cp_tab3(companies, selected_company)
+            content = create_cp_tab3(energy_use_df, selected_company)
         elif active_tab == "tab-4":
             content = create_cp_tab4(companies, selected_company)
         else:

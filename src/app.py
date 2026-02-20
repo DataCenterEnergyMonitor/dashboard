@@ -179,7 +179,7 @@ def create_app():
     # Company Profile page callbacks (new tab-based structure)
     cp_companies = sorted(energy_use_df["company_name"].unique())
     cp_default_company = cp_companies[0] if cp_companies else None
-    register_cp_page_callbacks(app, cp_companies, cp_default_company)
+    register_cp_page_callbacks(app, cp_companies, cp_default_company, energy_use_df)
     register_cp_filter_callbacks(app)
     register_cp_tab1_callbacks(app, company_profile_df)
     register_cp_tab2_callbacks(app, energy_use_df)

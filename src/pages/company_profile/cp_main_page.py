@@ -12,9 +12,10 @@ def create_cp_page(app, company_profile_df, energy_use_df):
     Company filter lives in the left sidebar inside each tab and is shared
     across all tabs via cp-filter-store.
     """
-    # Extract companies list for the shared dropdown
+    # Extract companies list and default values for the shared filter store
     companies = sorted(energy_use_df["company_name"].unique())
     default_company = companies[0] if companies else None
+    default_year = int(max(energy_use_df["reported_data_year"])) - 1
 
     # Define tabs configuration — short labels matching the RT page style
     tabs_config = [
@@ -32,11 +33,15 @@ def create_cp_page(app, company_profile_df, energy_use_df):
         id_prefix=ID_PREFIX,
     )
 
-    # Shared filter store: company selection persists across tabs
+    # Shared filter store: selections persist across tabs
     filter_store = dcc.Store(
         id=f"{ID_PREFIX}filter-store",
         data={
             "company": default_company,
+            "year": default_year,
+            "benchmark_companies": [],
+            "default_company": default_company,
+            "default_year": default_year,
             "source": "initial",
         },
     )

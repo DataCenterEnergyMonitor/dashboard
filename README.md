@@ -98,11 +98,11 @@ These files contain the code that connects **all** features to the app (imports,
 
 | Shared (coordinate with team) | Feature-specific (one lead per feature, any time) |
 |------------------------------|---------------------------------------------------|
-| `app.py`, `data_loader.py`, `server.py` | `callbacks/company_reporting_trends/`, `callbacks/global_policies/` |
-| `menu_structure.yaml` | `callbacks/*_callbacks.py` (per-feature, e.g. reporting, pue_wue) |
-| `layouts/`, `components/` (navbar, footer, filter_panel, figure_card, etc.) | `components/filters/company_reporting_trends/`, `components/filters/global_policies/`, other `filters/*.py` |
-| `callbacks/base_chart_callback.py`, `figures/styles.py` | `figures/global_policies/`, and per-feature figures (`pue_chart`, `wue_chart`, etc.) |
-| `helpers/`, `assets/styles.css` | `pages/company_reporting_trends/`, `pages/global_policies/`, and other `pages/*_page.py` per feature |
+| `app.py`, `data_loader.py`, `server.py` | `callbacks/company_profile/`, `callbacks/reporting_trends/`, `callbacks/global_policies/`, etc. |
+| `menu_structure.yaml` | `callbacks/<feature>/*_callback.py` (per-feature) |
+| `layouts/`, `components/` (navbar, figure_card, etc.) | `components/filters/company_profile/`, `components/filters/reporting_trends/`, etc. |
+| `callbacks/base_chart_callback.py`, `figures/styles.py` | `figures/company_profile/`, `figures/global_policies/`, per-feature `*_chart.py`, `*_barchart.py`, `*_table.py`, etc. |
+| `helpers/`, `assets/styles.css` | `pages/company_profile/`, `pages/reporting_trends/`, `pages/global_policies/`, etc. |
 | `data/`, `scripts/` | `src/static_pages/` (Quarto) per section |
 
 ```
@@ -110,7 +110,7 @@ dashboard/
 ├── Dockerfile
 ├── README.md
 ├── environment.yml
-├── menu_structure.yaml              ← shared
+├── menu_structure.yaml              ← shared (routes use hyphens: /company-profile, /pue-wue)
 │
 ├── assets/
 │   ├── *.png, *.svg
@@ -127,45 +127,157 @@ dashboard/
 │   └── update_geocoding_cache.py
 │
 └── src/
-    ├── app.py                       ← shared
+    ├── app.py                       ← shared (routing: pathname → page component)
     ├── server.py                    ← shared
     ├── data_loader.py               ← shared
     │
     ├── callbacks/
     │   ├── base_chart_callback.py   ← shared
-    │   ├── chart_callbacks.py
-    │   ├── company_profile_callbacks.py
-    │   ├── ep_page_callbacks.py
-    │   ├── energy_use_callbacks.py
-    │   ├── pue_wue_page_callbacks.py
-    │   ├── reporting_callbacks.py
-    │   ├── water_projections_page_callbacks.py
-    │   ├── wue_callbacks.py
-    │   ├── company_reporting_trends/   ← feature-specific
-    │   └── global_policies/             ← feature-specific
+    │   ├── company_profile/
+    │   │   ├── cp_page_callback.py
+    │   │   ├── cp_filter_callbacks.py
+    │   │   ├── cp_tab1_callback.py
+    │   │   ├── cp_tab2_callback.py
+    │   │   └── cp_tab3_callback.py
+    │   ├── reporting_trends/
+    │   │   ├── rt_page_callback.py
+    │   │   ├── rt_filter_callbacks.py
+    │   │   ├── rt_tab1_callback.py … rt_tab5_callback.py
+    │   │   └── ...
+    │   ├── global_policies/
+    │   │   ├── gp_page_callback.py
+    │   │   ├── gp_tab1_callback.py … gp_tab3_callback.py
+    │   │   └── ...
+    │   ├── pue_wue/
+    │   │   └── pue_wue_page_callbacks.py
+    │   ├── energy_projections/
+    │   │   └── ep_page_callbacks.py
+    │   └── water_projections/
+    │       └── water_projections_page_callbacks.py
     │
     ├── figures/
     │   ├── styles.py                ← shared
-    │   ├── *_chart.py, *_barchart.py, *_heatmap.py
-    │   └── global_policies/         ← feature-specific
+    │   ├── company_profile/
+    │   │   ├── company_profile_barchart.py
+    │   │   ├── company_profile_table.py
+    │   │   └── company_energy_use_barchart.py
+    │   ├── reporting_trends/
+    │   │   ├── reporting_barchart.py
+    │   │   ├── energy_reporting_heatmap.py
+    │   │   └── pue_wue_reporting_heatmap.py
+    │   ├── global_policies/
+    │   │   ├── gp_choropleth_map.py
+    │   │   ├── gp_stacked_area_chart.py
+    │   │   └── gp_treemap_chart.py
+    │   ├── pue_wue/
+    │   │   ├── pue_chart.py
+    │   │   ├── wue_chart.py
+    │   │   └── pue_wue_chart.py
+    │   ├── energy_demand/
+    │   │   └── energy_projections_chart.py
+    │   └── water_demand/
+    │       └── water_projections_chart.py
     │
-    ├── components/                  # shared except filters/* (feature-specific)
+    ├── components/
+    │   ├── navbar.py
+    │   ├── figure_card.py
+    │   ├── bookmark_bar.py
     │   └── filters/
-    │       ├── company_reporting_trends/   ← feature-specific
-    │       ├── global_policies/             ← feature-specific
-    │       └── *.py
+    │       ├── company_profile/
+    │       │   └── cp_filters.py
+    │       ├── reporting_trends/
+    │       │   ├── rt_filters.py
+    │       │   ├── rt_tab1_filters.py … rt_tab5_filters.py
+    │       │   └── rt_sort_options.py
+    │       ├── global_policies/
+    │       ├── pue_wue/
+    │       │   └── pue_wue_filters.py
+    │       ├── energy_projections/
+    │       │   └── ep_filters.py
+    │       └── water_projections/
+    │           └── wp_filters.py
     │
-    ├── helpers/                     ← shared
-    ├── layouts/                     ← shared
+    ├── helpers/
+    ├── layouts/
+    │   ├── base_layout.py
+    │   └── data_page_layout.py
     │
     ├── pages/
-    │   ├── *_page.py
-    │   ├── company_reporting_trends/   ← feature-specific
-    │   └── global_policies/             ← feature-specific
+    │   ├── home.py
+    │   ├── company_profile/
+    │   │   ├── cp_main_page.py
+    │   │   ├── cp_tab1.py … cp_tab4.py
+    │   │   └── ...
+    │   ├── reporting_trends/
+    │   │   ├── rt_main_page.py
+    │   │   ├── rt_tab1.py … rt_tab5.py
+    │   │   └── ...
+    │   ├── global_policies/
+    │   │   ├── gp_main_page.py
+    │   │   ├── gp_tab1.py … gp_tab4.py
+    │   │   └── ...
+    │   ├── pue_wue/
+    │   │   ├── pue_wue_page.py
+    │   │   ├── pue_methods_page.py, wue_methods_page.py
+    │   │   ├── pue_data_page.py, wue_data_page.py
+    │   │   └── ...
+    │   ├── energy_projections/
+    │   │   ├── energy_projections.py
+    │   │   ├── energy_projections_methods.py
+    │   │   └── energy_projections_data.py
+    │   ├── water_projections/
+    │   │   ├── water_projections_page.py
+    │   │   └── ...
+    │   ├── common/
+    │   │   ├── about.py
+    │   │   ├── companies.py
+    │   │   └── contact.py
+    │   └── learn/
+    │       └── data_centers_101.py
     │
-    └── static_pages/                # per-section (feature-specific)
-        ├── companies/, energy_projections/, pue_wue/
+    └── static_pages/                # Quarto (.qmd) per section
+        ├── companies/
+        ├── energy_projections/
+        └── pue_wue/
 ```
+
+### Naming conventions
+
+All source files under `src/` use **underscores** in filenames (Python PEP 8). Public URLs use **hyphens**. The routing config (`menu_structure.yaml` and `app.py`) is the translation layer between the two.
+
+| Where | Convention | Example |
+|-------|------------|--------|
+| **All `src/` files** | Underscores | `tab_1.py`, `cp_tab2_callback.py`, `nav_bar.py` |
+| **URLs (routes)** | Hyphens | `/company-profile`, `/pue-wue`, `/reporting-trends` |
+| **Routing** | `menu_structure.yaml` + `app.py` map pathname → component | `pathname == "/company-profile"` → `pages.company_profile.cp_main_page` |
+
+**Why this split**
+
+1. **Consistent Python convention** — Every `.py` file follows PEP 8 (underscores); no mixing with hyphens in source.
+2. **Web-standard URLs** — Hyphens in URLs are standard and readable.
+3. **Clear separation** — Routing is the only place that converts internal (Python) names to external (URL) form; one source of truth.
+
+**Pages: no `_page` suffix for tab files**
+
+- Page files live under `pages/<feature>/`, so the folder already indicates they are pages.
+- Prefer short names: `cp_tab1.py`, `rt_tab2.py`, `gp_tab3.py` ✓ (not `cp_tab1_page.py`).
+- A single entry page per feature can keep a descriptive name like `cp_main_page.py` or `rt_main_page.py` for clarity at the feature root.
+
+**Logic and figure files: keep type suffixes**
+
+Use suffixes so imports and file roles are obvious and multiple files per tab can coexist:
+
+| Folder | Suffix | Examples |
+|--------|--------|----------|
+| `callbacks/<feature>/` | `_callback` | `tab_1_callback.py`, `cp_page_callback.py`, `rt_filter_callbacks.py` |
+| `components/filters/<feature>/` | `_filters` | `cp_filters.py`, `rt_tab1_filters.py` |
+| `figures/<feature>/` | **figure type** | `tab_1_line_chart.py`, `tab_1_bar_chart.py`, `tab_2_heatmap.py`, `tab_2_table.py` |
+
+Figure filenames should describe the **specific** visualization (e.g. `company_profile_barchart.py`, `energy_reporting_heatmap.py`, `gp_choropleth_map.py`) so that:
+
+- You know what’s inside without opening the file.
+- Imports are clear: `from figures.company_profile.company_profile_barchart import create_chart`.
+- Multiple figures per tab are easy: e.g. `tab_1_line_chart.py` and `tab_1_table.py` in the same feature.
 
 ### Quick reference
 
